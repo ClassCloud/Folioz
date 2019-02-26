@@ -29,7 +29,7 @@
                         </select>
                     </span>
                 </span>
-                
+
             </fieldset>
         </div>
         <div class="no-label text-inline form-group">
@@ -39,7 +39,7 @@
         <div class="searchform text input-group">
             <label class="sr-only" for="query">{str tag='usersearch' section='admin'}</label>
             <input placeholder="{str tag='usersearch' section='admin'}" class="text form-control" type="text" name="query" id="query"{if $search->query} value="{$search->query}"{/if}>
-            <div class="input-group-btn button">
+            <div class="input-group-append button">
                 <button id="query-button" class="btn-search btn btn-primary " type="submit">
                 {str tag="search"}
                 </button>
@@ -49,8 +49,8 @@
     </div>
 </form>
 
-<div class="panel panel-default view-container" id="results">
-    <h2 class="panel-heading" id="resultsheading">{str tag="Results"}</h2>
+<div class="card view-container" id="results">
+    <h2 class="card-header" id="resultsheading">{str tag="Results"}</h2>
     {if $results}
         <table id="searchresults" class="tablerenderer table fullwidth">
             <thead>
@@ -80,11 +80,11 @@
                 {$results|safe}
             </tbody>
         </table>
-        <div class="panel-body">
+        <div class="card-body">
             {$pagination|safe}
         </div>
     {else}
-    <div class="panel-body">
+    <div class="card-body">
         <div class="no-results">{str tag="noresultsfound"}</div>
     </div>
     {/if}

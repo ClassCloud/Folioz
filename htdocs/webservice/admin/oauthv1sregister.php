@@ -434,7 +434,7 @@ function webservice_server_list_form($sopts, $iopts) {
                 'value' => pieform(array(
                         'name' => 'webservices_server_edit_' . $consumer->id,
                         'renderer' => 'div',
-                        'class' => 'form-as-button pull-left',
+                        'class' => 'form-as-button float-left',
                         'elementclasses' => false,
                         'successcallback' => 'webservices_server_submit',
                         'jsform' => false,
@@ -444,7 +444,7 @@ function webservice_server_list_form($sopts, $iopts) {
                             'submit' => array(
                                 'type' => 'button',
                                 'usebuttontag' => true,
-                                'class' => 'btn-default btn-xs',
+                                'class' => 'btn-secondary btn-sm',
                                 'value' => '<span class="icon icon-pencil icon-lg" role="presentation" aria-hidden="true"></span><span class="sr-only">' . get_string('editspecific', 'mahara', $consumer->application_title) . '</span>',
                                 'elementtitle' => get_string('editspecific', 'mahara', $consumer->application_title),
                             ),
@@ -454,7 +454,7 @@ function webservice_server_list_form($sopts, $iopts) {
                     pieform(array(
                         'name' => 'webservices_server_delete_' . $consumer->id,
                         'renderer' => 'div',
-                        'class' => 'form-as-button pull-left',
+                        'class' => 'form-as-button float-left',
                         'elementclasses' => false,
                         'successcallback' => 'webservices_server_submit',
                         'jsform' => false,
@@ -464,7 +464,7 @@ function webservice_server_list_form($sopts, $iopts) {
                             'submit' => array(
                                 'type' => 'button',
                                 'usebuttontag' => true,
-                                'class' => 'btn-default btn-xs',
+                                'class' => 'btn-secondary btn-sm',
                                 'value' => '<span class="icon icon-trash icon-lg text-danger" role="presentation" aria-hidden="true"></span><span class="sr-only">'.get_string('deletespecific', 'mahara', $consumer->application_title).'</span>',
                                 'elementtitle' => get_string('deletespecific', 'mahara', $consumer->application_title),
                             ),
@@ -493,7 +493,7 @@ function webservice_server_list_form($sopts, $iopts) {
                         pieform(array(
                             'name' => 'webservices_server_config_' . $consumer->id,
                             'renderer' => 'div',
-                            'class' => 'form-as-button pull-left',
+                            'class' => 'form-as-button float-left',
                             'elementclasses' => false,
                             'successcallback' => 'webservices_server_submit',
                             'jsform' => false,
@@ -503,7 +503,7 @@ function webservice_server_list_form($sopts, $iopts) {
                                 'submit' => array(
                                     'type' => 'button',
                                     'usebuttontag' => true,
-                                    'class' => 'btn-default btn-xs',
+                                    'class' => 'btn-secondary btn-sm',
                                     'value' => '<span class="icon icon-cog icon-lg " role="presentation" aria-hidden="true"></span><span class="sr-only">'.get_string('managespecific', 'mahara', $consumer->application_title).'</span>',
                                     'elementtitle' => get_string('managespecific', 'mahara', $consumer->application_title),
                                 ),

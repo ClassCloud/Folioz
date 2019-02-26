@@ -21,7 +21,7 @@
 {/if}
 
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-lg-9">
 
         <h1 class="page-header">
             {if count($artefactpath) == 0}
@@ -41,21 +41,20 @@
                 | {$viewdisplaytitle|safe}
                 {if $hasfeed}
                 <a href="{$feedlink}">
-                    <span class="icon-rss icon pull-right" role="presentation" aria-hidden="true"></span>
+                    <span class="icon-rss icon float-right" role="presentation" aria-hidden="true"></span>
                 </a>
                 {/if}
             </span>
         </h1>
 
-        <div class="btn-top-right btn-group btn-group-top pull-right">
+        <div class="btn-top-right btn-group btn-group-top float-right">
             {if $LOGGEDIN && (!$userisowner || ($userisowner && $objectedpage))}
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                 <span class="icon icon-ellipsis-h" role="presentation" aria-hidden="true"></span>
                 <span class="sr-only">{str tag="more..."}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                {if !$userisowner}
-                <li>
+                <li class="dropdown-item">
                     <a id="toggle_watchlist_link" class="watchlist" href="">
 
                         {if $viewbeingwatched}
@@ -79,7 +78,7 @@
                         {/if}
                     </a>
                 </li>
-                <li>
+                <li class="dropdown-item">
                     {if $objector}
                     <span class="nolink">
                         <span class="icon icon-lg icon-flag text-danger left" role="presentation" aria-hidden="true"></span>
@@ -92,7 +91,6 @@
                     </a>
                     {/if}
                 </li>
-                {/if}
                 {if $userisowner && $objectedpage}
                     <li>
                     <span class="nolink">
@@ -106,7 +104,7 @@
         </div>
 
         <div id="view" class="view-pane">
-            <div id="bottom-pane" class="panel panel-secondary">
+            <div id="bottom-pane" class="card">
                 <div id="column-container" class="no-heading view-container">
                 {$artefact|safe}
                 </div>

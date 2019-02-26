@@ -70,8 +70,8 @@ function pieform_element_layout(Pieform $form, $element) {
           . '</div>'
           . '<div id="customrows" class="col-xs-12 col-sm-10">'
               . '<div id="customrow_1" class="customrow form-group five-across multi-label clearfix" style="border-bottom: 0px !important;">'
-              . '<div class="customrowtitle pull-left field"><strong>' . get_string('Row', 'view') . ' 1</strong></div>'
-              . '<div class="pull-left field field-selectnumcols">'
+              . '<div class="customrowtitle float-left field"><strong>' . get_string('Row', 'view') . ' 1</strong></div>'
+              . '<div class="float-left field field-selectnumcols">'
                   . '<label for="selectnumcolsrow_1"><span class="sr-only">' . get_string('Row', 'view') . ' 1: </span>' . get_string('numberofcolumns', 'view') . '</label>'
                   . '<select name="selectnumcols" id="selectnumcolsrow_1" class="selectnumcols input-sm" onchange="CustomLayoutManager.customlayout_change_numcolumns(\'' . $form->get_property('name') . '\', this)">';
                       foreach ($element['clnumcolumnsoptions'] as $value => $data) {
@@ -79,7 +79,7 @@ function pieform_element_layout(Pieform $form, $element) {
                       }
       $output .= '</select></div>'
 
-              . '<div class="pull-left field">'
+              . '<div class="float-left field">'
                   . '<label for="selectcollayoutrow_1"><span class="sr-only">' . get_string('Row', 'view') . ' 1: </span>' . get_string('columnlayout', 'view') . '</label>'
                   . '<select name="selectcollayout" id="selectcollayoutrow_1" class="selectcollayout input-sm" onchange="CustomLayoutManager.customlayout_change_column_layout(\'' . $form->get_property('name') . '\')">';
                       foreach ($element['columnlayoutoptions'] as $value => $data) {
@@ -98,7 +98,7 @@ function pieform_element_layout(Pieform $form, $element) {
               . '</div>'; //closing customrow_1
 
       // 'Add row' button
-      $output .='<button type="button" name="addrow" class="btn btn-sm btn-default" id="addrow" onclick="CustomLayoutManager.customlayout_add_row(\'' . $form->get_property('name') . '\')">'
+      $output .='<button type="button" name="addrow" class="btn btn-sm btn-secondary" id="addrow" onclick="CustomLayoutManager.customlayout_add_row(\'' . $form->get_property('name') . '\')">'
               .'<span class="icon icon-lg icon-plus-circle left" role="presentation" aria-hidden="true"></span>'
               . get_string('addarow', 'view')
               .'</button>'
@@ -110,7 +110,7 @@ function pieform_element_layout(Pieform $form, $element) {
   // preview pane
   $output .= '<div id="previewcustomlayoutpane">'
 
-          . '<button type="button" name="submitlayout" id="addlayout" class="btn btn-default" onclick="CustomLayoutManager.customlayout_submit_layout(\'' . $form->get_property('name') . '\')">'
+          . '<button type="button" name="submitlayout" id="addlayout" class="btn btn-secondary" onclick="CustomLayoutManager.customlayout_submit_layout(\'' . $form->get_property('name') . '\')">'
           . '<span class="icon icon-lg icon-check left" role="presentation" aria-hidden="true"></span>'
           . get_string('createnewlayout', 'view')
           . '</button>'

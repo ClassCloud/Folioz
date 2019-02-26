@@ -4,11 +4,15 @@
     border-color: {$data.background};
 }
 
+.navbar-default .navbar-toggle:not(.collapsed) {
+    background-color: transparent;
+}
 .navbar-toggle .icon {
     color: {$data.backgroundfg};
 }
 .navbar-default .navbar-toggle {
     border-color: transparent;
+    background-color: transparent;
 }
 .navbar-default .navbar-collapse {
     border-color: transparent;
@@ -124,7 +128,7 @@
 }
 
 .dashboard-widget-container .logged-in .widget-heading p,
-a.panel-footer:hover .icon.pull-right,
+a.card-footer:hover .icon.float-right,
 .modal-docked .modal-header .close:hover .times,
 .modal-docked .modal-header .close:focus .times {
     color: #767676;
@@ -213,7 +217,7 @@ a:focus, a:hover {
   text-decoration-color: {$data.link};
 }
 
-.btn-default, a.btn-default {
+.btn-secondary, a.btn-secondary {
   color: #333;
 }
 
@@ -278,7 +282,8 @@ a.admin-site {
 }
 
 .custom-dropdown > ul > li > span {
-    background-color: #767676;
+    background-color: {$data.background};
+    color: {$data.backgroundfg};
 }
 /* this is for the timeline */
 .jtline .filling-line {
@@ -300,4 +305,9 @@ a.admin-site {
 .cd-timeline-navigation a::after,
 .cd-timeline-navigation-second a::after {
     color: {$data.background};
+}
+
+.progress-bar {
+    background-color: {$data.background};
+    color: {$data.backgroundfg};
 }

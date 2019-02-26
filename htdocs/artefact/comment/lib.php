@@ -987,7 +987,7 @@ class ArtefactTypeComment extends ArtefactType {
         }
         $form['elements']['submit'] = array(
             'type'  => 'submitcancel',
-            'class' => 'btn-default',
+            'class' => 'btn-secondary',
             'value' => array(get_string('Comment', 'artefact.comment'), get_string('cancel')),
         );
         // This is a placeholder where we can display the parent comment's text
@@ -1016,7 +1016,7 @@ class ArtefactTypeComment extends ArtefactType {
                 'submit'   => array(
                     'type'  => 'button',
                     'usebuttontag' => true,
-                    'class' => 'btn-link btn-xs',
+                    'class' => 'btn-link btn-sm',
                     'name'  => 'make_public_submit',
                     'value' => '<span class="icon icon-lock text-default left" role="presentation" aria-hidden="true"></span>' . get_string('makecommentpublic', 'artefact.comment'),
                 ),
@@ -1030,13 +1030,13 @@ class ArtefactTypeComment extends ArtefactType {
             'name'     => 'delete_comment' . $id,
             'successcallback' => 'delete_comment_submit',
             'renderer' => 'div',
-            'class' => 'form-as-button pull-left delete-comment btn-group-item',
+            'class' => 'form-as-button float-left delete-comment btn-group-item',
             'elements' => array(
                 'comment' => array('type' => 'hidden', 'value' => $id),
                 'submit'  => array(
                     'type'  => 'button',
                     'usebuttontag' => true,
-                    'class' => 'btn-default btn-sm',
+                    'class' => 'btn-secondary btn-sm',
                     'value' => '<span class="icon icon-trash icon-lg text-danger" role="presentation" aria-hidden="true"></span> <span class="sr-only">' . get_string('delete') . '</span>',
                     'confirm' => get_string('reallydeletethiscomment', 'artefact.comment'),
                     'name'  => 'delete_comment_submit',

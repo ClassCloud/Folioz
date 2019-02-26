@@ -1,5 +1,5 @@
 {include file="header.tpl"}
-<a title="{str section='module.multirecipientnotification' tag='composemessagedesc'}" class="btn-with-heading btn-lg btn btn-default" href="{$WWWROOT}module/multirecipientnotification/sendmessage.php">
+<a title="{str section='module.multirecipientnotification' tag='composemessagedesc'}" class="btn-with-heading btn-lg btn btn-secondary" href="{$WWWROOT}module/multirecipientnotification/sendmessage.php">
     <span class="icon icon-edit icon-lg left" role="presentation" aria-hidden="true"></span>
     {str section='module.multirecipientnotification' tag='composemessage'}
 </a>
@@ -10,20 +10,20 @@
     <div id="notifications" class="notification-parent view-container"  data-requesturl="indexout.json.php">
 
         <div class="btn-group bulk-actions" role="group">
-            <label class="btn btn-default" for="selectall">
+            <label class="btn btn-secondary" for="selectall">
                 <input type="checkbox" name="selectall" id="selectall" data-togglecheckbox="tocheck">
                 <span class="sr-only">{str section='activity' tag='selectall'}</span>
             </label>
 
-            <button type="button" class="btn btn-default" data-toggle="dropdown" aria-expanded="false">
+            <button type="button" class="btn btn-secondary" data-toggle="dropdown" aria-expanded="false">
                 {str section='admin' tag='bulkactions'}
             </button>
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                <span class="caret"></span>
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="icon icon-caret-down"></span>
             </button>
 
             <div class="activity-buttons dropdown-menu" role="menu">
-                <button class="btn btn-link btn-link-danger" data-action="deleteselected">
+                <button class="dropdown-item btn btn-link btn-link-danger" data-action="deleteselected">
                     {str tag='delete'}
                 </button>
 
@@ -36,7 +36,7 @@
             <div class="form-group">
                 <label for="notifications_type" class="sr-only">{str section='activity' tag='type'}:</label>
                 <div class="input-group select-group">
-                    <div class="input-group-addon" id="icon-addon-filter">
+                    <div class="input-group-prepend" id="icon-addon-filter">
                         <span class="icon icon-filter" role="presentation" aria-hidden="true"></span>
                     </div>
                     <div class="select form-group">

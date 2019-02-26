@@ -1,0 +1,228 @@
+// This file handles/modifies both real collapsible cards,
+// and collapsible pieform fieldsets (which are styled to look like cards)
+
+.card.collapsible {
+    margin-bottom: 0;
+    border-radius: 0;
+    .card-header {
+        padding: 10px 8px;
+        a {
+            border-radius: 0;
+        }
+    }
+    &.form-group {
+        display:block;
+    }
+    .card {
+        border-radius: 0;
+    }
+}
+
+
+.pieform-fieldset,
+.card {
+    &.collapsible {
+        @include box-shadow(none);
+        &.last {
+            .card-header {
+                @include border-bottom-radius($border-radius-sm);
+                a {
+                    &.collapsed {
+                        @include border-bottom-radius($border-radius-sm);
+                    }
+                }
+            }
+            legend h4 {
+                border-bottom: 1px solid $card-border-color;
+            }
+
+            .fieldset-body {
+                border-top:0;
+                @include border-bottom-radius($border-radius-sm);
+            }
+        }
+        &.first .card-header a {
+            @include border-top-radius(3px);
+        }
+
+        .section-import & {
+            &:last-child {
+                @extend .last;
+            }
+        }
+
+        h3 {
+            margin-bottom: 0;
+        }
+        .type-icon {
+            display:inline-block;
+            width: 32px;
+            padding: 0 30px;
+        }
+
+        &.has-attachment .card-header,
+        .collapsible-group & .card-header,
+        h4,
+        h3  {
+            margin: 0;
+            font-size: 18px;
+            padding: 0;
+
+            .pieform > .collapsible-group:first-child & {
+                @include border-top-radius(3px);
+            }
+        }
+
+        .fieldset-body {
+            border: 1px solid $card-border-color;
+            padding: 10px 15px;
+            background: $card-bg;
+            margin-bottom: -1px; //remove double border
+            .jstabs & {
+                border: 0;
+            }
+        }
+        .collapsible-group & {
+            .form-group {
+                margin: 0;
+                position: relative;
+                padding: 20px 0;
+                border-bottom: 1px solid $list-group-border-color;
+                &.alert {
+                    padding: 5px 10px;
+                }
+                &:last-child,
+                &.last {
+                    border-bottom: 0;
+                }
+            }
+            &.with-formgroup {
+                margin-top: 15px;
+            }
+        }
+        .html {
+            &:not(.heading) {
+                @include clearfix;
+            }
+        }
+        &.collapsible-small {
+            legend {
+                width: auto;
+                border: none;
+                h4 {
+                    a {
+                        padding: 5px 5px 5px 0 !important;
+                        border: 0;
+                        background-color: $card-bg !important;
+                        color: $link-color !important;
+                        font-size: $font-size-base !important;
+                        font-weight: 400 !important;
+                        &:hover,
+                        &:focus {
+                            text-decoration: underline !important;
+                        }
+                        span {
+                            margin: 5px 0 0 5px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    &.as-link {
+       @include card-as-link();
+       &.link-expand-right legend h4 {
+           border-bottom: 0;
+       }
+    }
+}
+
+.link-expand-right.form-group {
+    position: static;
+    legend {
+        position:absolute;
+        top: 5px;
+        right: 20px;
+        width: auto;
+        @include media-breakpoint-down(sm) {
+            position: static;
+            text-align: right;
+        }
+    }
+}
+
+// @todo: Rethink this, it's too complex
+.card.collapsible:not(.card-secondary) {
+    border-width: 0;
+    // For attachment collapsible
+    &.has-attachment {
+        border-radius: $border-radius-sm;
+        border-width: 0 0 1px 0;
+        .card-header a {
+            border-width: 0;
+            &:not(.collapsed) {
+                border-bottom-width: 1px;
+            }
+        }
+    }
+
+    // Remove border from heading - add to link tag.
+    // In this case we have a nested a tag that takes up the whole of the heading space
+    // rather than applying the card-header to the link
+    .card-header {
+        border: 0;
+        a {
+            text-shadow: 1px 0 0 $text-shadow;
+        }
+    }
+
+    &.card-primary{
+        .card-header a {
+            font-weight: bold;
+        }
+    }
+
+    &.notification {
+        .card-footer {
+            margin-bottom: 20px;
+        }
+        .no-footer {
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    }
+
+    .card-body,
+    .card-footer,
+    .card-header a {
+        border: 1px solid $card-border-color;
+    }
+
+    .card-header a,
+    .card-body:not(.no-footer) {
+        border-bottom-width: 0;
+    }
+
+    // last class will add bottom border to collapsible element(s)
+    // Except has-attachment, it doesn't need one.
+    &.last .card-header a.collapsed {
+        border-bottom-width: 1px;
+    }
+}
+
+.collapse > .collapse {
+    display: block ; // fix for not being able to put a class just on the wrapper
+    visibility: visible;
+}
+
+.collapsible {
+    h4,
+    h3 {
+        a {
+            text-shadow: 1px 0 0 $text-shadow;
+            border-bottom: 0;
+            padding: 10px 15px;
+        }
+    }
+}

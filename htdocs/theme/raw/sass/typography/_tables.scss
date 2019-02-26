@@ -1,7 +1,7 @@
 .table>thead>tr>th {
     border-color: $table-border-color;
     &.active {
-        background: scale-color($table-bg-active, $lightness: 75%);
+        background: scale-color($table-active-bg, $lightness: 75%);
     }
 }
 td.short {
@@ -17,6 +17,7 @@ td.tiny {
 .table {
     max-width:100%;
     border-collapse: separate;
+    border-spacing: 0;
     .icon-cell {
         min-width: 50px; //width of two icons
         .icon {
@@ -30,14 +31,14 @@ td.tiny {
 
     thead {
         text-transform: uppercase;
-        color: $gray;
+        color: $gray-500;
         font-size: $font-size-base;
         th, td {
             font-weight: 300;
         }
         .allnone-toggles {
             width: 81px;
-            .btn-xs {
+            .btn-sm {
                 font-size: 10px;
             }
         }
@@ -61,7 +62,7 @@ td.tiny {
     }
 
     tr.inactive {
-        background: $alert-warning-bg !important;
+        background: $state-warning-bg !important;
     }
 
     td input[type=radio],
@@ -85,11 +86,12 @@ td.tiny {
         }
         &.control-buttons {
             width: 90px;
+            text-align: right;
             a,
             .pieform {
                 display: inline-block;
             }
-            .btn-xs {
+            .btn-sm {
                 padding: 2px 7px;
             }
             // Allows space for when you also have a unzip button in the control button butn-group
@@ -99,10 +101,14 @@ td.tiny {
         }
         h3 {
             font-weight: 300;
-            font-family: $font-family-serif;
-            font-size: $font-size-base + 3;
+            font-family: $font-family-sans-serif;
+            font-size: $font-size-base * 1.214285;
             margin: 0;
         }
+    }
+
+    th {
+        border-top: 0;
     }
 
     .narrow {
@@ -124,9 +130,17 @@ td.tiny {
     &.nohead {
         th:not(:last-child) {
             min-width: 150px;
-            @media (min-width: $screen-sm-min) {
+            @include media-breakpoint-up(md) {
                 min-width: auto;
             }
+        }
+    }
+    > tbody > tr {
+        &.active td {
+            background-color: $table-active-bg;
+        }
+        > th {
+            border-top: 1px solid $table-border-color;
         }
     }
 }
@@ -140,7 +154,7 @@ td.tiny {
             }
         }
         &:hover {
-            background: scale-color($table-bg-active, $lightness: 60%);
+            background: scale-color($table-hover-bg, $lightness: 60%);
 
             cursor: pointer;
             .filename {
@@ -148,7 +162,7 @@ td.tiny {
             }
         }
         .file-download-link {
-            color: $text-color;
+            color: $theme-text-color;
             &:hover {
                 color: $link-hover-color;
             }
@@ -188,20 +202,20 @@ td.tiny {
         padding: 10px 3px;
     }
 
-    .btn-xs {
+    .btn-sm {
         font-size: 10px;
     }
 }
 
 .table-short {
     width: 100%;
-    @media screen and (min-width: $screen-sm-min) {
+    @include media-breakpoint-up(md) {
         width: 40%;
     }
 }
 
 .table-selectedlist {
-    font-size: $font-size-small;
+    font-size: $font-size-sm;
 }
 
 table.table tr {
@@ -256,7 +270,7 @@ table.table tr {
 
 // Unset border top on the first row of the table
 .table>tbody>tr:first-child>th,
-.table>tbody>tr:first-child>td {
+.table>tbody>tr:first-child td {
     border-top-width: 0;
 }
 

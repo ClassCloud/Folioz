@@ -2362,12 +2362,12 @@ function addfriend_form($friendid) {
         'successcallback'  => 'addfriend_submit',
         'renderer' => 'div',
         'autofocus' => 'false',
-        'class' => 'form-as-button pull-right',
+        'class' => 'form-as-button float-right',
         'elements' => array(
             'addfriend_submit' => array(
                 'type' => 'button',
                 'usebuttontag' => true,
-                'class' => 'btn-default last',
+                'class' => 'btn-secondary last',
                 'value' => '<span class="icon icon-user-plus icon-lg left" role="presentation"></span>' . get_string('addtofriendslist', 'group'),
             ),
             'id' => array(

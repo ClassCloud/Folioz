@@ -593,12 +593,12 @@ class ArtefactTypeBlog extends ArtefactType {
             'name' => 'delete_' . $id,
             'successcallback' => 'delete_blog_submit',
             'renderer' => 'div',
-            'class' => 'form-as-button pull-left btn-group-item',
+            'class' => 'form-as-button float-left btn-group-item',
             'elements' => array(
                 'submit' => array(
                     'type' => 'button',
                     'usebuttontag' => true,
-                    'class' => 'btn-default btn-sm last',
+                    'class' => 'btn-secondary btn-sm last',
                     'alt' => get_string('deletespecific', 'mahara', $title),
                     'elementtitle' => get_string('delete'),
                     'confirm' => $confirm,
@@ -1225,7 +1225,7 @@ class ArtefactTypeBlogPost extends ArtefactType {
                 ),'submit' => array(
                     'type' => 'button',
                     'usebuttontag' => true,
-                    'class' => 'btn-default btn-sm publish',
+                    'class' => 'btn-secondary btn-sm publish',
                     'value' => $strchangepoststatus,
                 ),
             ),
@@ -1241,7 +1241,7 @@ class ArtefactTypeBlogPost extends ArtefactType {
             'jsform' => true,
             'jssuccesscallback' => 'delete_success',
             'renderer' => 'div',
-            'class' => 'form-as-button pull-left',
+            'class' => 'form-as-button float-left',
             'elements' => array(
                 'delete' => array(
                     'type' => 'hidden',
@@ -1251,7 +1251,7 @@ class ArtefactTypeBlogPost extends ArtefactType {
                 'submit' => array(
                     'type' => 'button',
                     'usebuttontag' => true,
-                    'class' => 'btn-default btn-sm last',
+                    'class' => 'btn-secondary btn-sm last',
                     'elementtitle' => get_string('delete'),
                     'confirm' => get_string('deleteblogpost?', 'artefact.blog'),
                     'value' => '<span class="icon icon-trash icon-lg text-danger" role="presentation" aria-hidden="true"></span><span class="sr-only">' . get_string('deletespecific', 'mahara', $title) . '</span>',

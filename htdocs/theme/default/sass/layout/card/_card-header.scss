@@ -1,0 +1,49 @@
+.collapsible legend h4,
+.collapsible legend h3,
+.card-header {
+    a:not(.secondary-link) {
+        color: $link-color;
+        &.collapsed {
+            background-color: transparent;
+            color: $link-hover-color;
+        }
+        &:hover, &:focus {
+            background-color: none;
+        }
+    }
+}
+
+.card-header .help a {
+    border: 0;
+}
+
+
+// sidebar card headings
+.sidebar .card > .card-header {
+    @include border-top-radius(0);
+    border-bottom: 0;
+    background-color: $theme-primary-color;
+    color: #FFFFFF;
+
+    .help a .icon {
+        color: $theme-primary-color-light;
+    }
+
+    a {
+        color: #FFFFFF;
+    }
+
+    .text-midtone {
+        color: #FFFFFF;
+    }
+}
+
+
+.card.collapsible {
+    .card-header-nested,
+    .card-header {
+        > a.outer-link {
+            border-color: #ddd;
+        }
+    }
+}

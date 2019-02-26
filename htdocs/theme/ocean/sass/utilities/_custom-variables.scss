@@ -1,24 +1,64 @@
 // Custom component variables (non-bootstrap components)
 
 //Arrow compoanent variables
-$arrow-color: $brand-primary;
-$arrow-text-color: #fff;
-$arrow-link-color: #fff;
-$arrow-link-hover-color: $text-color;
-$arrow-link-active-color: #20738f;
-$arrow-link-background-color: #fff;
+$arrow-color:                   $theme-primary-color;
+$arrow-bar-bg:                  #0a4f66;
+$arrow-text-color:              #fff;
+$arrow-link-color:              #fff;
+$arrow-link-hover-color:        #FFF;
+$arrow-link-active-color:       #FFF;
+$arrow-link-background-color:   #fff;
 
 // color for the secondary title in sections (cf. groups)
-$section-heading-color: #999;
 
-$admin-title-color: #fff;
-$admin-title-bg: $brand-primary;
+$dashboard-widget-bg:           transparent;
+$dashboard-widget-color:        transparent;
 
-$dashboard-widget-bg: darken(#f9f9f9, 2%);
-$dashboard-widget-color:  $brand-primary;
 
-// Ocean theme specific colours
-$brand-primary-dark:        #629db0;        // $brand-primary 70%
-$brand-primary-mid:         #93becc;        // $brand-primary 50%
-$brand-primary-light:       #bed8e1;        // $brand-primary 30%
-$brand-primary-faint:       #e9f2f5;        // $brand-primary 10%
+// Legacy from Bootstrap 3
+
+//== Navbar
+// Basics of a navbar
+$navbar-collapse-max-height:       340px;
+
+// Navbar toggle and menu
+$navbar-default-color:                      #FFF;
+$navbar-default-bg:                         $theme-primary-color;
+$navbar-default-border:                     scale-color($navbar-default-bg, $lightness: 5%);
+$navbar-default-link-color:                 #FFF;
+$navbar-default-link-hover-color:           #FFF;
+$navbar-default-link-bg:                    $theme-primary-color;
+$navbar-default-link-hover-bg:              scale-color($navbar-default-bg, $lightness: -5.5%);
+$navbar-default-active-color:               #FFF;
+$navbar-default-active-bg:                  scale-color($navbar-default-bg, $lightness: 2%);
+$navbar-default-toggle-icon-bar-bg:         #FFF;
+
+// Navbar menus children
+$navbar-inverse-bg:                         scale-color($theme-primary-color, $lightness: 90%);
+$navbar-inverse-link-color:                 #333;
+$navbar-inverse-link-hover-color:           #333;
+$navbar-inverse-link-hover-bg:              scale-color($navbar-inverse-bg, $lightness: -5.5%);
+$navbar-inverse-link-active-color:          #000;
+$navbar-inverse-link-active-bg:             scale-color($navbar-inverse-bg, $lightness: -2%);
+
+
+// Navbar menu children toggles
+$navbar-inverse-toggle-color:               #FFF;
+$navbar-inverse-toggle-bg:                  transparent;
+$navbar-inverse-toggle-hover-color:         #333;
+$navbar-inverse-toggle-hover-bg:            scale-color($theme-primary-color, $lightness: 90%);
+$navbar-inverse-toggle-active-color:        #000;
+$navbar-inverse-toggle-active-bg:           scale-color($theme-primary-color, $lightness: 90%);
+
+
+//== Tabs
+$nav-tabs-border-color:                     #eee;
+
+$nav-tabs-link-hover-border-color:          $theme-primary-color;
+
+$nav-tabs-active-link-hover-bg:             $body-bg;
+$nav-tabs-active-link-hover-color:          $theme-primary-color;
+$nav-tabs-active-link-hover-border-color:   $theme-primary-color;
+
+$nav-tabs-justified-link-border-color:            #f7f7f7;
+$nav-tabs-justified-active-link-border-color:     $body-bg;

@@ -44,7 +44,7 @@ $newform = array(
         'submit' => array(
             'type'        => 'button',
             'usebuttontag' => true,
-            'class'       => 'btn-default',
+            'class'       => 'btn-secondary',
             'elementtitle' => get_string('generatesecreturl', 'view', hsc($title)),
             'value'       =>  '<span class="icon icon-plus icon-lg left" role="presentation" aria-hidden="true"></span> ' .get_string('newsecreturl', 'view'),
         ),
@@ -127,7 +127,7 @@ for ($i = 0; $i < count($records); $i++) {
             'name'             => 'deleteurl_' . $i,
             'successcallback'  => 'deleteurl_submit',
             'renderer'         => 'div',
-            'class'            => 'form-as-button btn-group form-inline pull-left',
+            'class'            => 'form-as-button btn-group form-inline float-left',
             'renderelementsonly' => true,
             'elements'         => array(
                 'token'  => array(
@@ -137,7 +137,7 @@ for ($i = 0; $i < count($records); $i++) {
                 'submit' => array(
                     'type'         => 'button',
                     'usebuttontag' => true,
-                    'class'        => 'btn-default btn-xs',
+                    'class'        => 'btn-secondary btn-sm',
                     'elementtitle' => get_string('delete'),
                     'confirm'      => get_string('reallydeletesecreturl', 'view'),
                     'value'        => '<span class="icon icon-trash text-danger icon-lg" role="presentation" aria-hidden="true"></span><span class="sr-only">' . get_string('delete') . '</span>',

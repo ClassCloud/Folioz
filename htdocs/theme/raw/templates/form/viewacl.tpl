@@ -1,13 +1,13 @@
 <input type="hidden" name="accesslist" value="">
-<div class="panel panel-secondary view-container" id="editaccesswrap"
+<div class="card card-secondary view-container" id="editaccesswrap"
     data-viewtype="{{$viewtype}}"
     data-user-roles='{{$userroles}}'
     data-group-roles='{{$grouproles}}' >
     {{if  $viewtype == "profile" }}
-        <h2 class="panel-heading">{{str tag=profile section=view}}</h2>
+        <h2 class="card-header">{{str tag=profile section=view}}</h2>
     {{/if}}
 
-    <table id="accesslisttable" class="fullwidth accesslists table form-inline">
+    <table id="accesslisttable" class="fullwidth accesslists table">
         <thead>
             <tr class="accesslist-head th-has-shared">
                 <th></th>
@@ -78,12 +78,12 @@
                 </select>
             </span>
             {% if(o.presets.empty) { %}<p class="table-help-text">{%={{jstr tag=whosharewith section=view}}%}</p>{% } %}
-            <div class="hidden picker input-short" data-select-wrapper="true">
+            <div class="d-none picker input-short" data-select-wrapper="true">
                 <select id="hidden-user-search-[{%=o.id%}]" name="accesslist[{%=o.id%}][id]" class=" select js-select2-search">
                     {% if (o.presets.id) { %}<option value="{%=o.presets.id%}">{%=o.presets.name%}</option>{% } %}
                 </select>
             </div>
-            <span class="picker input-short{% if (!(o.presets.type == 'group' || o.presets.type == 'user')) { %} hidden {% } %}">
+            <span class="picker input-short{% if (!(o.presets.type == 'group' || o.presets.type == 'user')) { %} d-none {% } %}">
                 <select data-roles="grouproles" name="accesslist[{%=o.id%}][role]" class="form-control input-small select">
                     {% if (o.presets.type == 'group' || o.presets.type == 'user') { %}
                         <option value="" >{%=o.defaultText%}</option>
@@ -96,21 +96,25 @@
         </div>
     </td>
     <td class="text-center js-date short" data-name='from'>
-        <div class="date-picker js-date-picker js-hide-empty {% if (o.presets.empty) { %}hidden{% } %}">
-            <div class="hasDatepickerwrapperacl"><input type="text" name="accesslist[{%=o.id%}][startdate]" class="form-control pull-left" data-setmin="true" setdatatarget="to" value="{%=o.presets.startdate%}" aria-label="{{str tag=element.calendar.datefrom section=pieforms}} ({{str tag='element.calendar.format.arialabel' section='pieforms'}})" {% if (o.presets.locked) { %}disabled{% } %}></div>
+        <div class="date-picker js-date-picker js-hide-empty {% if (o.presets.empty) { %}d-none{% } %}">
+            <div class="hasDatepickerwrapperacl">
+                <input type="text" id="accesslist{%=o.id%}_startdate" name="accesslist[{%=o.id%}][startdate]" class="form-control float-left datetimepicker-input" data-setmin="true" setdatatarget="to" value="{%=o.presets.startdate%}" aria-label="{{str tag=element.calendar.datefrom section=pieforms}} ({{str tag='element.calendar.format.arialabel' section='pieforms'}})" {% if (o.presets.locked) { %}disabled{% } %} data-toggle="datetimepicker" data-target="#accesslist{%=o.id%}_startdate" autocomplete="off">
+            </div>
         </div>
     </td>
     <td class="text-center js-date short" data-name='to'>
-        <div class="date-picker js-date-picker js-hide-empty {% if (o.presets.empty) { %}hidden{% } %}">
-            <div class="hasDatepickerwrapperacl"><input type="text" name="accesslist[{%=o.id%}][stopdate]" class="form-control pull-left" data-setmax="true" setdatatarget="from" value="{%=o.presets.stopdate%}" aria-label="{{str tag=element.calendar.dateto section=pieforms}} ({{str tag='element.calendar.format.arialabel' section='pieforms'}})" value="{%=o.presets.stopdate%}" {% if (o.presets.locked) { %}disabled{% } %}></div>
+        <div class="date-picker js-date-picker js-hide-empty {% if (o.presets.empty) { %}d-none{% } %}">
+            <div class="hasDatepickerwrapperacl">
+                <input type="text" id="accesslist{%=o.id%}_stopdate" name="accesslist[{%=o.id%}][stopdate]" class="form-control float-left datetimepicker-input" data-setmax="true" setdatatarget="from" value="{%=o.presets.stopdate%}" aria-label="{{str tag=element.calendar.dateto section=pieforms}} ({{str tag='element.calendar.format.arialabel' section='pieforms'}})" value="{%=o.presets.stopdate%}" {% if (o.presets.locked) { %}disabled{% } %} data-toggle="datetimepicker" data-target="#accesslist{%=o.id%}_stopdate" autocomplete="off">
+            </div>
         </div>
     </td>
     {% if (o.viewtype !== "profile") { %}
         <td class="text-center tiny commentcolumn">
-            <input value="1" name="accesslist[{%=o.id%}][allowcomments]" class="allow-comments-checkbox checkbox js-hide-empty {% if (o.presets.empty) { %}hidden{% } %}" type="checkbox" {% if (o.presets.allowcomments == "1") { %}checked{% } else { %}{% } %} {% if (o.presets.locked) { %}disabled{% } %}>
+            <input value="1" name="accesslist[{%=o.id%}][allowcomments]" class="allow-comments-checkbox form-check js-hide-empty {% if (o.presets.empty) { %}d-none{% } %}" type="checkbox" {% if (o.presets.allowcomments == "1") { %}checked{% } else { %}{% } %} {% if (o.presets.locked) { %}disabled{% } %}>
         </td>
         <td class="text-center tiny commentcolumn">
-            <input value="1" name="accesslist[{%=o.id%}][approvecomments]" class="moderate-comments-checkbox checkbox js-hide-empty {% if (o.presets.empty) { %}hidden{% } %}" type="checkbox" {% if (o.presets.approvecomments == "1" && o.presets.allowcomments == "1") { %}checked{% } else { %}{% } %}  {% if (o.presets.locked) { %}disabled{% } %}>
+            <input value="1" name="accesslist[{%=o.id%}][approvecomments]" class="moderate-comments-checkbox form-check js-hide-empty {% if (o.presets.empty) { %}d-none{% } %}" type="checkbox" {% if (o.presets.approvecomments == "1" && o.presets.allowcomments == "1") { %}checked{% } else { %}{% } %}  {% if (o.presets.locked) { %}disabled{% } %}>
         </td>
     {% } %}
 
@@ -159,14 +163,25 @@ jQuery(function($) {
                 useCurrent: false,
                 format: "{{str(tag='pieform_calendar_dateformat' section='langconfig')|pieform_element_calendar_convert_dateformat}} {{str(tag='pieform_calendar_timeformat' section='langconfig')|pieform_element_calendar_convert_timeformat}}",
                 locale: loc,
-                showClear: true,
-                showTodayButton: true,
+                buttons: {
+                    showClear: true,
+                    showToday: true,
+                },
                 tooltips: {{$datepickertooltips|safe}},
                 icons: {
+                    time: "icon icon-clock-o",
+                    date: "icon icon-calendar",
+                    up: "icon icon-arrow-up",
+                    down: "icon icon-arrow-down",
+                    previous: "icon icon-chevron-left",
+                    next: "icon icon-chevron-right",
+                    close: "icon icon-times",
                     clear: "icon icon-trash",
                     today: "icon icon-crosshairs",
                 },
-            }).on('dp.hide', function(selectedDate) {
+            });
+
+            target.on('hide.datetimepicker', function(selectedDate) {
                 if (selectedDate !== "") {
                     formchangemanager.setFormStateById('{{$formname}}', FORM_CHANGED);
                 }
@@ -389,7 +404,7 @@ jQuery(function($) {
                         helpText.remove();
                     }
                     remove.removeClass('icon-placeholder js-empty');
-                    row.find('.js-hide-empty').removeClass('hidden');
+                    row.find('.js-hide-empty').removeClass('d-none');
                     addNewRow(shareoptions, {empty: true});
                 }
                 formchangemanager.setFormStateById('{{$formname}}', FORM_CHANGED);
@@ -493,12 +508,12 @@ jQuery(function($) {
                 };
             }
             select.html(tmpl("roles-template", data));
-            select.prop('disabled', false).parent().removeClass('hidden');
+            select.prop('disabled', false).parent().removeClass('d-none');
         }
 
         function hideRoleSelect(self) {
             var roleSelect = $(self).closest('.dropdown-group').find('[data-roles="grouproles"]');
-            roleSelect.prop('disabled', true).empty().parent().addClass('hidden');
+            roleSelect.prop('disabled', true).empty().parent().addClass('d-none');
         }
 
         /*
@@ -523,11 +538,11 @@ jQuery(function($) {
             idFieldWrapper.find('> *').attr('data-type', val);
 
             if (searchoption) {
-                idFieldWrapper.removeClass('hidden');
+                idFieldWrapper.removeClass('d-none');
                 idField.prop('required', true);
             }
             else {
-                idFieldWrapper.addClass('hidden');
+                idFieldWrapper.addClass('d-none');
                 idField.html(tmpl("selectoption-template", {id: val}));
                 idField.prop('required', false);
             }
@@ -577,7 +592,7 @@ jQuery(function($) {
         function attachCommentEvents(newrow) {
             if ($('#{{$formname}}_allowcomments').prop('checked') === true) {
                 // Hide the per row comment options
-                newrow.find('.commentcolumn').addClass('hidden');
+                newrow.find('.commentcolumn').addClass('d-none');
             }
 
             var allowcommentsbox = newrow.find('.allow-comments-checkbox');

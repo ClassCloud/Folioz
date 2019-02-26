@@ -1,9 +1,9 @@
-<p id="{$prefix}_empty_selectlist" class="{if $selectedlist}hidden{/if} lead">
+<p id="{$prefix}_empty_selectlist" class="{if $selectedlist}d-none{/if} lead">
     {if !$selectfolders}
     {str tag=nofilesfound section=artefact.file}
     {/if}
 </p>
-<table id="{$prefix}_selectlist"  class="fullwidth{if !$selectedlist} hidden{/if} table table-selectedlist">
+<table id="{$prefix}_selectlist"  class="fullwidth{if !$selectedlist} d-none{/if} table table-selectedlist">
     <tbody>
         {foreach from=$selectedlist item=file}
         {assign var=displaytitle value=$file->title|str_shorten_text:34|safe}
@@ -25,7 +25,7 @@
                 {/if}
             </td>
             <td class="text-right s">
-                <button id="{$prefix}_unselect_{$file->id}" name="{$prefix}_unselect[{$file->id}]" class="btn btn-default btn-xs text-small button submit unselect" title="{str tag=remove}">
+                <button id="{$prefix}_unselect_{$file->id}" name="{$prefix}_unselect[{$file->id}]" class="btn btn-secondary btn-sm text-small button submit unselect" title="{str tag=remove}">
                     <span class="icon icon-times icon-lg text-danger left" role="presentation" aria-hidden="true"></span>
                     <span>{str tag=remove}</span>
                 </button>

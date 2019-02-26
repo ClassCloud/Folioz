@@ -17,7 +17,7 @@
         <div id="{$prefix}_upload_browse" class="filebrowser in-collapsible">
     {else}
         {if !$config.noselect}
-        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#{$prefix}_upload_browse">
+        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#{$prefix}_upload_browse">
             <span class="icon icon-paperclip icon-lg left" role="presentation" aria-hidden="true"></span>
             {str tag=addafile section=artefact.file}
         </button>
@@ -46,7 +46,7 @@
             </div>
 
             <div id="artefactchooser-body">
-                <div id="{$prefix}_ownersubtabs" {if !$tabs.subtabs}class="hidden"{/if}>
+                <div id="{$prefix}_ownersubtabs" {if !$tabs.subtabs}class="d-none"{/if}>
                 {if $tabs.subtabs}
                     {include file="artefact:file:form/ownersubtabs.tpl" tabs=$tabs prefix=$prefix querybase=$querybase}
                 {/if}
@@ -54,7 +54,7 @@
         {/if}
 
         {if $config.upload}
-        <div id="{$prefix}_upload_container" class="clearfix {if $config.selectone || $config.selectmodal} panel-fake{else} panel panel-default fileupload {/if} {if ($tabs && !$tabs.upload) || $uploaddisabled} hidden{/if}">
+        <div id="{$prefix}_upload_container" class="clearfix {if $config.selectone || $config.selectmodal} card-fake{else} card fileupload {/if} {if ($tabs && !$tabs.upload) || $uploaddisabled} d-none{/if}">
             {* config.uploadagreement: disable the file chooser unless the agreement is checked *}
             {* config.simpleupload: the form only contains a file chooser *}
             {* config.submitbutton: add submit button even if js is enabled & don't start uploading as soon as a file is chosen *}
@@ -137,7 +137,7 @@
         {/if}
 
         {if $config.upload}
-        <div id="{$prefix}_upload_disabled" class="uploaddisabled{if !$uploaddisabled} hidden{/if}">
+        <div id="{$prefix}_upload_disabled" class="uploaddisabled{if !$uploaddisabled} d-none{/if}">
             <div class="alert alert-warning">
             {str tag="cannotuploadtofolder" section=artefact.file}
             </div>
@@ -150,14 +150,14 @@
         {/if}
 
         {if $config.createfolder}
-            <div id="createfolder" class="{if $uploaddisabled}hidden{/if} form-group">
+            <div id="createfolder" class="{if $uploaddisabled}d-none{/if} form-group">
                 <div id="{$prefix}_createfolder_messages"></div>
                 <label for="{$prefix}_createfolder_name" class="accessible-hidden sr-only">
                     {str tag=createfolder section=artefact.file}
                 </label>
                 <span class="input-group">
                     <input type="text" class="text form-control" name="{$prefix}_createfolder_name" id="{$prefix}_createfolder_name" size="40" />
-                    <span class="input-group-btn">
+                    <span class="input-group-append">
                         <button type="submit" class="btn btn-primary" name="{$prefix}_createfolder" id="{$prefix}_createfolder" value="{str tag=createfolder section=artefact.file}">
                             <span class="icon icon-folder-open" role="presentation" aria-hidden="true"></span>
                             {str tag=createfolder section=artefact.file}
@@ -167,8 +167,8 @@
             </div>
         {/if}
 
-        <div class="filelist-wrapper panel panel-secondary">
-            <h3 id="{$prefix}_foldernav" class="panel-heading">
+        <div class="filelist-wrapper card card-secondary">
+            <h3 id="{$prefix}_foldernav" class="card-header">
             {include file="artefact:file:form/folderpath.tpl" path=$path querybase=$querybase owner=$tabs.owner ownerid=$tabs.ownerid}
             </h3>
 
@@ -179,7 +179,7 @@
 
         {* Edit form used when js is available *}
         {if $edit <= 0}
-        <table class="hidden">
+        <table class="d-none">
             <tbody id="{$prefix}_edit_placeholder">
             {include file="artefact:file:form/editfile.tpl" prefix=$prefix groupinfo=$groupinfo colspan=$colspan}
             </tbody>

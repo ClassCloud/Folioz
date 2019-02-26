@@ -5,7 +5,7 @@
             <li class="list-group-item flush">
                 <div class="usericon-heading clearfix">
                     <a href="{profile_url($postinfo->author)}" class="user-icon small-icon">
-                        <img src="{profile_icon_url user=$postinfo->author maxheight=40 maxwidth=40}" alt="{str tag=profileimagetext arg1=$postinfo->author|display_default_name}" class="pull-left">
+                        <img src="{profile_icon_url user=$postinfo->author maxheight=40 maxwidth=40}" alt="{str tag=profileimagetext arg1=$postinfo->author|display_default_name}" class="float-left">
                     </a>
                     <h4 class="title list-group-item-heading">
                         <a href="{$WWWROOT}interaction/forum/topic.php?id={$postinfo->topic}&post={$postinfo->id}">
@@ -22,8 +22,8 @@
                 </div>
                 <p class="content-text">{$postinfo->body|str_shorten_html:100:true:true:false|safe}</p>
                 {if $postinfo->filecount}
-                <div class="has-attachment panel panel-default collapsible collapsible-group" id="blockpostfiles-{$postinfo->id}">
-                    <h5 class="panel-heading">
+                <div class="has-attachment card collapsible collapsible-group" id="blockpostfiles-{$postinfo->id}">
+                    <h5 class="card-header">
                         <a class="text-left collapsed" data-toggle="collapse" href="#post-attach-{$postinfo->id}" aria-expanded="false">
                             <span class="icon icon-paperclip left" role="presentation" aria-hidden="true"></span>
                             <span class="text-small"> {str tag=attachedfiles section=artefact.blog} </span>
@@ -69,7 +69,7 @@
     </p>
     {/if}
 </div>
-<a class="morelink panel-footer text-small" href="{$WWWROOT}interaction/forum/index.php?group={$group->id}">
+<a class="morelink card-footer text-small" href="{$WWWROOT}interaction/forum/index.php?group={$group->id}">
     {str tag=gotoforums section=interaction.forum}
-    <span class="icon icon-arrow-circle-right right pull-right" role="presentation" aria-hidden="true"></span>
+    <span class="icon icon-arrow-circle-right right float-right" role="presentation" aria-hidden="true"></span>
 </a>

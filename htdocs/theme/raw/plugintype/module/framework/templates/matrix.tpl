@@ -18,12 +18,12 @@
   <tr class="table-pager">
     <td colspan="{$colspan}">&nbsp;</td>
     <td colspan="{$viewcount}" class="special">
-        <button class="btn btn-default" id="prev">
+        <button class="btn btn-secondary" id="prev">
             <span class="icon left icon-chevron-left" aria-hidden="true" role="presentation"></span>
             Prev
             <span class="sr-only">{str tag="goprevpages" section="module.framework"}</span>
         </button>
-        <button class="btn btn-default next" id="next">
+        <button class="btn btn-secondary next" id="next">
             Next
             <span class="icon right icon-chevron-right" aria-hidden="true" role="presentation"></span>
             <span class="sr-only">{str tag="gonextpages" section="module.framework"}</span>
@@ -80,7 +80,7 @@
         <td colspan="{$viewcount + $colspan}">
             <div class="shortname-container">
                 <span class="sr-only">{str tag="standardbegin" section="module.framework"}</span>
-                <span class="icon icon-chevron-down collapse-indicator right pull-right"></span>
+                <span class="icon icon-chevron-down collapse-indicator right float-right"></span>
                 <h3>{$standard->name}</h3>
                 <span class="sr-only status">{if $standard->settingstate == 'closed'}{str tag="collapsedsection" section="module.framework"}{/if}</span>
                 <a href="#">
@@ -92,7 +92,7 @@
                       {/if}
                   </span>
                 </a>
-                <div class="matrixtooltip popover hidden">
+                <div class="matrixtooltip popover d-none">
                     <h3 class="popover-title">{$standard->name}</h3>
                     <div class="popover-content">
                         {$standard->description|clean_html|safe}
@@ -104,7 +104,7 @@
     {if $standard->options}
         {foreach from=$standard->options key=ok item=option}
         {if $option->children}
-        <tr class="matrixlevel{$option->level} examplefor{$standard->id}{if $standard->settingstate == 'closed'} hidden{/if}">
+        <tr class="matrixlevel{$option->level} examplefor{$standard->id}{if $standard->settingstate == 'closed'} d-none{/if}">
             <td colspan="{$viewcount + 2}" class="code">
                 <div class="shortname-container">
                     <span class="sr-only">{str tag="headerrow" section="module.framework"}</span>
@@ -115,7 +115,7 @@
                     {/for}
                     {$option->name}
                     <span class="sr-only">{str tag="showelementdetails" section="module.framework"}</span>
-                    <div class="matrixtooltip popover hidden">
+                    <div class="matrixtooltip popover d-none">
                         <h3 class="popover-title">{$option->name}</h3>
                         <div class="popover-content">
                             {$option->description|clean_html|safe}
@@ -125,7 +125,7 @@
             </td>
         </tr>
         {else}
-        <tr class="matrixlevel{$option->level} examplefor{$standard->id}{if $standard->settingstate == 'closed'} hidden{/if}">
+        <tr class="matrixlevel{$option->level} examplefor{$standard->id}{if $standard->settingstate == 'closed'} d-none{/if}">
             <td class="code">
                 <div class="shortname-container" tabindex="0">
                     <span class="sr-only">{str tag="headerrow" section="module.framework"}</span>
@@ -136,7 +136,7 @@
                     {/for}
                     {$option->shortname}
                     <span class="sr-only">{str tag="showelementdetails" section="module.framework"}</span>
-                    <div class="matrixtooltip popover hidden">
+                    <div class="matrixtooltip popover d-none">
                         <h3 class="popover-title">{$option->name}</h3>
                         <div class="popover-content">
                             {$option->description|clean_html|safe}
@@ -222,7 +222,7 @@
                     <span class="sr-only">Close configuration</span>
                 </button>
                 <h4 class="modal-title blockinstance-header text-inline"></h4>
-                <span aria-hidden="true" role="presentation" class="icon icon-cogs icon-2x pull-right"></span>
+                <span aria-hidden="true" role="presentation" class="icon icon-cogs icon-2x float-right"></span>
             </div>
             <div class="modal-body blockinstance-content">
             </div>

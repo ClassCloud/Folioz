@@ -68,7 +68,7 @@ jQuery(function($) {
      * Clear form when a form is collapsed
      */
     function resetOnCollapse() {
-        $('[data-action~="reset-on-collapse"]').on('hidden.bs.collapse', function () {
+        $('[data-action~="reset-on-collapse"]').on('d-none.bs.collapse', function () {
             var i,
                 forms =$(this).find('form');
             for (i = 0; i < forms.length; i = i + 1){
@@ -168,13 +168,13 @@ jQuery(function($) {
 
         // open the dropdown when it is clicked
         $('.custom-dropdown > .picker').on("click", function() {
-            $(this).parent().children('ul').toggleClass('hidden');
+            $(this).parent().children('ul').toggleClass('d-none');
         });
 
         // close the dropdown when there is a click anywhere outside it
         $(document).on('click', function(event) {
             if (!$(event.target).closest('.custom-dropdown').length) {
-                $('.custom-dropdown').children('ul').addClass('hidden');
+                $('.custom-dropdown').children('ul').addClass('d-none');
               }
         });
     }
@@ -244,12 +244,12 @@ jQuery(function($) {
 
     $('.navbar-main .navbar-collapse.collapse').on('show.bs.collapse', function(event) {
         event.stopPropagation();
-        $('.navbar-collapse.collapse.in').collapse('hide');
+        $('.navbar-collapse.collapse.show').collapse('hide');
     });
 
     $('.navbar-main .child-nav.collapse').on('show.bs.collapse', function(event) {
         event.stopPropagation();
-        $('.child-nav.collapse.in').collapse('hide');
+        $('.child-nav.collapse.show').collapse('hide');
     });
 
     affixSize();
@@ -280,7 +280,7 @@ jQuery(function($) {
         (event.type=='click' && !$(event.target).closest('.navbar-toggle, .navbar-form').length) ||
         (event.type == 'keyup' && event.keyCode == keyESCAPE)
       ) {
-        $('.navbar-collapse.collapse.in').collapse('hide');
+        $('.navbar-collapse.collapse.show').collapse('hide');
       }
     });
 

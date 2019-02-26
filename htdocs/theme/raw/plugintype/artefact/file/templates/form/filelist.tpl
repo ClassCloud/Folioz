@@ -5,7 +5,7 @@
             <tr>
                 <th class="icon-cell"></th>
                 <th>{str tag=Name section=artefact.file}</th>
-                <th class="hidden-xs">{str tag=Description section=artefact.file}</th>
+                <th class="d-none d-md-block">{str tag=Description section=artefact.file}</th>
                 <th class="filesize">
                     {str tag=Size section=artefact.file}
                 </th>
@@ -35,7 +35,7 @@
                 {assign var=publishable value=0}
             {/if}
 
-            <tr id="file:{$file->id}" class="file-item {if $file->isparent} parentfolder{/if}{if $highlight && $highlight == $file->id} active{/if}{if $file->artefacttype == 'folder'} folder{else}{if !$publishable } disabled {/if}{if $file->artefacttype == 'profileicon'} profileicon{/if}{/if}{if $edit == $file->id} hidden{/if}{if $selectable && ($file->artefacttype != 'folder' || $selectfolders) && $publishable && !$file->isparent} js-file-select {else} no-hover{/if}{if $file->locked} warning{/if}" {if $selectable && ($file->artefacttype != 'folder' || $selectfolders) && $publishable && !$file->isparent} data-id="{$file->id}" data-select="select-file" {/if} {if !$publishable && $file->artefacttype != 'folder'} title="{str tag=notpublishable section=artefact.file}"{/if}>
+            <tr id="file:{$file->id}" class="file-item {if $file->isparent} parentfolder{/if}{if $highlight && $highlight == $file->id} active{/if}{if $file->artefacttype == 'folder'} folder{else}{if !$publishable } disabled {/if}{if $file->artefacttype == 'profileicon'} profileicon{/if}{/if}{if $edit == $file->id} d-none{/if}{if $selectable && ($file->artefacttype != 'folder' || $selectfolders) && $publishable && !$file->isparent} js-file-select {else} no-hover{/if}{if $file->locked} warning{/if}" {if $selectable && ($file->artefacttype != 'folder' || $selectfolders) && $publishable && !$file->isparent} data-id="{$file->id}" data-select="select-file" {/if} {if !$publishable && $file->artefacttype != 'folder'} title="{str tag=notpublishable section=artefact.file}"{/if}>
 
             {assign var=displaytitle value=$file->title|safe}
             <td class="icon-cell">
@@ -89,7 +89,7 @@
                     </a>
                 {/if}
             </td>
-            <td class="filedescription hidden-xs">
+            <td class="filedescription d-none d-md-block">
                 {$file->description|safe|clean_html}
                 {if $showtags}
                     {if $file->tags}
@@ -114,7 +114,7 @@
             <td class="right s nowrap text-right">
                 <div class="btn-group">
                 {if $selectable && ($file->artefacttype != 'folder' || $selectfolders) && $publishable && !$file->isparent}
-                    <button type="submit" class="btn btn-xs btn-default" name="{$prefix}_select[{$file->id}]" id="{$prefix}_select_{$file->id}" title="{str tag=select}">
+                    <button type="submit" class="btn btn-sm btn-secondary" name="{$prefix}_select[{$file->id}]" id="{$prefix}_select_{$file->id}" title="{str tag=select}">
                         <span class="icon icon-check icon-lg" role="presentation" aria-hidden="true"></span>
                         <span class="sr-only">{str tag=selectspecific section=artefact.file arg1=$displaytitle|escape:html|safe}</span>
                     </button>
@@ -124,7 +124,7 @@
                         <span class="dull text-muted">{str tag=Submitted section=view}</span>
                     {elseif !$file->isparent}
                         {if !isset($file->can_edit) || $file->can_edit !== 0}
-                        <button name="{$prefix}_edit[{$file->id}]" class="btn btn-default btn-xs editable" title="{str tag=edit}">
+                        <button name="{$prefix}_edit[{$file->id}]" class="btn btn-secondary btn-sm editable" title="{str tag=edit}">
                             <span class="icon icon-pencil icon-lg" role="presentation" aria-hidden="true"></span>
                             {if $file->artefacttype == 'folder'}
                                 <span class="sr-only">{str tag=editfolderspecific section=artefact.file arg1=$displaytitle|escape:html|safe}</span>
@@ -148,7 +148,7 @@
                 {elseif !isset($file->can_edit) || $file->can_edit != 0}
                     <div class="btn-group">
                         {if $file->artefacttype == 'archive'}
-                        <a href="{$WWWROOT}artefact/file/extract.php?file={$file->id}" title="{str tag=Decompress section=artefact.file}" class="btn btn-default btn-xs">
+                        <a href="{$WWWROOT}artefact/file/extract.php?file={$file->id}" title="{str tag=Decompress section=artefact.file}" class="btn btn-secondary btn-sm">
                             <span class="icon icon-file-archive-o icon-lg" role="presentation" aria-hidden="true"></span>
                             <span class="sr-only">
                                 {str(tag=decompressspecific section=artefact.file arg1=$displaytitle)|escape:html|safe}
@@ -164,12 +164,12 @@
                             {assign var=deletetext value=str(tag=deletespecific arg1=$displaytitle)}
                         {/if}
 
-                        <button name="{$prefix}_edit[{$file->id}]" class="btn btn-default btn-xs">
+                        <button name="{$prefix}_edit[{$file->id}]" class="btn btn-secondary btn-sm">
                             <span class="icon icon-pencil icon-lg" role="presentation" aria-hidden="true"></span>
                             <span class="sr-only">{$edittext|escape:html|safe}</span>
                         </button>
 
-                        <button name="{$prefix}_delete[{$file->id}]" class="btn btn-default btn-xs">
+                        <button name="{$prefix}_delete[{$file->id}]" class="btn btn-secondary btn-sm">
                             <span class="icon icon-trash text-danger icon-lg" role="presentation" aria-hidden="true"></span>
                             <span class="sr-only">{$deletetext|escape:html|safe}</span>
                         </button>
@@ -187,14 +187,14 @@
     </table>
 </div>
 {if !$selectable && $downloadfolderaszip}
-    <a id="downloadfolder" class="panel-footer text-small" href="{$WWWROOT}artefact/file/downloadfolder.php?{$folderparams|safe}">
+    <a id="downloadfolder" class="card-footer text-small" href="{$WWWROOT}artefact/file/downloadfolder.php?{$folderparams|safe}">
         <span class="icon icon-download" role="presentation" aria-hidden="true"></span>
         <span>{str tag=downloadfolderziplink section=artefact.file}</span>
     </a>
 {/if}
 
 {else}
-<div class="panel-body">
+<div class="card-body">
     <p class="no-results">
         {str tag=nofilesfound section=artefact.file}
     </p>

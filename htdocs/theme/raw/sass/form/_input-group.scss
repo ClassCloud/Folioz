@@ -7,32 +7,45 @@
         margin-top: 17px;
     }
 }
+
 .pieform .input-group {
     max-width:100%;
 
+    // Chrome bug - flex container doesn't work on fieldset tag
+    fieldset.input-group {
+      display: block;
+      .input-group-append {
+        display: inline-block;
+        height: $input-height;
+        width: auto;
+      }
+    }
     .pieform-fieldset > .form-group {
         border: none;
         padding: 0;
         box-shadow: none;
         float: left;
         .form-control {
-            border-top-left-radius: $border-radius-base;
-            border-bottom-left-radius: $border-radius-base;
+            border-top-left-radius: $border-radius;
+            border-bottom-left-radius: $border-radius;
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
             max-width: 100%;
+            &.text {
+                height: $input-height;
+            }
         }
         ~ .form-group {
             .form-control {
                 @include border-left-radius(0);
                 margin-left: -1px;
-                @media (min-width: $screen-xs-min) {
+                @include media-breakpoint-up(sm) {
                     border-left:0;
                 }
             }
             &:last-child {
                 .form-control {
-                    @include border-right-radius($border-radius-base);
+                    @include border-right-radius($border-radius);
                 }
             }
         }
@@ -45,10 +58,13 @@
         margin-top: 5px;
         // For screen size smaller than xs
         @media (min-width: 321px) {
-            margin-top: 13px;
-        }
-        @media (min-width: $screen-sm-min) {
             margin-top: 10.5px;
+        }
+        @include media-breakpoint-up(md) {
+            margin-top: 10.5px;
+        }
+        @include media-breakpoint-down(xs) {
+            margin-top: 14.5px;
         }
     }
 
@@ -56,11 +72,26 @@
     .form-control {
         display: inline-block;
         width: auto;
+        flex: 0 1 auto;
+    }
+
+    .input-group-prepend {
+        padding: 9px 14px;
+        text-align: center;
+        background-color: $gray-100;
+        border: 1px solid $input-border-color;
+        border-radius: 2px;
+        border-bottom-right-radius: 0;
+        border-top-right-radius: 0;
+        border-right: 0;
+        + .select select {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
     }
 }
-.pieform .input-group-btn {
+.pieform .input-group-append {
     font-size: inherit;
-    width: inherit;
     float:left;
     &.form-group {
         display: block;

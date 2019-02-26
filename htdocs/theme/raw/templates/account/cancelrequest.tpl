@@ -1,7 +1,7 @@
 {include file="header.tpl"}
-<div id="cancelrequest" class="panel panel-danger view-container">
-    <h2 class="panel-heading">{str tag=canceldeletionrequest section=account}</h2>
-    <div class="panel-body">
+<div id="cancelrequest" class="card bg-danger view-container">
+    <h2 class="card-header">{str tag=canceldeletionrequest section=account}</h2>
+    <div class="card-body">
         <p>{str tag=canceldeletionrequestconfirmation section=account arg1=$userdisplayname}</p>
         {$cancelrequestform|safe}
     </div>

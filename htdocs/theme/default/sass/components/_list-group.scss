@@ -12,3 +12,18 @@
   font-family: $font-family-sans-serif;
   font-weight: 700;
 }
+
+.list-group-item {
+    &.published {
+        background-color: #fff;
+    }
+    .list-group-item-controls,
+    .btn-action-list,
+    .list-group-item-heading {
+        .btn-group-top {
+            @include media-breakpoint-up(lg) {
+                margin-top: -13px;
+            }
+        }
+    }
+}

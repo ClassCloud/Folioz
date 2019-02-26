@@ -1,0 +1,67 @@
+a.card-footer {
+    text-align:center;
+    color: $link-color;
+    display: block;
+    &:hover {
+        color: $link-hover-color;
+        background: $gray-100;
+        text-decoration: none;
+        .icon {
+            color: $gray-300;
+        }
+        .icon.float-right { //only apply link colorto right aligned icons
+            color: $link-color;
+        }
+    }
+    .icon.float-right {
+        margin-top: 3px;
+    }
+}
+
+.has-attachment {
+    position: relative;
+    z-index: 1;
+    background-color: $card-bg;
+}
+
+.card-footer {
+    background-color: $card-footer-bg;
+    p {
+        margin:0;
+    }
+    &.has-form {
+        @include clearfix;
+        .control {
+            display: inline-block;
+        }
+    }
+    &.has-link {
+        a {
+            display: block;
+        }
+    }
+
+    .expand-add-button {
+        .show-form {
+            display: none;
+        }
+        .hide-form {
+            display: inline-block;
+        }
+        &.collapsed {
+            .show-form {
+                display: inline-block;
+            }
+            .hide-form {
+                display: none;
+            }
+        }
+    }
+    a:not(.btn) {
+        color: $gray-700;
+    }
+}
+
+.fieldset-body .card-footer {
+    margin: 20px -15px -10px;
+}

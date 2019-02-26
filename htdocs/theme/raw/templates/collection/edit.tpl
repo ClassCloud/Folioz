@@ -1,9 +1,9 @@
 {include file="header.tpl"}
 {if $ADMIN || $INSTITUTIONALADMIN}
 <div class="row">
-    <div class="col-md-9">
-        <div class="panel panel-default">
-            <div class="panel-body">
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-body">
                 {$form|safe}
             </div>
         </div>

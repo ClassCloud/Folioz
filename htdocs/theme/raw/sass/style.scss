@@ -7,9 +7,10 @@
  *
  * This file is licensed under the same terms as Mahara itself
  */
+
 @import "utilities/theme-variables"; // Import our theme variables
 @import "utilities/bootstrap-variables";  // ...and our custom bootstrap variables file
 @import "utilities/custom-variables";  // ...and our custom variables file
-@import "utilities/bootstrap-index"; // bootstrap scss dependecy file
+@import "lib/bootstrap4/bootstrap"; // bootstrap scss dependecy file
 
 @import "utilities/index"; //include the index of our sass partials

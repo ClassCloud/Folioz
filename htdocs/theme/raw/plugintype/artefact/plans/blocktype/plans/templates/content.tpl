@@ -2,18 +2,18 @@
     <p class="editor-description">{$noplans}</p>
 {/if}
 {foreach from=$plans item=plan}
-<div class="panel-body flush">
+<div class="card-body flush">
     {if $editing}
         <div class="pull-right btn-group">
-            <a class="btn btn-default btn-sm" href="{$WWWROOT}artefact/plans/edit/index.php?id={$plan.id}{if $plan.view}&view={$plan.view}{/if}" title="{str(tag=editspecific arg1=$plan.title)|escape:html|safe}">
+            <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/edit/index.php?id={$plan.id}{if $plan.view}&view={$plan.view}{/if}" title="{str(tag=editspecific arg1=$plan.title)|escape:html|safe}">
                 <span class="icon icon-pencil"></span>
                 <span class="sr-only">{str tag='edit'}</span>
             </a>
-            <a class="btn btn-default btn-sm" href="{$WWWROOT}artefact/plans/new.php?id={$plan.id}{if $plan.view}&view={$plan.view}{/if}" title="{str(tag=addtaskspecific section='artefact.plans' arg1=$plan.title)|escape:html|safe}">
+            <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/new.php?id={$plan.id}{if $plan.view}&view={$plan.view}{/if}" title="{str(tag=addtaskspecific section='artefact.plans' arg1=$plan.title)|escape:html|safe}">
                 <span class="icon icon-plus"></span>
                 <span class="sr-only">{str tag='addtask' section='artefact.plans'}</span>
             </a>
-            <a class="btn btn-default btn-sm" href="{$WWWROOT}artefact/plans/delete/index.php?id={$plan.id}{if $plan.view}&view={$plan.view}{/if}" title="{str(tag=deletespecific arg1=$plan.title)|escape:html|safe}">
+            <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/delete/index.php?id={$plan.id}{if $plan.view}&view={$plan.view}{/if}" title="{str(tag=deletespecific arg1=$plan.title)|escape:html|safe}">
                 <span class="icon icon-trash text-danger"></span>
                 <span class="sr-only">{str tag='Delete'}</span>
             </a>
@@ -38,13 +38,13 @@
                     {$tasks.tablerows|safe}
                 </div>
                 {if $tasks.pagination}
-                    <div id="plans_page_container_{$blockid}_plan{$tasks.planid}" class="hidden">
+                    <div id="plans_page_container_{$blockid}_plan{$tasks.planid}" class="d-none">
                         {$tasks.pagination|safe}
                     </div>
                     <script>
                     jQuery(function($) {literal}{{/literal}
                         {$tasks.pagination_js|safe}
-                        $('#plans_page_container_{$blockid}_plan{$tasks.planid}').removeClass('hidden');
+                        $('#plans_page_container_{$blockid}_plan{$tasks.planid}').removeClass('d-none');
                     {literal}}{/literal});
                     </script>
                 {/if}

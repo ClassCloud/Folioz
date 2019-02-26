@@ -11,6 +11,7 @@ input[type=text],
 input[type=password],
 textarea,
 select {
+    @extend .form-control;
     .modal & {
         width: auto;
         max-width: 100%;
@@ -29,7 +30,8 @@ select {
 
 label,
 .pseudolabel {
-    @extend .control-label;
+    // .col-form-label is adding too much padding to <label> commenting out
+    // @extend .col-form-label;
     max-width: 100%;
     padding-right: 10px;
     font-weight: normal;
@@ -62,7 +64,7 @@ label,
         min-width: 0;
     }
 
-    @media (min-width: $screen-sm-min) {
+    @include media-breakpoint-up(md) {
         min-width: 265px;
     }
 
@@ -83,7 +85,7 @@ label,
 
 .stacked-label {
     display: inline-block;
-    @media (min-width: $screen-sm-min) {
+    @include media-breakpoint-up(md) {
         width:200px;
     }
 }
@@ -96,7 +98,7 @@ label,
     }
 }
 
-.as-panel form {
+.as-card form {
     margin-top:0;
 }
 
@@ -108,10 +110,39 @@ label,
 .textarea label {
     vertical-align: top;
 }
-.radio label,
-.checkbox label {
-    margin-top: 0;
+
+// BS3 code - begin
+.radio,
+.checkbox {
+  position: relative;
+  display: block;
+  // margin-top: 10px;
+  margin-bottom: 10px;
+
+  label {
+    min-height: $line-height-computed; // Ensure the input doesn't jump when there is no text
+    padding-left: 20px;
+    margin-bottom: 0;
+    font-weight: normal;
+    cursor: pointer;
+  }
 }
+
+.radio input[type="radio"],
+.radio-inline input[type="radio"],
+.checkbox input[type="checkbox"],
+.checkbox-inline input[type="checkbox"] {
+  position: absolute;
+  margin-left: -20px;
+  margin-top: 4px \9;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  margin: 4px 0 0;
+  line-height: normal;
+}
+// BS3 code - end
 
 .radio-aligned {
     display: inline-block;
@@ -128,7 +159,7 @@ label,
 .align-with-input {
     display: inline-block;
     margin-left: 0;
-    @media (min-width: $screen-sm-min) {
+    @include media-breakpoint-up(md) {
         margin-left: 265px;
     }
     &.file {
@@ -163,10 +194,24 @@ textarea.resizable {
     }
     .form-group {
         padding: 0;
-        border-bottom: 0px none;
+        border-bottom: 0 none;
+        align-items: flex-start;
+        display: inline-block;
+        div.checkbox {
+          input.checkbox {
+              width: auto;
+              margin-top: -6px;
+          }
+        }
+    }
+    @include media-breakpoint-down(md) {
+        > .form-group {
+            width: 100%;
+        }
     }
     &.form-inline-align-bottom .form-group{
         vertical-align: bottom;
+        align-self: flex-end;
     }
     &.form-short {
         select, input:not(.submit) {
@@ -180,6 +225,7 @@ textarea.resizable {
 
 .form-inline-align-bottom a {
     vertical-align: bottom;
+    align-self: flex-end;
 }
 
 .form-control.file {
@@ -209,19 +255,19 @@ textarea.resizable {
     font-family: "FontAwesome";
     font-size: 16px;
     content: "\f073";
-    color: scale-color($text-color, $lightness: 25%);
+    color: scale-color($theme-text-color, $lightness: 25%);
     position:relative;
-    right: 20px;
+    right: 25px;
 }
 .hasDatepickerwrapperacl:after {
     font-family: "FontAwesome";
     font-size: 16px;
     content: "\f073";
-    color: scale-color($text-color, $lightness: 25%);
+    color: scale-color($theme-text-color, $lightness: 25%);
     right: 10px;
     position: absolute;
     font-size: 16px;
-    top: 3px;
+    top: 5px;
 }
 .date-picker {
     position: relative;

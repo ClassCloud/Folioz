@@ -1,7 +1,7 @@
 {if $MAINNAV}
 
 <nav>
-  <div id="main-nav" class="{if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}adminnav{/if} nav collapse navbar-collapse nav-main" role="tabpanel">
+  <div id="main-nav" class="{if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}adminnav{/if} nav collapse navbar-collapse nav-main" role="tabcard">
     <ul id="nav" class="nav navbar-nav">
         {strip}
             {foreach from=$MAINNAV item=item name=menu}
@@ -23,13 +23,13 @@
                     {/if}
                 </a>
                 {if $item.submenu}
-                <button type="button" class="navbar-showchildren navbar-toggle dropdown-toggle {if !$item.selected}collapsed{/if}" data-toggle="collapse" data-parent="nav" data-target="#childmenu-{$dwoo.foreach.menu.index}">
+                <button type="button" class="navbar-showchildren navbar-toggle {if !$item.selected}collapsed{/if}" data-toggle="collapse" data-parent="#nav" data-target="#childmenu-{$dwoo.foreach.menu.index}">
                     <span class="icon icon-chevron-down" role="presentation" aria-hidden="true"></span>
                     <span class="nav-title sr-only">{str tag="showmenu" section="mahara" arg1="$item.title"}</span>
                 </button>
                 {/if}
                 {if $item.submenu}
-                <ul id="childmenu-{$dwoo.foreach.menu.index}" class="{if $item.selected} in{/if} collapse child-nav" role="menu">
+                <ul id="childmenu-{$dwoo.foreach.menu.index}" class="{if $item.selected} show{/if} collapse child-nav" role="menu">
                 {strip}
                     {foreach from=$item.submenu item=subitem}
                     <li class="{if $subitem.selected}active {/if}{if $subitem.submenu}has-sub {/if}">
@@ -59,7 +59,7 @@
   </div>
 </nav>
 <nav>
-  <div id="main-nav-admin" class="{if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}adminnav{/if} nav collapse navbar-collapse nav-main-admin" role="tabpanel">
+  <div id="main-nav-admin" class="{if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}adminnav{/if} nav collapse navbar-collapse nav-main-admin" role="tabcard">
     <ul id="navadmin" class="nav navbar-nav">
     {strip}
         {foreach from=$MAINNAVADMIN item=item name=menu}
@@ -81,13 +81,13 @@
                 {/if}
             </a>
             {if $item.submenu}
-            <button type="button" class="navbar-showchildren navbar-toggle dropdown-toggle {if !$item.selected}collapsed{/if}" data-toggle="collapse" data-parent="navadmin" data-target="#adminchildmenu-{$dwoo.foreach.menu.index}">
+            <button type="button" class="navbar-showchildren navbar-toggle {if !$item.selected}collapsed{/if}" data-toggle="collapse" data-parent="#navadmin" data-target="#adminchildmenu-{$dwoo.foreach.menu.index}">
                 <span class="icon icon-chevron-down" role="presentation" aria-hidden="true"></span>
                 <span class="nav-title sr-only">{str tag="showmenu" section="mahara" arg1="$item.title"}</span>
             </button>
             {/if}
             {if $item.submenu}
-            <ul id="adminchildmenu-{$dwoo.foreach.menu.index}" class="{if $item.selected} in{/if} collapse child-nav" role="menu">
+            <ul id="adminchildmenu-{$dwoo.foreach.menu.index}" class="{if $item.selected} show{/if} collapse child-nav" role="menu">
             {strip}
                 {foreach from=$item.submenu item=subitem}
                 <li class="{if $subitem.selected}active {/if}{if $subitem.submenu}has-sub {/if}">
@@ -120,7 +120,7 @@
 
 {if $RIGHTNAV}
 <nav>
-  <div id="main-nav-user" class="{if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}{/if} nav collapse navbar-collapse nav-main-user" role="tabpanel">
+  <div id="main-nav-user" class="{if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}{/if} nav collapse navbar-collapse nav-main-user" role="tabcard">
     <ul id="navuser" class="nav navbar-nav">
       {strip}
         {foreach from=$RIGHTNAV item=item}
@@ -132,13 +132,13 @@
                 <span class="nav-title">{$item.title}</span>
             </a>
             {if $item.submenu}
-            <button type="button" class="navbar-showchildren navbar-toggle dropdown-toggle {if !$item.selected}collapsed{/if}" data-toggle="collapse" data-parent="navuser" data-target="#userchildmenu-{$dwoo.foreach.menu.index}">
+            <button type="button" class="navbar-showchildren navbar-toggle {if !$item.selected}collapsed{/if}" data-toggle="collapse" data-parent="#navuser" data-target="#userchildmenu-{$dwoo.foreach.menu.index}">
                  <span class="icon icon-chevron-down" role="presentation" aria-hidden="true"></span>
                  <span class="nav-title sr-only">{str tag="showmenu" section="mahara" arg1="$item.title"}</span>
             </button>
             {/if}
             {if $item.submenu}
-            <ul id="userchildmenu-{$dwoo.foreach.menu.index}" class="{if $item.selected} in{/if} collapse child-nav" role="menu">
+            <ul id="userchildmenu-{$dwoo.foreach.menu.index}" class="{if $item.selected} show{/if} collapse child-nav" role="menu">
                {foreach from=$item.submenu item=subitem}
                <li class="{if $subitem.selected}active {/if}{if $subitem.submenu}has-sub {/if}">
                    <a href="{$WWWROOT}{$subitem.url}"{if $subitem.accesskey} accesskey="{$subitem.accesskey}"{/if}>

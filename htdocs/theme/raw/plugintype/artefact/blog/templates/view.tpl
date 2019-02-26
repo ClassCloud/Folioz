@@ -1,12 +1,12 @@
 {include file="header.tpl"}
 {if $canedit}
 <div class="btn-top-right btn-group btn-group-top">
-    <a class="btn btn-default addpost" href="{$WWWROOT}artefact/blog/post.php?blog={$blog->get('id')}">
+    <a class="btn btn-secondary addpost" href="{$WWWROOT}artefact/blog/post.php?blog={$blog->get('id')}">
         <span class="icon icon-lg icon-plus left" role="presentation" aria-hidden="true"></span>
         {str section="artefact.blog" tag="addpost"}
     </a>
     {if !$blog->get('locked')}
-    <a class="btn btn-default settings" href="{$WWWROOT}artefact/blog/settings/index.php?id={$blog->get('id')}">
+    <a class="btn btn-secondary settings" href="{$WWWROOT}artefact/blog/settings/index.php?id={$blog->get('id')}">
         <span class="icon icon-lg icon-cogs left" role="presentation" aria-hidden="true"></span>
         {str section="artefact.blog" tag="settings"}
     </a>
@@ -27,11 +27,11 @@
     <div id="postlist" class="postlist list-group list-group-lite">
         {$posts.tablerows|safe}
     </div>
-    <div id="blogpost_page_container" class="hidden">{$posts.pagination|safe}</div>
+    <div id="blogpost_page_container" class="d-none">{$posts.pagination|safe}</div>
     <script>
     jQuery(function($) {literal}{{/literal}
         {$posts.pagination_js|safe}
-        $('#blogpost_page_container').removeClass('hidden');
+        $('#blogpost_page_container').removeClass('d-none');
         {literal}}{/literal});
     </script>
     {else}

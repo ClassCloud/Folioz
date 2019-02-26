@@ -1,7 +1,7 @@
 {include file="header.tpl"}
-<div id="deleteaccount" class="panel panel-danger view-container">
-    <h2 class="panel-heading">{str tag=deleteaccount1}</h2>
-    <div class="panel-body">
+<div id="deleteaccount" class="card bg-danger view-container">
+    <h2 class="card-header">{str tag=deleteaccount1}</h2>
+    <div class="card-body">
         {if $requiresapproval}
             <p>{str tag=sendnotificationdescription section=account}</p>
         {else}

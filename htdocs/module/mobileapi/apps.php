@@ -161,7 +161,7 @@ else {
                     'renderer'        => 'div',
                     'elementclasses'  => false,
                     'successcallback' => 'webservices_user_token_submit',
-                    'class'           => 'form-as-button pull-left',
+                    'class'           => 'form-as-button float-left',
                     'jsform'          => false,
                     'elements' => array(
                         'token'    => array('type' => 'hidden', 'value' => $service->token),
@@ -169,7 +169,7 @@ else {
                         'submit'     => array(
                                 'type'  => 'button',
                                 'usebuttontag' => true,
-                                'class' => 'btn-default btn-sm',
+                                'class' => 'btn-secondary btn-sm',
                                 'value' => '<span class="icon icon-trash icon-lg text-danger left" role="presentation" aria-hidden="true"></span>' . get_string('delete'),
                                 'elementtitle' => get_string('deletespecific', 'mahara', $service->clientname),
                             ),
@@ -216,14 +216,14 @@ if (get_config_plugin('module', 'mobileapi', 'manualtokens')) {
                         'renderer'        => 'div',
                         'elementclasses'  => false,
                         'successcallback' => 'webservices_user_token_submit',
-                        'class'           => 'form-as-button pull-left',
+                        'class'           => 'form-as-button float-left',
                         'jsform'          => false,
                         'elements' => array(
                             'action'     => array('type' => 'hidden', 'value' => 'generate'),
                             'submit'     => array(
                                     'type'  => 'button',
                                     'usebuttontag' => true,
-                                    'class' => 'btn-default btn-sm',
+                                    'class' => 'btn-secondary btn-sm',
                                     'value'   => '<span class="icon icon-refresh"></span> ' . get_string('gen', 'auth.webservice'),
                                     'elementtitle' => get_string('gen', 'auth.webservice')
                                 ),

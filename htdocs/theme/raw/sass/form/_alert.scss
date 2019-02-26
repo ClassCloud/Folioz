@@ -21,7 +21,7 @@
         >thead>tr>th {
             color: inherit;
             vertical-align: bottom;
-            border-bottom: 1px solid rgba($gray-light, 0.05);
+            border-bottom: 1px solid rgba($gray-300, 0.05);
         }
         >thead>tr>th,
         >thead>tr>td,
@@ -29,7 +29,7 @@
         >tbody>tr>td,
         >tfoot>tr>th,
         >tfoot>tr>td {
-            border-top: 1px solid $alert-info-border;
+            border-top: 1px solid $state-info-border;
             &:first-child {
                 padding-left:0;
             }
@@ -39,6 +39,6 @@
 
 .alert-default {
     background-color: rgba($body-bg, 0.4);
-    border: 1px solid scale-color($brand-default, $lightness: -5.5%);
-    color: $gray;
+    border: 1px solid scale-color($gray-400, $lightness: 8%);
+    color: $gray-500;
 }

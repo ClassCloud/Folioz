@@ -15,8 +15,8 @@
                     </p>
                     <p>{str tag=confirmprivacyrefusal section=admin}</p>
                     <div class="btn-group">
-                        <button id="confirm-no-button" type="button" class="btn btn-default">{str tag="yes"}</button>
-                        <button id="back-button" type="button" class="btn btn-default">{str tag="no"}</button>
+                        <button id="confirm-no-button" type="button" class="btn btn-secondary">{str tag="yes"}</button>
+                        <button id="back-button" type="button" class="btn btn-secondary">{str tag="no"}</button>
                     </div>
                 </div>
             </div>
@@ -58,7 +58,7 @@
     $('.modal').on('shown.bs.modal', function() {
         $('#confirm-no-button').trigger("focus");
     });
-    $('.modal').on('hidden.bs.modal', function() {
+    $('.modal').on('d-none.bs.modal', function() {
         if (!acceptprivacy) {
             formAbortProcessing($j("#agreetoprivacy_submit"));
             $('#agreetoprivacy_submit').trigger("focus");

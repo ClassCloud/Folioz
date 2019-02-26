@@ -1,42 +1,14 @@
 .arrow-bar {
-    background-color: #026BB6;
 
-    // to theme the Résumé nav green
-    &.resume {
-        background-color: #5B6E1C;
-
-        .arrow {
-            background-color: $arrow-link-color;
-            &:after {
-                border-left-color: $arrow-link-color;
-            }
-        }
-        .nav-inpage {
-            &.nav > li {
-                & > a {
-                    color: $arrow-text-color;
-                }
-                &.active > a,
-                &.active > button  {
-                    color: $arrow-link-color;
-                    background-color: $arrow-link-background-color;
-                }
-                & > a:hover {
-                    color: $arrow-link-hover-color;
-                    background-color: $arrow-link-background-color;
-                }
-            }
-        }
-    }
-
-    // to theme the Groups nav green
+    // to theme the Résumé nav and Groups nav green
+    &.resume,
     &.group {
         background-color: #5B6E1C;
 
         .arrow {
-            background-color: $arrow-link-group-color;
+            background-color: $arrow-alt-color;
             &:after {
-                border-left-color: $arrow-link-group-color;
+                border-left-color: $arrow-alt-color;
             }
         }
         .nav-inpage {
@@ -46,12 +18,12 @@
                 }
                 &.active > a,
                 &.active > button  {
-                    color: $arrow-link-group-color;
+                    color: $arrow-link-active-color;
                     background-color: $arrow-link-background-color;
                 }
                 & > a:hover {
                     color: $arrow-link-hover-color;
-                    background-color:$arrow-link-background-color;
+                    background-color: $arrow-link-background-color;
                 }
             }
         }
@@ -64,7 +36,7 @@
             }
             &.active > a,
             &.active > button  {
-                color: $link-color;
+                color: $arrow-link-active-color;
                 background-color: $arrow-link-background-color;
             }
             & > a:hover {

@@ -14,10 +14,10 @@
                 display:block;
             }
             .select2-selection {
-                border-color: $input-border;
+                border-color: $input-border-color;
             }
             .select2-selection:focus {
-                border-color: $input-border-focus;
+                border-color: $input-focus-border-color;
                 outline: none;
             }
         }
@@ -43,7 +43,7 @@
             position: relative;
             padding-right: 30px;
             background: transparent;
-            height: $input-height-base;
+            height: $input-height;
             left: 0;
             margin: 0;
             outline: none;
@@ -72,6 +72,8 @@
     }
 
     .input-sm {
+        padding: 2.3px 10px;
+        font-size: 12px;
         &.picker {
             padding: 0;
         }
@@ -81,8 +83,8 @@
                 margin-top: 6px;
             }
             select.form-control {
-                height: $input-height-small;
-                line-height: $input-height-small / 2 + 2;
+                height: $input-height-sm;
+                line-height: $input-height-sm / 2 + 2;
             }
         }
     }
@@ -95,8 +97,8 @@
         .picker select.form-control {
             padding-top: 5px;
             padding-bottom: 5px;
-            height: $input-height-large;
-            line-height: $input-height-large / 2 + 3;
+            height: $input-height-lg;
+            line-height: $input-height-lg / 2 + 3;
         }
     }
 
@@ -104,8 +106,8 @@
         .input-group-addon {
             display: inline-block;
             float: left;
-            height: $input-height-base;
-            line-height: $input-height-base / 2;
+            height: $input-height;
+            line-height: $input-height / 2;
         }
     }
     .input-short-error {
@@ -132,6 +134,48 @@
         }
         &.input-short {
             margin-top: 5px;
+        }
+    }
+}
+
+.dropdown-menu {
+    z-index: 10;
+    > li {
+        padding: 3px 0;
+        > a {
+            padding: 3px 20px;
+            color: $theme-text-color;
+        }
+    }
+    > .active {
+        background-color: $theme-primary-color;
+        > a {
+            color: #fff;
+            text-decoration: none;
+            outline: 0;
+            background-color: $theme-primary-color;
+            &:hover,
+            &:focus {
+                text-decoration: none;
+            }
+        }
+    }
+}
+
+.dropdown-item {
+    padding: 0;
+}
+
+.card-footer {
+    .dropdown-menu {
+        .dropdown-item {
+            padding: 0;
+            a {
+                display: block;
+                &.seperator {
+                    border: 0;
+                }
+            }
         }
     }
 }

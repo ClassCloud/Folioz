@@ -25,8 +25,8 @@
                     {$postinfo->body|str_shorten_html:100:true:true:false|safe}
                 </div>
                 {if $postinfo->filecount}
-                <div class="has-attachment panel panel-default collapsible collapsible-group" id="blockpostfiles-{$postinfo->id}">
-                    <h5 class="panel-heading">
+                <div class="has-attachment card collapsible collapsible-group" id="blockpostfiles-{$postinfo->id}">
+                    <h5 class="card-header">
                         <a class="text-left collapsed" data-toggle="collapse" href="#post-attach-{$postinfo->id}" aria-expanded="false">
                             <span class="icon icon-paperclip left" role="presentation" aria-hidden="true"></span>
                             <span class="text-small"> {str tag=attachedfiles section=artefact.blog} </span>
@@ -66,13 +66,13 @@
             </li>
             {/foreach}
         </ul>
-        <a href="{$WWWROOT}interaction/forum/index.php?group={$group->id}" class="panel-footer text-small">
+        <a href="{$WWWROOT}interaction/forum/index.php?group={$group->id}" class="card-footer text-small">
         {str tag=gotoforums section=interaction.forum}
         <span class="icon icon-arrow-circle-right right" role="presentation" aria-hidden="true"></span>
         </a>
     </div>
 {else}
-    <div class="panel-body">
+    <div class="card-body">
         <span class="text-small no-results">{str tag=noforumpostsyet section=interaction.forum}</span>
     </div>
 {/if}

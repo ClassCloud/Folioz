@@ -37,7 +37,7 @@
         <div class="searchform text input-group">
             <label class="sr-only" for="query">{str tag='usersearch' section='admin'}</label>
             <input placeholder="{str tag='usersearch' section='admin'}" class="text form-control" type="text" name="query" id="query"{if $search->query} value="{$search->query}"{/if}>
-            <div class="input-group-btn button">
+            <div class="input-group-append button">
                 <button id="query-button" class="btn-search btn btn-primary " type="submit">
                 {str tag="search"}
                 </button>
@@ -61,8 +61,8 @@
 </form>
 
 
-<div id="results" class="panel panel-default view-container">
-    <h2 class="panel-heading" id="resultsheading">{str tag="Results"}</h2>
+<div id="results" class="card view-container">
+    <h2 class="card-header" id="resultsheading">{str tag="Results"}</h2>
         {if $results}
         <table id="searchresults" class="tablerenderer fullwidth table">
             <thead>
@@ -92,17 +92,17 @@
                 {$results|safe}
             </tbody>
         </table>
-        <div class="panel-body">
+        <div class="card-body">
             {$pagination|safe}
         </div>
 
-        <a class="panel-footer text-small" id="csvlink" href="{$WWWROOT}admin/groups/archivescsvdownload.php{if $.request.institution}?institution={$.request.institution}{/if}">
+        <a class="card-footer text-small" id="csvlink" href="{$WWWROOT}admin/groups/archivescsvdownload.php{if $.request.institution}?institution={$.request.institution}{/if}">
         <span class="icon icon-table left" role="presentation" aria-hidden="true"></span>
         {str tag=exportdataascsv section=admin}
         </a>
 
         {else}
-            <div class="panel-body">
+            <div class="card-body">
                 <p class="no-results"> {str tag="noresultsfound"}</p>
             </div>
         {/if}

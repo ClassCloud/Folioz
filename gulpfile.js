@@ -44,7 +44,7 @@ gulp.task('css', 'Compile SASS into CSS', function () {
 
 // Watch Files For Changes
 gulp.task('watch', 'Watch style directories and auto-compile CSS', function() {
-    gulp.watch('htdocs/theme/**/sass/**/*.scss', ['css']);
+    gulp.watch('htdocs/theme/*/sass/**/*.scss', ['css']);
 });
 
 // Default Task (recompile on init before watching)

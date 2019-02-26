@@ -1,6 +1,6 @@
 {include file="header.tpl"}
 <p class="lead">{str tag="institutionmemberspagedescription" section="admin"}</p>
-<div class="panel panel-default panel-body">
+<div class="card card-body">
     <p>{$instructions}</p>
     {$usertypeselector|safe}
     <div class="userlistform">

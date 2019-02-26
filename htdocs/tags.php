@@ -75,12 +75,12 @@ jQuery(function($) {
           // set all tabs to inactive
           $('ul.nav-tabs li').each(function() {
               $(this).removeClass('active');
-              $(this).find('a').removeClass('current-tab');
+              $(this).find('a').removeClass('active');
               $(this).find('.sr-only').html('(' + get_string_ajax('tab', 'mahara') + ')');
           });
           // set current one to active
           $(this).closest('li').addClass('active');
-          $(this).addClass('current-tab');
+          $(this).addClass('active');
           $(this).find('.sr-only').html('(' + get_string_ajax('tab', 'mahara') + ' ' + get_string_ajax('selected', 'mahara') + ')');
 
           return false;
@@ -132,10 +132,10 @@ jQuery(function($) {
                   if (edit_tag_link.length) {
                       if (data.data.tag && !data.data.is_institution_tag) {
                           edit_tag_link.prop('href', config.wwwroot + 'edittags.php?tag=' + data.data.tagurl);
-                          edit_tag_link.removeClass('hidden');
+                          edit_tag_link.removeClass('d-none');
                       }
                       else {
-                          edit_tag_link.addClass('hidden');
+                          edit_tag_link.addClass('d-none');
                       }
                   }
 

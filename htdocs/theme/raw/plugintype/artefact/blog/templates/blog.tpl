@@ -3,7 +3,7 @@
         {str tag='alldraftposts' section='artefact.blog'}
     {/if}
     {if ($editing && $canaddpost)}
-        <a class="panel-footer" href="{$WWWROOT}artefact/blog/post.php?blog={$blogid}">
+        <a class="card-footer" href="{$WWWROOT}artefact/blog/post.php?blog={$blogid}">
             <span class="icon icon-plus text-success left" role="presentation" aria-hidden="true"></span>
             {str tag='shortcutnewentry' section='artefact.blog'}
         </a>
@@ -25,7 +25,7 @@
           {$posts.tablerows|safe}
         </div>
         {if $posts.pagination}
-        <div id="blogpost_page_container{if $blockid}_{$blockid}{/if}" class="hidden">{$posts.pagination|safe}</div>
+        <div id="blogpost_page_container{if $blockid}_{$blockid}{/if}" class="d-none">{$posts.pagination|safe}</div>
         {/if}
         {if $license}
           <div class="license">
@@ -37,7 +37,7 @@
     <script>
     jQuery(function($) {literal}{{/literal}
         {$posts.pagination_js|safe}
-        $('#blogpost_page_container{if $blockid}_{$blockid}{/if}').removeClass('hidden');
+        $('#blogpost_page_container{if $blockid}_{$blockid}{/if}').removeClass('d-none');
     {literal}}{/literal});
     </script>
     {/if}

@@ -234,14 +234,14 @@ var UserSearch = (function($) {
                           'type': 'checkbox',
                           'name': 'users[' + j + ']',
                           'value': j,
-                          'class': 'hidden',
+                          'class': 'd-none',
                           'checked': 'checked'
                       }));
                       count++;
                   }
               }
               if (count) {
-                  $('#nousersselected').addClass('hidden');
+                  $('#nousersselected').addClass('d-none');
                   $('#' + formid).append($('<input>', {
                       'type': 'hidden',
                       'name': 'action',
@@ -250,7 +250,7 @@ var UserSearch = (function($) {
                   $('#' + formid).trigger('submit');
                   return false;
               }
-              $('#nousersselected').removeClass('hidden');
+              $('#nousersselected').removeClass('d-none');
               return false;
           });
       };

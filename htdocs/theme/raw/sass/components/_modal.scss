@@ -73,7 +73,7 @@ $width-sm: 90%;
 }
 
 .modal-content {
-    border-radius: 0;
+    border-radius: $border-radius;
     h5 {
         margin: 0;
     }
@@ -89,7 +89,7 @@ $width-sm: 90%;
 
 .modal-header,
 .mce-panel .mce-window-head {
-    background: $panel-default-heading-bg;
+    background: $card-header-bg;
     padding: 10px 15px;
     h4, .mce-title {
         font-family: $font-family-base;
@@ -98,7 +98,10 @@ $width-sm: 90%;
     }
     .close,
     .mce-close {
+        order: 1;
         opacity: 1;
+        padding: 0;
+        margin: 0;
         &:hover,
         &:focus {
             .times {
@@ -116,9 +119,9 @@ $width-sm: 90%;
     @include transition(visibility 0s 0.3s);
     visibility: hidden;
     position: fixed;
-    top: 0px;
-    right: 0px;
-    bottom: 0px;
+    top: 0;
+    right: 0;
+    bottom: 0;
 
     .mce-tinymce {
         display:none;
@@ -143,7 +146,7 @@ $width-sm: 90%;
         .modal-dialog {
             @include transition(right 0.5s ease-in-out);
             right: -($width + 5);
-            @media (max-width: $screen-sm-min) {
+            @include media-breakpoint-down(md) {
                 right: -($width-sm + 5);
             }
         }
@@ -153,36 +156,37 @@ $width-sm: 90%;
         width: $width;
         margin: 0;
         position: fixed;
-        top: 0px;
-        bottom: 0px;
-        @media (max-width: $screen-sm-min) {
+        top: 0;
+        bottom: 0;
+        @include media-breakpoint-down(md) {
             width: ($width-sm + 5);
         }
     }
 
     .modal-header {
-        background:  $brand-primary;
+        background:  theme-color("primary");
         padding: 10px 15px;
-        color: $modal-docked-header;
+        color: $modal-header-color;
+        border-radius: 0;
          h4, a {
-            color: $modal-docked-header;
+            color: $modal-header-color;
         }
         &.modal-section {
             margin: 0 0 10px 0;
         }
         .close {
-           @include box-shadow(-2px 0px 2px rgba(0,0,0,0.3));
+           @include box-shadow(-2px 0 2px rgba(0,0,0,0.3));
             border-radius:3px 0 0 3px;
             opacity: 1;
             position: absolute;
             top: 1px;
             left: -29px;
             padding: 10px 7px 9px;
-            background: $modal-docked-header;
+            background: $modal-header-color;
             border: 1px solid $modal-header-border-color;
             border-right:0;
 
-            @media (max-width: $screen-sm-min) {
+            @include media-breakpoint-down(md) {
                 left:-22px;
                 padding: 10px 4px 9px 3px;
             }
@@ -194,11 +198,12 @@ $width-sm: 90%;
             &:focus,
             &:active {
                 outline: none;
-
+                opacity: 1;
                 .times {
                     opacity:0.8;
                 }
             }
+
         }
     }
     .modal-content {
@@ -214,4 +219,8 @@ $width-sm: 90%;
     input {
         max-width:250px;
     }
+}
+
+.modal-title {
+    margin-top: 0;
 }

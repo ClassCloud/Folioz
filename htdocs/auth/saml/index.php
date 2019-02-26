@@ -385,7 +385,7 @@ function saml_auth_generate_login_form() {
         return;
     }
     if (count_records('institution', 'registerallowed', 1, 'suspended', 0)) {
-        $registerlink = '<a class="btn btn-primary btn-xs" href="' . get_config('wwwroot') . 'register.php">' . get_string('register') . '</a>';
+        $registerlink = '<a class="btn btn-primary btn-sm" href="' . get_config('wwwroot') . 'register.php">' . get_string('register') . '</a>';
     }
     else {
         $registerlink = '';
@@ -423,7 +423,7 @@ function saml_auth_generate_login_form() {
                 'value' => get_string('login')
             ),
             'register' => array(
-                'value' => '<div id="login-helplinks" class="panel-footer"><small>' . $registerlink
+                'value' => '<div id="login-helplinks" class="card-footer"><small>' . $registerlink
                     . '<a href="' . get_config('wwwroot') . 'forgotpass.php">' . get_string('lostusernamepassword') . '</a></small></div>'
             ),
             'loginsaml' => array(

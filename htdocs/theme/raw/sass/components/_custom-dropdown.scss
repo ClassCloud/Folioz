@@ -15,12 +15,12 @@
         padding: 0;
         margin: 0;
         background-color: $body-bg;
-        border: 1px solid $btn-default-border;
+        border: 1px solid $btn-secondary-border;
 
         > li > a {
             // option links
             display: block;
-            padding: 5px;
+            padding: 5px 10px;
             color: $dropdown-link-color;
 
             &:hover {
@@ -35,7 +35,7 @@
             display: block;
             background-color: $dropdown-link-active-bg;
             color: $dropdown-link-active-color;
-            padding: 5px;
+            padding: 5px 10px;
             cursor: default;
         }
     }

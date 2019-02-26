@@ -1,9 +1,9 @@
 // Often the same template is used to render buttons at the top of the page and
 // in a list group. cf. groups table/groups
 .list-group,
-.panel-heading {
+.card-header {
     .btn-group {
-        @media (max-width: $screen-xs-max ) {
+        @include media-breakpoint-down(sm) {
             &.btn-group-top .btn {
                 border-top: 0;
             }
@@ -44,7 +44,7 @@
 
         &:focus,
         &:hover {
-            background: darken($btn-primary-bg, 10%);
+            background: scale-color($btn-primary-bg, $lightness: -10%);
             text-decoration: none;
         }
         span {
@@ -57,43 +57,43 @@
 // makes certain buttons primary colour
 .col-collapse-offset.col-with-collapse .btn {
     color: #fff;
-    background-color: $brand-primary;
-    border-color: darken($btn-primary-bg, 5%);
+    background-color: $theme-primary-color;
+    border-color: scale-color($btn-primary-bg, $lightness: -5%);
     .icon {
         color: #fff;
     }
     &:focus,
     &:hover {
-        background-color: lighten($brand-primary, 5%);
+        background-color: scale-color($theme-primary-color, $lightness: 5%);
     }
 }
 .submitcancel .btn {
     color: #fff;
-    background-color: $brand-primary;
-    border-color: darken($btn-primary-bg, 5%);
+    background-color: $theme-primary-color;
+    border-color: scale-color($btn-primary-bg, $lightness: -5%);
     .icon {
         color: #fff;
     }
     &:focus,
     &:hover {
-        background-color: lighten($brand-primary, 5%);
+        background-color: scale-color($theme-primary-color, $lightness: 5%);
     }
 }
 .btn-with-heading {
     color: #fff;
-    background-color: $brand-primary;
-    border-color: darken($btn-primary-bg, 5%);
+    background-color: $theme-primary-color;
+    border-color: scale-color($btn-primary-bg, $lightness: -5%);
     .icon {
         color: #fff;
     }
     &:focus,
     &:hover {
-        background-color: lighten($brand-primary, 5%);
+        background-color: scale-color($theme-primary-color, $lightness: 5%);
         color: #fff;
     }
 }
 
-.panel-secondary .blockinstance-controls .btn-group-top .btn {
+.card-secondary .blockinstance-controls .btn-group-top .btn {
     color: #333;
     .text-danger {
         color: $state-danger-text;
@@ -113,7 +113,7 @@
         font-family: $font-family-sans-serif;
 
         &:hover {
-            background-color: lighten($btn-primary-bg, 5%);
+            background-color: scale-color($btn-primary-bg, $lightness: 5%);
         }
 
         .mce-txt {
@@ -124,14 +124,14 @@
 
 .modal-tinymce {
     .pieform {
-        button.btn-default {
+        button.btn-secondary {
             background-color: $btn-primary-bg;
             border-color: $btn-primary-border;
             font-family: $font-family-sans-serif;
             color: $btn-primary-color;
 
             &:hover {
-                background-color: lighten($btn-primary-bg, 5%);
+                background-color: scale-color($btn-primary-bg, $lightness: 5%);
             }
         }
     }

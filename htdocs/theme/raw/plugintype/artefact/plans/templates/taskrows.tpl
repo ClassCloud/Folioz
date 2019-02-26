@@ -3,8 +3,8 @@
         <div class="task-item plan_incomplete list-group-item {if $task->description || $task->tags}list-group-item-default{/if}">
             {if $editing}
             <div class="pull-right btn-group">
-                <a class="btn btn-default btn-sm" href="{$WWWROOT}artefact/plans/edit/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='editthistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-pencil text-default"></span></a>
-                <a class="btn btn-default btn-sm" href="{$WWWROOT}artefact/plans/delete/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='deletethistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-trash text-danger"></span></a>
+                <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/edit/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='editthistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-pencil text-default"></span></a>
+                <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/delete/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='deletethistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-trash text-danger"></span></a>
             </div>
             {/if}
             {if $task->description || $task->tags}<a class="link-block collapsed" href="#expand-task-{$task->id}{if $block}-{$block}{/if}" data-toggle="collapse" aria-expanded="false" aria-controls="expand-task-{$task->id}{if $block}-{$block}{/if}">{/if}
@@ -18,14 +18,14 @@
                     </div>
 
                     {if $task->description || $task->tags}
-                    <span class="icon icon-chevron-down right collapse-indicator pull-right" role="presentation" aria-hidden="true"></span>
+                    <span class="icon icon-chevron-down right collapse-indicator float-right" role="presentation" aria-hidden="true"></span>
                     {/if}
                 </span>
             {if $task->description || $task->tags}</a>{/if}
 
             {if $task->description || $task->tags}
             <div class="collapse" id="expand-task-{$task->id}{if $block}-{$block}{/if}">
-                 <div class="panel-body">
+                 <div class="card-body">
                     {if $task->description}
                         {$task->description|clean_html|safe}
                     {/if}
@@ -42,8 +42,8 @@
         <div class="task-item list-group-item {if $task->description || $task->tags}list-group-item-default{/if}">
             {if $editing}
             <div class="pull-right btn-group">
-                <a class="btn btn-default btn-sm" href="{$WWWROOT}artefact/plans/edit/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='editthistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-pencil text-default"></span></a>
-                <a class="btn btn-default btn-sm" href="{$WWWROOT}artefact/plans/delete/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='deletethistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-trash text-danger"></span></a>
+                <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/edit/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='editthistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-pencil text-default"></span></a>
+                <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/delete/task.php?id={$task->id}{if $view}&view={$view}{/if}" title="{str tag='deletethistask' section='artefact.plans' arg1=$task->title}"><span class="icon icon-trash text-danger"></span></a>
             </div>
             {/if}
             {if $task->description || $task->tags}<a class="link-block collapsed" href="#expand-task-{$task->id}{if $block}-{$block}{/if}" data-toggle="collapse" aria-expanded="false" aria-controls="expand-task-{$task->id}{if $block}-{$block}{/if}">{/if}
@@ -63,7 +63,7 @@
                     </div>
 
                     {if $task->description || $task->tags}
-                    <span class="icon icon-chevron-down right collapse-indicator pull-right" role="presentation" aria-hidden="true"></span>
+                    <span class="icon icon-chevron-down right collapse-indicator float-right" role="presentation" aria-hidden="true"></span>
                     {/if}
                 </span>
 
@@ -71,7 +71,7 @@
 
             {if $task->description || $task->tags}
             <div class="collapse" id="expand-task-{$task->id}{if $block}-{$block}{/if}">
-                 <div class="panel-body">
+                 <div class="card-body">
                     {if $task->description}
                         {$task->description|clean_html|safe}
                     {/if}

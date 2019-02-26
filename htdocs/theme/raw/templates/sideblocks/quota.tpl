@@ -1,12 +1,12 @@
 {loadquota}
-<div class="panel panel-default">
-    <h3 class="panel-heading">
+<div class="card">
+    <h3 class="card-header">
         {str tag="quota"}
-        <span class="pull-right">
+        <span class="float-right">
         {contextualhelp plugintype='artefact' pluginname='file' section='quota_message'}
         </span>
     </h3>
-    <div class="panel-body">
+    <div class="card-body">
         <p id="quota_message">
             {$QUOTA_MESSAGE|safe}
         </p>

@@ -1,0 +1,54 @@
+.card {
+    margin-bottom: $line-height-computed;
+    border: 1px solid $card-border;
+    border-radius: $card-border-radius;
+    @include box-shadow(rgba(0, 0, 0, 0.05) 0 1px 1px);
+    form {
+        margin:0;
+    }
+    table {
+        font-size: 12px;
+        margin-bottom: 0;
+    }
+    small {
+        margin-top:5px;
+        line-height: 1.5em;
+        color: $gray-500;
+        display: block;
+    }
+
+    .list-group-item small {
+        @extend .text-midtone;
+        font-size: $font-size-base * 0.85715;
+    }
+
+    dl {
+        dt {
+            font-weight:normal;
+            clear: both;
+            margin-right:10px;
+        }
+        dd, dt {
+            display:inline-block;
+            float:left;
+        }
+
+        dd {
+            color: $gray-500;
+            line-height: 1.5em;
+            font-size: 0.9em;
+        }
+    }
+    .nav-pills {
+        margin: 0;
+    }
+    > .list-group:last-child {
+        .list-group-item:last-child {
+            border-bottom: 0;
+        }
+    }
+}
+
+.view-pane .card {
+    border-width: 0;
+}

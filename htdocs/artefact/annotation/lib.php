@@ -982,7 +982,7 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
             $submit = array(
                 'type'  => 'submit',
                 'value' => get_string('placeannotationfeedback', 'artefact.annotation'),
-                'class' => 'btn-default'
+                'class' => 'btn-secondary'
             );
             $form['elements']['submit'] = $submit;
             // Dont use the 'Processing...' bit on the submit button
@@ -1339,7 +1339,7 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
         }
         $form['elements']['submit'] = array(
             'type'  => 'submitcancel',
-            'class' => 'btn-default',
+            'class' => 'btn-secondary',
             'value' => array(get_string('placeannotationfeedback', 'artefact.annotation'), get_string('cancel')),
             'goto' => '/' . $view->get_url(false),
         );
@@ -1368,7 +1368,7 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
                 'submit'   => array(
                     'type'  => 'button',
                     'usebuttontag' => true,
-                    'class' => 'btn-link btn-xs quiet',
+                    'class' => 'btn-link btn-sm quiet',
                     'name'  => 'make_annotation_feedback_public_submit',
                     'value' => '<span class="icon icon-lock text-default left" role="presentation" aria-hidden="true"></span>' . get_string('makepublic', 'artefact.annotation'),
                 ),
@@ -1385,7 +1385,7 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
             'renderer'          => 'oneline',
             'plugintype'        => 'artefact',
             'pluginname'        => 'annotation',
-            'class' => 'form-as-button pull-left delete-comment btn-group-item',
+            'class' => 'form-as-button float-left delete-comment btn-group-item',
             'jsform'            => true,
             'successcallback'   => 'delete_annotation_feedback_submit',
             'jssuccesscallback' => 'modifyAnnotationFeedbackSuccess',
@@ -1398,7 +1398,7 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
                 'submit'  => array(
                     'type'  => 'button',
                     'usebuttontag' => true,
-                    'class' => 'btn-default btn-sm',
+                    'class' => 'btn-secondary btn-sm',
                     'value' => '<span class="icon icon-trash text-danger" role="presentation" aria-hidden="true"></span><span class="sr-only">' . get_string('delete') . '</span>',
                     'elementtitle' => get_string('delete'),
                     'confirm' => get_string('reallydeletethisannotationfeedback', 'artefact.annotation'),

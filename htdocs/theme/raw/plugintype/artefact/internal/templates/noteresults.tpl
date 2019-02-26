@@ -20,7 +20,7 @@
                         </a>
                     </h3>
                     {/if}
-                    <div id="n{$n->id}_desc" class="hidden">
+                    <div id="n{$n->id}_desc" class="d-none">
                         <p>
                             {$n->description|clean_html|safe}
                         </p>
@@ -55,14 +55,14 @@
                     </div>
                     {/if}
                 </td>
-                <td class="note-titled"><label class="hidden">{str tag=currenttitle section=artefact.internal}: </label>
+                <td class="note-titled"><label class="d-none">{str tag=currenttitle section=artefact.internal}: </label>
                     {foreach from=$n->blocks item=b}
                     <div class="detail">
                         {$b.blocktitle}
                     </div>
                     {/foreach}
                 </td>
-                <td class="note-containedin"><label class="hidden">{str tag=containedin section=artefact.internal}: </label>
+                <td class="note-containedin"><label class="d-none">{str tag=containedin section=artefact.internal}: </label>
                     {foreach from=$n->views item=v}
                     <div class="detail">
                         <a href="{$v.fullurl}">{$v.viewtitle}</a>
@@ -76,7 +76,7 @@
                     {/foreach}
                 </td>
                 <td class="note-attachment">
-                    <label class="hidden">
+                    <label class="d-none">
                         {str tag=Attachments section=artefact.resume}:
                     </label>
                     {$n->count}
@@ -88,7 +88,7 @@
                     </span>
                     {else}
                     <div class="btn-group">
-                        <a href="{$WWWROOT}artefact/internal/editnote.php?id={$n->id}" title="{str tag=edit}" class="btn btn-default btn-xs">
+                        <a href="{$WWWROOT}artefact/internal/editnote.php?id={$n->id}" title="{str tag=edit}" class="btn btn-secondary btn-sm">
                             <span class="icon icon-lg icon-pencil" role="presentation" aria-hidden="true"></span>
                             <span class="sr-only">
                                 {str(tag=editspecific arg1=$n->title)|escape:html|safe}

@@ -5,16 +5,16 @@
 @import "utilities/bootstrap-variables";
 @import "utilities/custom-variables";
 
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/mixins";
+@import "./lib/bootstrap4/mixins";
 @import "utilities/mixins";
 
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/scaffolding";
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/type";
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/code";
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/grid";
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/tables";
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/forms";
-@import "../../../lib/bootstrap/assets/stylesheets/bootstrap/buttons";
+@import "./lib/bootstrap4/reboot";
+@import "./lib/bootstrap4/type";
+@import "./lib/bootstrap4/code";
+@import "./lib/bootstrap4/grid";
+@import "./lib/bootstrap4/tables";
+@import "./lib/bootstrap4/forms";
+@import "./lib/bootstrap4/buttons";
 
 @import "typography/fonts";
 @import "typography/typography";

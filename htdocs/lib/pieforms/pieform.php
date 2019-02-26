@@ -274,7 +274,7 @@ class Pieform {/*{{{*/
                     'type'         => 'text',
                     'title'        => get_string('spamtrap'),
                     'defaultvalue' => '',
-                    'class'        => 'dontshow hidden',
+                    'class'        => 'dontshow d-none',
                 ),
             );
             $spamelements2 = array(
@@ -784,7 +784,7 @@ class Pieform {/*{{{*/
             if ($this->has_required_fields) {
                 $result .= '<div class="form-group requiredmarkerdesc';
                 if ($this->all_required_field_labels_hidden) {
-                    $result .= ' hidden';
+                    $result .= ' d-none';
                 }
                 $result .= '">' . get_string('requiredfields', 'pieforms', $this->get_property('requiredmarker')) . '</div>';
             }

@@ -4426,7 +4426,7 @@ class View {
                          'submit' => array(
                             'type' => 'button',
                             'usebuttontag' => true,
-                            'class' => 'btn-primary input-group-btn no-label',
+                            'class' => 'btn-primary input-group-append no-label',
                             'value' => get_string('search')
                         )
                     )
@@ -7277,7 +7277,7 @@ function create_view_form($group=null, $institution=null, $template=null, $colle
         'pluginname'      => 'view',
         'renderer'        => 'div',
         'successcallback' => 'createview_submit',
-        'class'           => 'form-as-button pull-left',
+        'class'           => 'form-as-button float-left',
         'elements'   => array(
             'new' => array(
                 'type' => 'hidden',
@@ -7290,7 +7290,7 @@ function create_view_form($group=null, $institution=null, $template=null, $colle
             'submit' => array(
                 'type'  => 'button',
                 'usebuttontag' => true,
-                'class' => 'btn-default',
+                'class' => 'btn-secondary',
                 'value' => '<span class="icon icon-plus icon-lg left" role="presentation" aria-hidden="true"></span>' . get_string('createview', 'view'),
             )
         )
@@ -7321,7 +7321,7 @@ function create_view_form($group=null, $institution=null, $template=null, $colle
         $form['elements']['submitcollection'] = array(
             'type'  => 'button',
             'usebuttontag' => true,
-            'class' => 'btn-default btn-xs btn-group-item',
+            'class' => 'btn-secondary btn-sm btn-group-item',
             'value' => get_string('copycollection', 'collection'),
         );
     }
@@ -7331,7 +7331,7 @@ function create_view_form($group=null, $institution=null, $template=null, $colle
             'value' => $template,
         );
         $form['elements']['submit']['value'] = get_string('copyview', 'view');
-        $form['elements']['submit']['class'] = 'btn-default btn-xs btn-group-item';
+        $form['elements']['submit']['class'] = 'btn-secondary btn-sm btn-group-item';
         if ($collection !== null) {
             $form['elements']['submit']['class'] .= ' last';
         }
@@ -7537,7 +7537,7 @@ function view_group_submission_form($view, $tutorgroupdata, $returnto=null) {
                     'submit' => array(
                         'type' => 'button',
                         'usebuttontag' => true,
-                        'class' => 'btn-primary input-group-btn',
+                        'class' => 'btn-primary input-group-append',
                         'value' => get_string('submit')
                     )
                 ),
@@ -7554,14 +7554,14 @@ function view_group_submission_form($view, $tutorgroupdata, $returnto=null) {
             'type' => 'hidden',
             'value' => $view->get_collection()->get('id'),
         );
-        $form['elements']['text1']['value'] = get_string('submitthiscollectionto1', 'view') . ' ';
+        $form['elements']['text1']['value'] = get_string('submitthiscollectionto1', 'view') . '&nbsp;';
     }
     else {
         $form['elements']['view'] = array(
             'type' => 'hidden',
             'value' => $viewid
         );
-        $form['elements']['text1']['value'] = get_string('submitthisviewto1', 'view') . ' ';
+        $form['elements']['text1']['value'] = get_string('submitthisviewto1', 'view') . '&nbsp;';
     }
 
     return pieform($form);

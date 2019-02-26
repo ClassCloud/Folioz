@@ -1,11 +1,11 @@
 {include file="header.tpl"}
     {if !$noedit}
     <div class="btn-top-right btn-group btn-group-top {if $GROUP} pagetabs{/if}">
-        <a id="addview-button" class="btn btn-default" href="{$WWWROOT}view/editlayout.php?new=1{$urlparamsstr}">
+        <a id="addview-button" class="btn btn-secondary" href="{$WWWROOT}view/editlayout.php?new=1{$urlparamsstr}">
             <span class="icon icon-plus icon-lg left" role="presentation" aria-hidden="true"></span>
             {str section=mahara tag=add}
         </a>
-        <a id="copyview-button" class="btn btn-default" href="{$WWWROOT}view/choosetemplate.php?searchcollection=1{$urlparamsstr}">
+        <a id="copyview-button" class="btn btn-secondary" href="{$WWWROOT}view/choosetemplate.php?searchcollection=1{$urlparamsstr}">
             <span class="icon icon-files-o icon-lg left" role="presentation" aria-hidden="true"></span>
             {str section=mahara tag=copy}
         </a>
@@ -39,15 +39,15 @@
                 <div class="modal-header">
                     <button type="button" class="btn close" data-dismiss="modal" aria-label="{str tag=Close}"><span aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title">
-                        <span class="icon icon-lg icon-plus prs"></span>
+                        <span class="icon icon-lg icon-plus"></span>
                         {str tag=confirmaddtitle section=view}
                     </h4>
                 </div>
                 <div class="modal-body">
                     <p>{str tag=confirmadddesc section=view}</p>
                     <div class="btn-group">
-                        <button id="add-collection-button" type="button" class="btn btn-default"><span class="icon icon-folder-open"></span> {str tag=Collection section=collection}</button>
-                        <button id="add-view-button" type="button" class="btn btn-default"><span class="icon icon-file-text"></span> {str tag=view}</button>
+                        <button id="add-collection-button" type="button" class="btn btn-secondary"><span class="icon icon-folder-open"></span> {str tag=Collection section=collection}</button>
+                        <button id="add-view-button" type="button" class="btn btn-secondary"><span class="icon icon-file-text"></span> {str tag=view}</button>
                     </div>
                 </div>
             </div>
@@ -76,7 +76,7 @@
     $('.modal').on('shown.bs.modal', function() {
         $('#add-collection-button').trigger("focus");
     });
-    $('.modal').on('hidden.bs.modal', function() {
+    $('.modal').on('d-none.bs.modal', function() {
         $('#addview-button').trigger("focus");
     });
     </script>

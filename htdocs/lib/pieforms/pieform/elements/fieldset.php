@@ -74,7 +74,7 @@ function pieform_element_fieldset(Pieform $form, $element) {
             $legendcontent .= '<span class="icon-fieldset icon icon-'.$element['iconclass'].'" role="presentation" aria-hidden="true"> </span>';
         }
         $legendcontent .= Pieform::hsc($element['legend']);
-        $legendcontent .= '<span class="icon icon-chevron-down collapse-indicator right pull-right" role="presentation" aria-hidden="true"> </span> ';
+        $legendcontent .= '<span class="icon icon-chevron-down collapse-indicator right float-right" role="presentation" aria-hidden="true"> </span> ';
 
         $legendcontent .= '</a>';
     }
@@ -100,7 +100,7 @@ function pieform_element_fieldset(Pieform $form, $element) {
     }
 
     // Render the body of the fieldset
-    $stateClass = $iscollapsed ? '':'in';
+    $stateClass = $iscollapsed ? '':'show';
 
     $fieldset.= $iscollapsible ? '<div class="fieldset-body collapse '.$stateClass.'" id="'.$openparam.'">' : '';
 

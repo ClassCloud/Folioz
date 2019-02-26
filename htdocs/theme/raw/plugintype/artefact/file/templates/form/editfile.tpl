@@ -1,4 +1,4 @@
-<tr id="{$prefix}_edit_row"{if !$fileinfo} class="text-regular hidden editrow no-hover"{/if}>
+<tr id="{$prefix}_edit_row"{if !$fileinfo} class="text-regular d-none editrow no-hover"{/if}>
     <td colspan="{$colspan}" class="fileedittablewrap form-condensed">
         <div class="fileedittable">
             <h4 id="{$prefix}_edit_heading" class="edit-heading">
@@ -9,7 +9,7 @@
                 <span class="image-rotator-inner">
                     <img role="presentation" aria-hidden="true" src="{$WWWROOT}theme/raw/images/no_userphoto25.png" title="" alt="">
                 </span>
-                <span class="icon icon-rotate-right btn btn-default"></span>
+                <span class="icon icon-rotate-right btn btn-secondary"></span>
                 <input type="hidden" id="{$prefix}_edit_orientation" name="{$prefix}_edit_orientation" value="0">
             </div>
             <div class="required form-group">
@@ -57,7 +57,7 @@
                                     {else}
                                     <td>
                                         <!-- <label for="{$prefix}_permission_{$r}_{$permid}">{str tag=changerolepermissions section=group arg1=$permid arg2=$r}</label> -->
-                                        <input type="checkbox" class="permission checkbox" id="{$prefix}_permission_{$r}_{$permid}" name="{$prefix}_permission:{$r}:{$permid}" {if $r == 'admin'} checked disabled{/if}/>
+                                        <input type="checkbox" class="permission form-check" id="{$prefix}_permission_{$r}_{$permid}" name="{$prefix}_permission:{$r}:{$permid}" {if $r == 'admin'} checked disabled{/if}/>
                                     </td>
                                     {/if}
                                     {/foreach}

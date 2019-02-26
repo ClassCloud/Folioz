@@ -386,6 +386,8 @@
         $('.blocktype-drag').on('click keydown', function(e) {
             // Add a block when click left button or press 'Space bar' or 'Enter' key
             if (isHit(e) && !$('#addblock').hasClass('in')) {
+                e.stopPropagation();
+                e.preventDefault();
                 startAddBlock($(this));
             }
         });
@@ -406,7 +408,7 @@
 
         addblockdialog.find('h4.modal-title').text(get_string('addblock', 'view', element.text()));
         computeColumnInputs(addblockdialog);
-        addblockdialog.find('.block-inner').removeClass('hidden');
+        addblockdialog.find('.block-inner').removeClass('d-none');
         addblockdialog.find('.cell-chooser input:first').prop('checked', true);
         addblockdialog.find('.cell-chooser input:first').parent().addClass('focused active');
 
@@ -655,7 +657,7 @@
                         $('#blockinstance_' + blockinstanceId).remove();
                     }
 
-                    if (!$('#configureblock').hasClass('hidden')) {
+                    if (!$('#configureblock').hasClass('d-none')) {
                         hideDock();
                         showMediaPlayers();
                         self.trigger("focus");
@@ -691,7 +693,7 @@
      */
     function rewriteMoveButton(button) {
 
-        button.removeClass('hidden');
+        button.removeClass('d-none');
 
         button.on('click', function(e) {
             e.stopPropagation();
@@ -700,7 +702,7 @@
             computeColumnInputs($('#addblock'));
 
             var self = $(this),
-                addblockdialog = $('#addblock').removeClass('hidden');
+                addblockdialog = $('#addblock').removeClass('d-none');
                 prevcell = self.closest('.column-content'),
                 order = prevcell.children().index(self.closest('.blockinstance')),
                 row = workspace.find('.js-col-row').index(self.closest('.js-col-row')),
@@ -855,7 +857,7 @@
 
                 $('#blockinstance_' + blockinstanceId).remove();
 
-                if (!$('#configureblock').hasClass('hidden')) {
+                if (!$('#configureblock').hasClass('d-none')) {
                     hideDock();
                     showMediaPlayers();
                     button.trigger("focus");

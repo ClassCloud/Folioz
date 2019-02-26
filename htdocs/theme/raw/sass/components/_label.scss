@@ -2,7 +2,7 @@
     display: inline-block;
     margin-right: 5px;
     &.label-default {
-        color: $gray-dark;
+        color: $gray-700;
     }
 }
 
@@ -11,5 +11,14 @@ a.label.label-default,
     &:hover,
     &:focus {
         background-color:$theme-primary-color;
+    }
+}
+
+.badge {
+    margin-right: 5px;
+    padding: 0.2em 0.6em 0.3em;
+    @include border-radius($badge-border-radius);
+    &.badge-warning {
+        @extend .text-white;
     }
 }

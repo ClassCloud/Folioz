@@ -67,12 +67,16 @@ return function(id, list, heading, script, extradata) {
 
     this.rewritePaginatorLinks = function() {
         $('#' + self.id + ' li').each(function() {
-          var a = $(this).find('a')[0];
+            // Add links so bootstrap knows this is a pagination item
+            $(this).addClass("page-item");
+            $(this).find("> *").addClass("page-link");
 
-          // If there is a link
-          if (a) {
-              self.rewritePaginatorLink(a);
-          }
+            var a = $(this).find('a')[0];
+
+            // If there is a link
+            if (a) {
+                self.rewritePaginatorLink(a);
+            }
         });
     };
 
@@ -208,7 +212,7 @@ return function(id, list, heading, script, extradata) {
         }
 
         if (self.heading) {
-            $(self.heading).removeClass('hidden');
+            $(self.heading).removeClass('d-none');
         }
 
         // Focus management based on whether the user searched for something or just changed the page

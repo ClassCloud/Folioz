@@ -4,7 +4,7 @@
 
     tr {
         &.standard {
-            background: scale-color($table-bg-accent, $lightness: -2%) !important;
+            background: scale-color($table-accent-bg, $lightness: -2%) !important;
 
             cursor: pointer;
         }
@@ -41,11 +41,11 @@
                 }
                 &.dot {
                     font-size: 0.8em;
-                    color: scale-color($gray-light, $lightness: 28%);
+                    color: scale-color($gray-300, $lightness: 28%);
                 }
                 &.dot.disabled {
                     font-size: 1em;
-                    color: scale-color($gray-light, $lightness: 28%);
+                    color: scale-color($gray-300, $lightness: 28%);
                     cursor: $cursor-disabled;
                     // Override dot icon with minus icon
                     &:before {
@@ -76,7 +76,12 @@
         left: auto;
         top: auto;
         .popover-title {
-            font-size: 14px;
+            font-size: 0.875rem;
+            margin: 0;
+            padding: 8px 14px;
+            background-color: scale-color($card-header-bg, $lightness: -15.26);
+            border-bottom: 1px solid scale-color($gray-100, $lightness: -3.78);
+            border-radius: 3px 3px 0 0;
         }
         .popover-content {
             ol,
@@ -98,7 +103,7 @@
             position: relative;
 
             &:hover .dot {
-                color: $gray-light;
+                color: $gray-300;
             }
 
             &:hover:before,
@@ -128,7 +133,7 @@
     }
 }
 .assessment {
-    color: $gray-dark;
+    color: $gray-700;
 
     .assessmentfeedback {
         &.begun {
@@ -188,11 +193,11 @@ div.toolbarhtml {
         }
         &.dot {
             font-size: 0.8em;
-            color: scale-color($gray-light, $lightness: 28%);
+            color: scale-color($gray-300, $lightness: 28%);
         }
         &.dot.disabled {
             font-size: 1em;
-            color: scale-color($gray-light, $lightness: 28%);
+            color: scale-color($gray-300, $lightness: 28%);
             cursor: $cursor-disabled;
             // Override dot icon with minus icon
             &:before {
@@ -203,14 +208,14 @@ div.toolbarhtml {
 }
 
 th.smartevidencedash, td.smartevidencedash {
-    padding: 0px !important;
+    padding: 0 !important;
     vertical-align: middle !important;
 }
 
 .statusheader,
 .completedcount {
   // Pick the screen size you want it might be $screen-md-min.
-  @media (min-width: $screen-sm-min) {
+  @include media-breakpoint-up(md) {
     // addjust pixel value
     max-width: 14px;
   }
@@ -218,14 +223,14 @@ th.smartevidencedash, td.smartevidencedash {
 .smartevidencedash {
   // Pick the screen size you want it might be $screen-md-min.
   // might not need media query because you might want to force the dash cell to be all the same.
-  @media (min-width: $screen-sm-min) {
+  @include media-breakpoint-up(md) {
     // addjust pixel value
     max-width: 3px;
   }
 }
 
 div.pseudolabel {
-    @media (min-width: $screen-sm-min) {
+    @include media-breakpoint-up(md) {
         min-width: 265px !important;
     }
 }

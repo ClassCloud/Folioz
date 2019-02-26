@@ -9,13 +9,77 @@ $arrow-link-active-color: #333333;
 
 // color for the secondary title in sections (cf. groups)
 $section-heading-color: #999;
-$admin-title-color: $brand-primary;
-$admin-title-bg: $brand-primary;
+$admin-title-color: theme-color("primary");
+$admin-title-bg: theme-color("primary");
 
-$dashboard-widget-bg: $brand-primary;
+$dashboard-widget-bg: theme-color("primary");
 $dashboard-widget-color: #FFFFFF;
 
 $help-icon-color: #5b8fc8;
 $rss-icon-color: #FE6500;
 
 $theme-primary-color-light: #799152;
+
+// LEGACY BOOTSTRAP 3 VARIABLES
+
+// Colors
+$brand-success:         #449D44;
+$brand-danger:          #F04F50;
+
+// Form states and alerts
+$state-success-text:             $brand-success;
+$state-success-bg:               lighten($brand-success, 50%);
+$state-success-border:           darken(adjust-hue($state-success-bg, -10), 10%);
+
+$state-info-text:                #31708f;
+$state-info-bg:                  #d9edf7;
+$state-info-border:              darken(adjust-hue($state-info-bg, -10), 7%);
+
+$state-warning-text:             #8a6d3b;
+$state-warning-bg:               #fcf8e3;
+$state-warning-border:           darken(adjust-hue($state-warning-bg, -10), 5%);
+
+$state-danger-text:              darken($brand-danger, 10%);
+$state-danger-bg:                lighten($brand-danger, 30%);
+$state-danger-border:            darken(adjust-hue($state-danger-bg, -10), 5%);
+
+// Buttons
+$btn-secondary-bg:                 $white;
+$btn-secondary-border:             #CCCCCC;
+
+$btn-primary-color:              #FFFFFF;
+$btn-primary-bg:                 #556d32;
+$btn-primary-border:             #556d32;
+
+// Navbar
+$navbar-default-bg:                #FFFFFF;
+$navbar-default-border:            transparent;
+
+// Navbar links
+$navbar-default-link-hover-bg:             #f1f6eb;
+
+// Navbar toggle
+$navbar-default-toggle-hover-bg:           $navbar-default-link-hover-bg;
+
+// Inverted navbar
+// Reset inverted navbar basics
+$navbar-inverse-bg:                         $link-hover-color;
+
+// Inverted navbar links
+$navbar-inverse-link-color:                 #FFFFFF;
+$navbar-inverse-link-hover-color:           #FFFFFF;
+$navbar-inverse-link-hover-bg:              lighten($link-hover-color, 5%);
+$navbar-inverse-link-active-color:          #FFFFFF;
+$navbar-inverse-link-active-bg:             $link-hover-color;
+$navbar-inverse-toggle-hover-color:         $navbar-inverse-link-color;
+
+// Inverted navbar toggle
+$navbar-inverse-toggle-icon-bar-bg:         $link-hover-color;
+
+// cards
+//** Border color for elements within cards
+$card-footer-bg:             #f0f5ea;
+$card-header-bg:    #fff;
+
+$card-border:        #d9d9d9;
+$card-header-bg:    #FFFFFF;
