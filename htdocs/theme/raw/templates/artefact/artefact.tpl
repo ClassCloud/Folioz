@@ -49,18 +49,18 @@
 
         <div class="btn-top-right btn-group btn-group-top float-right">
             {if $LOGGEDIN && (!$userisowner || ($userisowner && $objectedpage))}
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" title="{str tag='moreoptions'}" aria-expanded="false">
                 <span class="icon icon-ellipsis-h" role="presentation" aria-hidden="true"></span>
-                <span class="sr-only">{str tag="more..."}</span>
+                <span class="sr-only">{str tag="moreoptions"}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
                 <li class="dropdown-item">
+                    {strip}
                     <a id="toggle_watchlist_link" class="watchlist" href="">
-
                         {if $viewbeingwatched}
-                            <span class="icon icon-eye-slash left" role="presentation" aria-hidden="true"></span>
+                            <span class="icon icon-lg icon-eye-slash left" role="presentation" aria-hidden="true"></span>
                         {else}
-                            <span class="icon icon-eye left" role="presentation" aria-hidden="true"></span>
+                            <span class="icon icon-lg icon-eye left" role="presentation" aria-hidden="true"></span>
                         {/if}
 
                         {if $artefact}
@@ -77,8 +77,10 @@
                             {/if}
                         {/if}
                     </a>
+                    {/strip}
                 </li>
                 <li class="dropdown-item">
+                    {strip}
                     {if $objector}
                     <span class="nolink">
                         <span class="icon icon-lg icon-flag text-danger left" role="presentation" aria-hidden="true"></span>
@@ -90,13 +92,16 @@
                         {str tag=reportobjectionablematerial}
                     </a>
                     {/if}
+                    {/strip}
                 </li>
                 {if $userisowner && $objectedpage}
                     <li>
+                    {strip}
                     <span class="nolink">
-                        <span class="icon icon-lg icon-flag text-success left" role="presentation" aria-hidden="true"></span>
+                        <span class="icon icon-lg icon-flag text-danger left" role="presentation" aria-hidden="true"></span>
                         {str tag=objectionreviewonview}
                     </span>
+                    {/strip}
                     </li>
                 {/if}
             </ul>

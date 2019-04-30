@@ -172,10 +172,42 @@
             padding: 0;
             a {
                 display: block;
+                text-decoration: none;
                 &.seperator {
                     border: 0;
                 }
             }
         }
     }
+}
+
+// Pages pageaction btn dropdown-menu
+.pageactions .dropdown-menu {
+    margin: 0;
+    padding: 0;
+
+    > li {
+      padding: 0;
+
+        > a {
+            padding: 5px 10px;
+            display: block;
+
+            &:hover,
+            &:focus {
+                text-decoration: none;
+            }
+        }
+        > span.nolink {
+            padding: 5px 10px;
+            display: block;
+            white-space: nowrap;
+        }
+    }
+}
+
+// override bootstrap select2 default bg color "success"
+.select2-container--default .select2-dropdown .select2-results__option--highlighted[aria-selected] {
+    background-color: $dropdown-link-hover-bg !important;
+    color: $dropdown-link-hover-color !important;
 }

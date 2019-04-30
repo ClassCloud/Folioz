@@ -61,8 +61,7 @@
     {/if}
 
 {elseif $group->membershiptype == 'invite'}
-
-    <div class="invite btn-action-list btn-top-right btn-group btn-group-top">
+    <div class="invite btn-action-list btn-top-right btn-group-top-invite">
         {$group->invite|safe}
     </div>
 
@@ -100,11 +99,11 @@
         </div>
     </div>
 {elseif $group->jointype == 'controlled'}
-    <div class="controlled">
+    <div class="controlled text-small">
         {str tag="membershipcontrolled" section="group"}
     </div>
 {else}
-    <div class="controlled">
+    <div class="controlled text-small">
         {str tag="membershipbyinvitationonly" section="group"}
     </div>
 {/if}

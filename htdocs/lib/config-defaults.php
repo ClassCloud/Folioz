@@ -397,6 +397,10 @@ $cfg->sslproxy = false;
  *
  * A point to note about the example below. Moodle doesn't strip the trailing slash from wwwroot
  * Bug MDL-30042 fixes this, if this patch isn't applied, just hard code the login url you want instead
+ *
+ * Another point to note is if you need some system to render the local login page when accessing a restricted page
+ * rather than automatically redirect to externallogin you can override this by adding a 'override=1' to the URL of the page you are
+ * trying to access.
  */
 // $cfg->externallogin = 'http://moodle.example.com/auth/mnet/jump.php?hostwwwroot={wwwroot}&wantsurl={shorturlencoded}';
 
@@ -787,3 +791,20 @@ $cfg->sessionhandler = 'file';
  * The location of the dwoo cache directory
  */
 //$cfg->customdwoocachedir = '/var/cache/appcache/testing';
+
+/**
+ * Uncomment the following line if you wish to lock down access for members of institutions
+ * so that they are separated entirely and disallow contact between members of one institution
+ * with members of another institution.
+ *
+ * Users can only be in one institution at one point in time. Being a member of multiple
+ * institutions is not allowed. Only institution staff, institution admins, site staff and
+ * site admins can create groups. No friends allowed.
+ */
+//$cfg->isolatedinstitutions = true;
+
+/**
+ * Uncomment the following line if you do not wish to allow friends and friend related
+ * activites on your install of Mahara. No friends allowed - this is a site-wide setting.
+ */
+//$cfg->friendsnotallowed = true;

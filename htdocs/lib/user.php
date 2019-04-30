@@ -253,17 +253,19 @@ function general_account_prefs_form_elements($prefs) {
     global $USER;
     require_once('license.php');
     $elements = array();
-    $elements['friendscontrol'] = array(
-        'type' => 'radio',
-        'defaultvalue' => $prefs->friendscontrol,
-        'title'  => get_string('friendsdescr', 'account'),
-        'options' => array(
-            'nobody' => get_string('friendsnobody', 'account'),
-            'auth'   => get_string('friendsauth', 'account'),
-            'auto'   => get_string('friendsauto', 'account')
-        ),
-        'help' => true
-    );
+    if (!get_config('friendsnotallowed')) {
+        $elements['friendscontrol'] = array(
+            'type' => 'radio',
+            'defaultvalue' => $prefs->friendscontrol,
+            'title'  => get_string('friendsdescr', 'account'),
+            'options' => array(
+                'nobody' => get_string('friendsnobody', 'account'),
+                'auth'   => get_string('friendsauth', 'account'),
+                'auto'   => get_string('friendsauto', 'account')
+            ),
+            'help' => true
+        );
+    }
     $elements['wysiwyg'] = array(
         'type' => 'switchbox',
         'defaultvalue' => (get_config('wysiwyg')) ? get_config('wysiwyg') == 'enable' : $prefs->wysiwyg,
@@ -288,17 +290,19 @@ function general_account_prefs_form_elements($prefs) {
         'title' => get_string('disableemail', 'account'),
         'help' => true,
     );
-    $elements['messages'] = array(
-        'type' => 'radio',
-        'defaultvalue' => $prefs->messages,
-        'title' => get_string('messagesdescr', 'account'),
-        'options' => array(
-            'nobody' => get_string('messagesnobody', 'account'),
-            'friends' => get_string('messagesfriends', 'account'),
-            'allow' => get_string('messagesallow', 'account'),
-        ),
-        'help' => true,
-    );
+    if (!get_config('friendsnotallowed')) {
+        $elements['messages'] = array(
+            'type' => 'radio',
+            'defaultvalue' => $prefs->messages,
+            'title' => get_string('messagesdescr', 'account'),
+            'options' => array(
+                'nobody' => get_string('messagesnobody', 'account'),
+                'friends' => get_string('messagesfriends', 'account'),
+                'allow' => get_string('messagesallow', 'account'),
+            ),
+            'help' => true,
+        );
+    }
     $languages = get_languages();
     // Determine default language.
     $instlang = get_user_institution_language($USER->id, $instlanginstname);
@@ -1422,6 +1426,11 @@ function get_user($userid) {
  * @param int $suspendinguserid The ID of the user who is performing the suspension
  */
 function suspend_user($suspendeduserid, $reason, $suspendinguserid=null) {
+    if ($suspendeduserid == 0) {
+        // We shouldn't be suspending 'root' user
+        throw new UserException(get_string('invaliduser', 'error'));
+    }
+
     if ($suspendinguserid === null) {
         global $USER;
         $suspendinguserid = $USER->get('id');
@@ -1813,7 +1822,27 @@ function can_send_message($from, $to) {
         $to = $to->id;
     }
     $messagepref = get_account_preference($to, 'messages');
-    return (is_friend($from->id, $to) && $messagepref == 'friends') || $messagepref == 'allow' || $from->admin;
+
+    $cansend = false;
+    // Can send message if users are friends and the 'friendsnotallowed' feature is not set
+    if (is_friend($from->id, $to) && $messagepref == 'friends'
+        && !get_config('friendsnotallowed')) {
+        $cansend = true;
+    }
+    // Can send message if recipient 'allows' recieving messages and the 'isolatedinstitutions' is not set
+    if ($messagepref == 'allow' && !is_isolated()) {
+        $cansend = true;
+    }
+    // Can send message if the 'isolatedinstitutions' is set and both users are from the same institution
+    try {
+        isolatedinstitution_access($to, $from->id);
+        $cansend = true;
+    }
+    catch (AccessDeniedException $e) {
+        $cansend = false;
+    }
+
+    return $cansend;
 }
 
 function load_user_institutions($userid) {
@@ -1970,7 +1999,7 @@ function profile_url($user, $full=true, $useid=false) {
 }
 
 /**
- * used by user/myfriends.php and user/find.php to get the data (including pieforms etc) for display
+ * used by user/index.php to get the data (including pieforms etc) for display
  * @param array $userids
  * @return array containing the users in the order from $userids
  */
@@ -2015,29 +2044,57 @@ function get_users_data($userids, $getviews=true) {
     }
 
     if (!$data || !$getviews || !$views = get_views(array_keys($data), null, null)) {
-        $views = array();
+      $views = array();
     }
 
     if ($getviews) {
         $viewcount = array_map('count', $views);
         // since php is so special and inconsistent, we can't use array_map for this because it breaks the top level indexes.
         $cleanviews = array();
-        foreach ($views as $userindex => $viewarray) {
-            $cleanviews[$userindex] = array_slice($viewarray, 0, 5);
 
-            // Don't reveal any more about the view than necessary
-            foreach ($cleanviews as $userviews) {
-                foreach ($userviews as &$view) {
-                    foreach (array_keys(get_object_vars($view)) as $key) {
-                        if ($key != 'id' && $key != 'title' && $key != 'url' && $key != 'fullurl') {
-                            unset($view->$key);
+        foreach ($views as $userindex => $view) {
+            $collectionobject = null;
+            foreach ($view as $viewid => $vdata) {
+                //pages in a collection
+                if (!empty($vdata->collection)) {
+                    if (!$collectionobject) {
+                        $collectionobject = $vdata->collection;
+                        $cleanviews[$userindex][] = $vdata;
+                    }
+                    else {
+                        if ($collectionobject != $vdata->collection && isset($collectionobject)) {
+                          $collectionobject = $vdata->collection;
+                          $cleanviews[$userindex][] = $vdata;
                         }
+                    }
+                }
+            }
+            // pages not in a collection, separating the loop to display collections first, then single pages
+            foreach ($view as $viewid => $vdata) {
+                if (empty($vdata->collection)) {
+                    $cleanviews[$userindex][] = $vdata;
+                }
+            }
+            // $cleanviews[$userindex] = array_slice($cleanviews[$userindex], 0, 10); // if we want to limit output
+        }
+
+        // Don't reveal any more about the view than necessary
+        foreach ($cleanviews as $userviews) {
+            foreach ($userviews as &$view) {
+                foreach (array_keys(get_object_vars($view)) as $key) {
+                    if (!empty($view->collection)) {
+                        if ($key == 'title') {
+                            $view->$key = $view->collection->get('name');
+                        }
+                    }
+                    if ($key != 'id' && $key != 'title' && $key != 'url' && $key != 'fullurl') {
+                        // pages in a collection should appear with collection name as title
+                        unset($view->$key);
                     }
                 }
             }
         }
     }
-
     foreach ($data as $friend) {
         if ($getviews && isset($cleanviews[$friend->id])) {
             $friend->views = $cleanviews[$friend->id];
@@ -2059,14 +2116,14 @@ function get_users_data($userids, $getviews=true) {
     return $ordereddata;
 }
 
-function build_userlist_html(&$data, $page, $admingroups) {
+function build_userlist_html(&$data, $searchtype, $admingroups, $filter='', $query='') {
     if ($data['data']) {
         $userlist = array_map(function($u) { return (int)$u['id']; }, $data['data']);
-        $userdata = get_users_data($userlist, $page == 'myfriends');
+        $userdata = get_users_data($userlist, $filter != 'pending');
     }
     $smarty = smarty_core();
     $smarty->assign('data', isset($userdata) ? $userdata : null);
-    $smarty->assign('page', $page);
+    $smarty->assign('page', $searchtype);
     $smarty->assign('offset', $data['offset']);
 
     $params = array();
@@ -2077,8 +2134,7 @@ function build_userlist_html(&$data, $page, $admingroups) {
     if (isset($data['filter'])) {
         $params['filter'] = $data['filter'];
     }
-
-    if ($page == 'myfriends') {
+    if ($searchtype == 'myfriends') {
         $resultcounttextsingular = get_string('friend', 'group');
         $resultcounttextplural = get_string('friends', 'group');
     }
@@ -2092,7 +2148,7 @@ function build_userlist_html(&$data, $page, $admingroups) {
     $data['tablerows'] = $smarty->fetch('user/userresults.tpl');
     $pagination = build_pagination(array(
         'id' => 'friendslist_pagination',
-        'url' => get_config('wwwroot') . 'user/' . $page . '.php?' . http_build_query($params),
+        'url' => get_config('wwwroot') . 'user/index.php?' . http_build_query($params),
         'jsonscript' => 'json/friendsearch.php',
         'datatable' => 'friendslist',
         'searchresultsheading' => 'searchresultsheading',
@@ -2104,7 +2160,9 @@ function build_userlist_html(&$data, $page, $admingroups) {
         'numbersincludeprevnext' => 2,
         'resultcounttextsingular' => $resultcounttextsingular,
         'resultcounttextplural' => $resultcounttextplural,
-        'extradata' => array('page' => $page),
+        'extradata' => array('searchtype' => $searchtype),
+        'filter'    => $filter,
+        'query' => $query,
     ));
     $data['pagination'] = $pagination['html'];
     $data['pagination_js'] = $pagination['javascript'];
@@ -2270,23 +2328,27 @@ function friendscontrol_submit(Pieform $form, $values) {
     global $USER, $SESSION;
     $USER->set_account_preference('friendscontrol', $values['friendscontrol']);
     $SESSION->add_ok_msg(get_string('updatedfriendcontrolsetting', 'account'));
-    redirect($values['returnto'] == 'find' ? '/user/find.php' : '/user/myfriends.php');
+    redirect('/user/index.php');
 }
 
-function acceptfriend_form($friendid) {
+function acceptfriend_form($friendid, $modalmode='') {
+    $value = ($modalmode == 'modal' ? get_string('approverequest', 'group') : '<span class="icon icon-check icon-lg text-success left" role="presentation" aria-hidden="true"></span>' . get_string('approve', 'group'));
+    $elementclass = $modalmode == 'modal' ? 'form-as-button' : 'form-as-button pull-left';
+    $class = $modalmode == 'modal' ? 'link-unstyled' : 'default btn-secondary';
+
     return pieform(array(
         'name' => 'acceptfriend' . (int) $friendid,
         'validatecallback' => 'acceptfriend_validate',
         'successcallback'  => 'acceptfriend_submit',
         'renderer' => 'div',
-        'class' => 'form-as-button',
+        'class' => $elementclass,
         'autofocus' => 'false',
         'elements' => array(
             'acceptfriend_submit' => array(
                 'type' => 'button',
                 'usebuttontag' => true,
-                'class' => 'btn-link btn-text',
-                'value' => get_string('approverequest', 'group'),
+                'class' => $class,
+                'value' =>  $value,
             ),
             'id' => array(
                 'type' => 'hidden',
@@ -2355,7 +2417,8 @@ function acceptfriend_submit(Pieform $form, $values) {
 }
 
 // Form to add someone who has friendscontrol set to 'auto'
-function addfriend_form($friendid) {
+function addfriend_form($friendid, $displaymode='') {
+    $value = $displaymode == 'pageactions' ? '<span class="icon icon-user-plus icon-lg left" role="presentation"></span>' : '<span class="icon icon-user-plus icon-lg left" role="presentation"></span>' . get_string('addtofriendslist', 'group');
     return pieform(array(
         'name' => 'addfriend' . (int) $friendid,
         'validatecallback' => 'addfriend_validate',
@@ -2365,10 +2428,11 @@ function addfriend_form($friendid) {
         'class' => 'form-as-button float-right',
         'elements' => array(
             'addfriend_submit' => array(
+                'elementtitle' => get_string('addtofriendslist', 'group'),
                 'type' => 'button',
                 'usebuttontag' => true,
-                'class' => 'btn-secondary last',
-                'value' => '<span class="icon icon-user-plus icon-lg left" role="presentation"></span>' . get_string('addtofriendslist', 'group'),
+                'class' => 'btn-secondary last' . ($displaymode == 'pageactions' ? ' addaction' : ''),
+                'value' => $value,
             ),
             'id' => array(
                 'type' => 'hidden',
@@ -2479,7 +2543,11 @@ function create_user($user, $profile=array(), $institution=null, $remoteauth=nul
             }
             $user->quota = $quota;
         }
-        if (get_config('defaultaccountlifetime')) {
+        if (isset($profile->expiry)) {
+            //set the expiry date from the csv upload
+            $user->expiry = $profile->expiry;
+        }
+        else if (get_config('defaultaccountlifetime')) {
             // we need to set the user expiry to the site default one
             $user->expiry = date('Y-m-d',mktime(0, 0, 0, date('m'), date('d'), date('Y')) + (int)get_config('defaultaccountlifetime'));
         }
@@ -2496,7 +2564,7 @@ function create_user($user, $profile=array(), $institution=null, $remoteauth=nul
         set_profile_field($user->id, 'lastname', $user->lastname, TRUE);
     }
     foreach ($profile as $k => $v) {
-        if (in_array($k, array('firstname', 'lastname', 'email'))) {
+        if (in_array($k, array('firstname', 'lastname', 'email', 'expiry'))) {
             continue;
         }
         set_profile_field($user->id, $k, $v, TRUE);
@@ -2595,19 +2663,39 @@ function update_user($user, $profile, $remotename=null, $accountprefs=array(), $
         }
     }
 
+    foreach (get_object_vars($profile) as $k => $v) {
+        if ($k == 'expiry') {
+            if (!$oldrecord->expiry) {
+                //adding an expiry for first time
+                $newrecord->expiry = $v;
+                $updated[$k] = $v;
+            }
+            else {
+                $unexpire = $oldrecord->expiry && strtotime($oldrecord->expiry) < time() && (empty($v) || strtotime($v) > time());
+                $newexpiry = db_format_timestamp($v);
+                if ($oldrecord->expiry != $newexpiry) {
+                    $newrecord->expiry = $newexpiry;
+                    $updated[$k] = $v;
+                    if ($unexpire) {
+                        $newrecord->expirymailsent = 0;
+                        $newrecord->lastaccess = db_format_timestamp(time());
+                    }
+                }
+            }
+            continue;
+        }
+        if (get_profile_field($userid, $k) != $v) {
+            set_profile_field($userid, $k, $v);
+            $updated[$k] = $v;
+        }
+    }
+
     if (count(get_object_vars($newrecord))) {
         $newrecord->id = $userid;
         update_record('usr', $newrecord);
         if (!empty($newrecord->password)) {
             $newrecord->authinstance = $user->authinstance;
             reset_password($newrecord, false, $quickhash);
-        }
-    }
-
-    foreach (get_object_vars($profile) as $k => $v) {
-        if (get_profile_field($userid, $k) != $v) {
-            set_profile_field($userid, $k, $v);
-            $updated[$k] = $v;
         }
     }
 
@@ -3047,8 +3135,14 @@ function get_onlineusers($limit=10, $offset=0, $orderby='firstname,lastname') {
             }
         }
     }
+    else if (!$USER->get('admin')) {
+        $showusers = get_field('institution', 'showonlineusers', 'name', 'mahara');
+        if ((int)$showusers === 1) {
+            $showusers = 3;
+        }
+    }
 
-    $result = array('count' => 0, 'limit' => $limit, 'offset' => $offset, 'data' => false);
+    $result = array('count' => 0, 'limit' => $limit, 'offset' => $offset, 'data' => false, 'showusers' => $showusers);
     switch ($showusers) {
         case 0: // show none
             return $result;
@@ -3056,12 +3150,17 @@ function get_onlineusers($limit=10, $offset=0, $orderby='firstname,lastname') {
             $sql = "SELECT DISTINCT u.* FROM {usr} u JOIN {usr_institution} i ON id = i.usr
                 WHERE deleted = 0 AND lastaccess > ? AND i.institution IN (" . join(',',array_map('db_quote', array_keys($institutions))) . ")
                 ORDER BY $orderby";
-            $countsql = 'SELECT count(DISTINCT id) FROM {usr} JOIN {usr_institution} i ON id = i.usr
+            $countsql = 'SELECT COUNT(DISTINCT id) FROM {usr} JOIN {usr_institution} i ON id = i.usr
                 WHERE deleted = 0 AND lastaccess > ? AND i.institution IN (' . join(',',array_map('db_quote', array_keys($institutions))) . ')';
             break;
         case 2: // show all
             $sql = "SELECT * FROM {usr} WHERE deleted = 0 AND lastaccess > ? ORDER BY $orderby";
-            $countsql = 'SELECT count(id) FROM {usr} WHERE deleted = 0 AND lastaccess > ?';
+            $countsql = 'SELECT COUNT(id) FROM {usr} WHERE deleted = 0 AND lastaccess > ?';
+            break;
+        case 3: // Show all only from no institution
+            $sql = "SELECT DISTINCT u.* FROM {usr} u WHERE deleted = 0 AND lastaccess > ? AND u.id NOT IN (SELECT DISTINCT usr FROM {usr_institution})
+                ORDER BY $orderby";
+            $countsql = 'SELECT COUNT(DISTINCT id) FROM {usr} u WHERE deleted = 0 AND lastaccess > ? AND u.id NOT IN (SELECT DISTINCT usr FROM {usr_institution})';
             break;
     }
 
@@ -3086,7 +3185,8 @@ function get_onlineusers($limit=10, $offset=0, $orderby='firstname,lastname') {
     else {
         $onlineusers = array();
     }
-    $result['data'] = array_map(function($a) { return $a->id; }, $onlineusers);
+    $result['onlineusers'] = $onlineusers; // return a list of user objects
+    $result['data'] = array_map(function($a) { return $a->id; }, $onlineusers); // return a list of user id numbers
 
     return $result;
 }
@@ -3331,4 +3431,56 @@ function get_institution_versioned_content($institution = 'mahara') {
         ORDER BY s.id DESC", array($institution, $institution));
 
     return $content;
+}
+
+/**
+ * Check isolated institution access
+ *
+ * If the 'isolatedinstitutions' feature is set, check who can access user profile/request friendship page.
+ * @param $userid string Id of the user the current user is trying to access
+ * @param $currentuser string Optional - Id of the current user if we want it to be someone other than logged in user
+ * @return bool
+ * @throws AccessDeniedException
+ */
+function isolatedinstitution_access($userid, $currentuserid = null) {
+    global $USER;
+
+    if (!empty($currentuserid)) {
+        $user = new User();
+        $user->find_by_id($currentuserid);
+    }
+    else {
+        $user = $USER;
+    }
+
+    $is_admin = $user->get('admin') || $user->get('staff');
+    if (is_isolated() && !$is_admin) {
+        // If loggedin user is not in the same institution as the user then access is denied.
+        $userobj = new User();
+        $userobj->find_by_id($userid);
+        $userinsts = array_keys($userobj->get('institutions'));
+        $loggedininsts = array_keys($user->get('institutions'));
+        $ok = (empty($userinsts) && empty($loggedininsts)) ? true : false; // both users in 'mahara'
+        if (!$userobj->get('admin') && !$ok && empty(array_intersect($userinsts, $loggedininsts))) {
+            throw new AccessDeniedException(get_string('notinthesameinstitution', 'error'));
+        }
+        else {
+            // If 'owngroupsonly' is set we only allow access when
+            // - Both current user and being viewed user are members of the same institution and they have groups in common
+            // - The current user is an admin/institution admin in the same institution
+            // - The current user is a member viewing the profile of an institution admin/staff in their institution
+            // - The current user is viewing the profile of a site admin
+            $is_institutional_admin = $user->is_institutional_admin() || $user->is_institutional_staff();
+            $is_viewing_admin = $userobj->get('admin') || $userobj->is_institutional_admin() || $userobj->get('staff') || $userobj->is_institutional_staff();
+            if (get_config('owngroupsonly') && (!$is_institutional_admin && !$is_viewing_admin)) {
+                $membersofsamegroup = count_records_sql("
+                    SELECT COUNT(*) FROM {group_member} gm WHERE gm.member = ?
+                    AND gm.group IN (SELECT gm2.group FROM {group_member} gm2 WHERE gm2.member = ?)", array($user->get('id'), $userid));
+                if (!$membersofsamegroup && $user->get('id') != $userid) {
+                    throw new AccessDeniedException(get_string('notinthesamegroup', 'error'));
+                }
+            }
+        }
+    }
+    return true;
 }

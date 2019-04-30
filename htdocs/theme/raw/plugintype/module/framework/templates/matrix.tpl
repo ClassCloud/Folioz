@@ -1,15 +1,4 @@
-{include file="header.tpl"}
-
-{if $collection}
-    {include file=collectionnav.tpl}
-{/if}
-
-<h1 id="viewh1" class="page-header">
-    <span class="section-heading">{$name}</span>
-</h1>
-<div class="with-heading text-small">
-    {include file=author.tpl}
-</div>
+{include file="header.tpl" headertype="matrix"}
 
 <p>{$description|clean_html|safe}</p>
 <p>{str tag="addpages" section="module.framework"}</p>
@@ -81,7 +70,7 @@
             <div class="shortname-container">
                 <span class="sr-only">{str tag="standardbegin" section="module.framework"}</span>
                 <span class="icon icon-chevron-down collapse-indicator right float-right"></span>
-                <h3>{$standard->name}</h3>
+                <h3>{$standard->shortname}</h3>
                 <span class="sr-only status">{if $standard->settingstate == 'closed'}{str tag="collapsedsection" section="module.framework"}{/if}</span>
                 <a href="#">
                   <span class="sr-only action">
@@ -105,7 +94,7 @@
         {foreach from=$standard->options key=ok item=option}
         {if $option->children}
         <tr class="matrixlevel{$option->level} examplefor{$standard->id}{if $standard->settingstate == 'closed'} d-none{/if}">
-            <td colspan="{$viewcount + 2}" class="code">
+            <td colspan="{$viewcount + $colspan}" class="code">
                 <div class="shortname-container">
                     <span class="sr-only">{str tag="headerrow" section="module.framework"}</span>
                     {for name=foo from=0 to=$option->level step=1}
@@ -113,7 +102,7 @@
                         <span class="matrixindent"></span>
                         {/if}
                     {/for}
-                    {$option->name}
+                    {$option->shortname}
                     <span class="sr-only">{str tag="showelementdetails" section="module.framework"}</span>
                     <div class="matrixtooltip popover d-none">
                         <h3 class="popover-title">{$option->name}</h3>

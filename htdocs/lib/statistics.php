@@ -559,6 +559,13 @@ function userdetails_statistics_headers($extra, $urllink) {
               'class' => format_class($extra, 'lastlogin'),
               'link' => format_goto($urllink . '&sort=lastlogin', $extra, array('sort'), 'lastlogin')
         ),
+        array(
+              'id' => 'probation',
+              'name' => get_string('probationreportcolumn', 'admin'),
+              'class' => format_class($extra, 'probation'),
+              'link' => format_goto($urllink . '&sort=probation', $extra, array('sort'), 'probation'),
+              'disabled' => empty(get_config('probationenabled'))
+        ),
     );
 }
 
@@ -627,7 +634,7 @@ function userdetails_stats_table($limit, $offset, $extra, $institution, $urllink
 
     $result['settings']['start'] = ($start) ? $start : null;
     $result['settings']['end'] = $end;
-    $result['settings']['users'] = count($users);
+    $result['settings']['users'] = !empty($users) ? count($users) : 0;
 
     if ($count < 1) {
         return $result;
@@ -642,6 +649,7 @@ function userdetails_stats_table($limit, $offset, $extra, $institution, $urllink
         case "remotename":
         case "quotapercent":
         case "studentid":
+        case "probation":
             $orderby = " " . $sorttype . " " . (!empty($extra['sortdesc']) ? 'DESC' : 'ASC') . ", CONCAT (u.firstname, ' ', u.lastname)";
             break;
         case "lastname":
@@ -655,7 +663,7 @@ function userdetails_stats_table($limit, $offset, $extra, $institution, $urllink
     $sql = "SELECT u.id, u.firstname, u.lastname, u.username, u.preferredname AS displayname,
             u.lastlogin, u.email, u.studentid, u.ctime,
             (SELECT remoteusername FROM {auth_remote_user} aru WHERE aru.localusr = u.id LIMIT 1) AS remotename,
-            ((u.quotaused * 1.0)/ u.quota) AS quotapercent, u.quota, u.quotaused
+            ((u.quotaused * 1.0)/ u.quota) AS quotapercent, u.quota, u.quotaused, u.probation
             " . $fromsql . $wheresql . "
             ORDER BY " . $orderby;
     if (empty($extra['csvdownload'])) {
@@ -671,10 +679,13 @@ function userdetails_stats_table($limit, $offset, $extra, $institution, $urllink
         $item->quotapercent_format = round($item->quotapercent * 100);
         $item->quota_format = display_size($item->quota);
         $item->quotaused_format = !empty($item->quotaused) ? display_size($item->quotaused) : 0;
+        // Map statistics page column headers to CSV column headers to allow for easier user update CSV import
+        $item->preferredname = $item->displayname;
+        $item->remoteuser = $item->remotename;
     }
     if (!empty($extra['csvdownload'])) {
         $csvfields = array('firstname', 'lastname', 'email', 'studentid',
-                           'displayname', 'username', 'remotename', 'quotapercent_format', 'lastlogin');
+                           'preferredname', 'username', 'remoteuser', 'quotapercent_format', 'lastlogin', 'probation');
         $USER->set_download_file(generate_csv($data, $csvfields), $institution . 'userdetailsstatistics.csv', 'text/csv');
     }
     $result['csv'] = true;
@@ -2677,7 +2688,7 @@ function view_type_graph($type = null) {
     if (count($viewtypes) > 1) {
         $dataarray = array();
         foreach ($viewtypes as &$t) {
-            $dataarray[get_string($t->type, 'view')] = $t->views;
+            $dataarray[get_string(ucfirst($t->type), 'view')] = $t->views;
         }
         arsort($dataarray);
 
@@ -2945,8 +2956,10 @@ function institution_view_type_graph($type = null, $institutiondata) {
 function institution_view_type_graph_render($type = null, $extradata) {
 
     $data['graph'] = ($type) ? $type : 'pie';
-    $data['jsondata'] = get_field('institution_data','value','type','view-type-graph','institution', $extradata->institution);
-    return $data;
+    if ($jsondata = json_decode(get_field('institution_data','value','type','view-type-graph','institution', $extradata->institution))) {
+        $data['jsondata'] = json_encode($jsondata[0]);
+        return $data;
+    }
 }
 
 function institution_user_type_graph($type = null, $institutiondata) {
@@ -4439,10 +4452,12 @@ function report_config_form($extra, $institutionelement) {
         $activeheadings = get_active_columns($data, $extra->extra);
         $headerelements = array();
         foreach ($data['tableheadings'] as $heading) {
+            $disabled = isset($heading['disabled']) && !empty($heading['disabled']) ? true : false;
+            $disabled = $disabled ? true : (!empty($heading['required']) ? true : false);
             $headerelements['report_column_' . $heading['id']] = array(
                 'type' => 'checkbox',
                 'title' => $heading['name'],
-                'readonly' => (!empty($heading['required']) ? true : false),
+                'readonly' => $disabled,
                 'defaultvalue' => (!empty($heading['required']) || !empty($heading['selected']) ? $heading['id'] : null),
             );
         }

@@ -21,6 +21,11 @@ require_once('activity.php');
 require_once(get_config('docroot') . 'lib/antispam.php');
 
 $id = param_integer('id');
+if ($id == 0) {
+    // We shouldn't be editing / masquerading as 'root' user
+    throw new UserException(get_string('invaliduser', 'error'));
+}
+
 $user = new User;
 $user->find_by_id($id);
 $authobj = AuthFactory::create($user->authinstance);
@@ -204,6 +209,11 @@ foreach ($authinstances as $authinstance) {
     foreach ($user_insts as $inst) {
         if ($authinstance->name == $inst->institution || $authinstance->name == 'mahara') {
             $options[$authinstance->id] = $authinstance->displayname . ': ' . $authinstance->instancename;
+            $authobj = AuthFactory::create($authinstance->id);
+            if ($authobj->needs_remote_username()) {
+                $externalauthjs[] = $authinstance->id;
+                $external = true;
+            }
         }
     }
 }

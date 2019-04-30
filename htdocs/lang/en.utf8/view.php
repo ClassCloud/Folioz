@@ -136,6 +136,9 @@ $string['registeredusers'] = 'Registered users';
 $string['friends'] = 'Friends';
 $string['groups'] = 'Groups';
 $string['users'] = 'Users';
+$string['friend'] = 'Friend';
+$string['group'] = 'Group';
+$string['user'] = 'User';
 $string['everyoneingroup'] = 'Everyone in group';
 $string['nospecialrole'] = 'No special role';
 $string['peer'] = 'Peer';
@@ -182,7 +185,6 @@ $string['viewvisitcount'] = array(
 );
 $string['profilenotshared'] = 'Full access to this user profile is restricted.';
 
-$string['friend'] = 'Friend';
 $string['profileicon'] = 'Profile picture';
 $string['Updatedon'] = 'Updated on';
 $string['Createdon'] = 'Created on';
@@ -323,12 +325,15 @@ $string['moveblockup'] = "Move %s block up";
 $string['movethisblockup'] = "Move this block up";
 $string['moveblockright'] = "Move %s block right";
 $string['movethisblockright'] = "Move this block right";
+$string['moveblock2'] = 'Move block';
 $string['moveblock'] = 'Move %s block';
 $string['movethisblock'] = 'Move this block';
 $string['Configure'] = 'Configure';
+$string['configureblock2'] = 'Configure block';
 $string['configureblock1'] = 'Configure %s block (ID %s)';
 $string['configurethisblock1'] = 'Configure this block (ID %s)';
 $string['closeconfiguration'] = 'Close configuration';
+$string['removeblock2'] = 'Remove block';
 $string['removeblock1'] = 'Remove %s block (ID %s)';
 $string['removethisblock1'] = 'Remove this block (ID %s)';
 $string['blocktitle'] = 'Block title';
@@ -471,9 +476,10 @@ $string['mostcomments1'] = 'Most comments';
 
 // View types
 $string['dashboard'] = 'Dashboard';
-$string['profile'] = 'Profile';
-$string['portfolio'] = 'Portfolio';
-$string['grouphomepage'] = 'Group homepage';
+$string['Profile'] = 'Profile';
+$string['Portfolio'] = 'Portfolio';
+$string['Portfolios'] = 'Portfolios';
+$string['Grouphomepage'] = 'Group homepage';
 
 $string['grouphomepagedescription'] = 'The group homepage contains the content that appears on the "About" tab for this group';
 $string['pageaccessrules'] = 'Page access rules';

@@ -26,10 +26,9 @@ Scenario: Creating a page with content in it (Bug 1426983)
     | Page title | Test view |
     And I fill in "First description" in first editor
     And I press "Save"
-    # verify display page button is displayed
-    And I should see "Display page" in the "div#view-wizard-controls.col-collapse-offset.col-with-collapse" element
-    # verify Return to pages and collections is displayed
-    And I should see "Return to pages and collections" in the "div#view-wizard-controls.col-collapse-offset.col-with-collapse" element
+    # verify page elements are displayed Display page and Return to pages and collections buttons
+    And I should see "Display page" in the "Display page button" property
+    And I should see "Return to pages and collections" in the "Return to pages and collections button" property
     # Editing the pages
     And I follow "Settings" in the "Toolbar buttons" property
     #Change the Page title
@@ -76,8 +75,8 @@ Scenario: Creating a page with content in it (Bug 1426983)
     And I press "Remove"
 
     # verify page elements are displayed Display page and Return to pages and collections buttons
-    And I should see "Display page" in the "#view-wizard-controls .btn-default:nth-of-type(1)" element
-    And I should see "Return to pages and collections" in the "#view-wizard-controls .btn-default:nth-of-type(2)" element
+    And I should see "Display page" in the "Display page button" property
+    And I should see "Return to pages and collections" in the "Return to pages and collections button" property
     And I display the page
     # Show last updated date and time when seeing a portfolio page (Bug 1634591)
     And I should see "Updated on" in the ".text-right" element
@@ -87,18 +86,18 @@ Scenario: Creating a page with content in it (Bug 1426983)
     Then I should see "This is the edited page title"
     And I should see "This is the edited description"
     # Create a timeline version
-    And I press "More..."
+    And I press "More options"
     And I follow "Save to timeline"
     # Check that the image is displayed on page and ensure the link is correct
     Then I should see image "Image2.png" on the page
     # The "..." button should only have the option to print and delete the page
-    And I should see "More..."
-    And I press "More..."
+    And I should see "More options"
+    And I press "More options"
     Then I should see "Print"
     And I should see "Delete this page"
     # User share page with public and enable copy page functionality
     And I choose "Pages and collections" in "Create" from main menu
-    And I click on "Manage access" in "This is the edited page title" panel access menu
+    And I click on "Manage access" in "This is the edited page title" card access menu
     And I follow "Advanced options"
     And I enable the switch "Allow copying"
     And I select "Public" from "General" in shared with select2 box
@@ -109,6 +108,7 @@ Scenario: Creating a page with content in it (Bug 1426983)
     And I wait "1" seconds
     Then I should see "This is the edited page title"
     When I follow "This is the edited page title"
+    And I press "More options"
     And I follow "Copy"
     And I fill in the following:
     | Page title | This is my page now |
@@ -123,13 +123,13 @@ Scenario: Creating a page with content in it (Bug 1426983)
     # Go to version page
     And I choose "Pages and collections" in "Create" from main menu
     And I follow "This is the edited page title"
-    And I press "More..."
+    And I press "More options"
     And I follow "Timeline"
 
     Then I should see "Timeline"
     # check page can be deleted (Bug 1755682)
     And I choose "Pages and collections" in "Create" from main menu
-    And I click on "Delete" in "This is the edited page" panel menu
+    And I click on "Delete" in "This is the edited page" card menu
     And I should see "Do you really want to delete this page?"
     And I press "Yes"
     Then I should see "Page deleted"

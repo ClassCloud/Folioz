@@ -90,9 +90,17 @@
     margin-bottom: 21px;
     line-height: $line-height-base;
     background-color: transparent;
-    border: 1px solid $card-border;
+    border: 1px solid $card-border-color;
     border-radius: 2px;
     transition: border .2s ease-in-out;
+}
+#createcustomlayoutpane .layoutthumb {
+    border: 1px solid $card-border-color;
+    border-radius: 2px;
+    padding: 4px;
+    display: table;
+    overflow: hidden;
+    position: relative;
 }
 
 .blocktype-radio {
@@ -101,17 +109,31 @@
 
 // see emaillist.tpl
 .email-list {
-    padding-bottom: 20px;
+    margin-top: 20px;
     display: block;
-    .validation-message {
-        padding: 8px 0 15px 15px
+    .description:not(.html) {
+        padding: 4px 0 0 18px
+    }
+    .stacked-label {
+        width: auto;
+        margin-right: 10px;
+        vertical-align: super;
+    }
+    .unvalidated, .unsent, .validated {
+        margin-top: 20px;
+        &:last-of-type {
+            margin-bottom: 20px;
+        }
+        + .input-group {
+            margin: 20px 0;
+        }
     }
     @include media-breakpoint-up(md) {
         display: inline-block;
-        width: 420px;
+        min-width: 400px;
     }
     @include media-breakpoint-up(xl) {
-        width: 500px;
+        min-width: 500px;
     }
 }
 
@@ -296,11 +318,9 @@
         background: #fff;
         box-shadow: 0 0 3px 5px #f8f8f8;
     }
-}
-
-.user-thumbnails {
-    .user-icon {
-        margin: 5px;
+    &.card.card-secondary > .block > .card-body {
+        overflow: hidden;
+        padding: 15px 20px;
     }
 }
 
@@ -583,6 +603,9 @@
     table {
         padding: 10px;
     }
+    .card-header {
+      background-color: white;
+    }
 }
 
 .ownersubtab {
@@ -661,7 +684,12 @@ div.toolbarhtml {
         background-color: $gray-100 !important;
     }
 }
-
+.viewinstruction-export {
+    border: 1px solid $card-border-color;
+    padding: 10px 15px;
+    margin-bottom: -1px; //remove double border
+    background-color: $gray-100 !important;
+}
 .releaseviewform {
     position: relative;
     top: 15px;
@@ -703,7 +731,7 @@ a[type="submit"],
 }
 
 .elasticsearch-filters {
-    border-bottom: 1px solid $card-border;
+    border-bottom: 1px solid $card-border-color;
     background-color: $card-header-bg;
 }
 
@@ -732,15 +760,7 @@ a[type="submit"],
     }
 }
 
-// Pages and collections sort by input alignment
-#searchviews_submit_container {
-    margin-left: 0;
-}
-
 // Share with me search filter
-#search_submit {
-    margin-left: 0;
-}
 #search_share_container {
     label {
         margin-top: 13px;
@@ -755,11 +775,6 @@ a[type="submit"],
     border-radius: $border-radius;
     width: auto;
     margin-top: 12px;
-}
-
-// My Friends search filter
-#filter_submit {
-    margin-left: 0;
 }
 
 // Find people results approve request alignment
@@ -795,4 +810,41 @@ a[type="submit"],
 // Backup for libraries that still need hidden class instead of bootstrap 4s new .d-none
 .hidden {
     display: none;
+}
+//used for Smart Evidence json-editor
+#editor_holder .bg-light {
+    background-color: #FFF !important;
+}
+
+div.form-group .form-control-label {
+    vertical-align: top;
+}
+
+.btn-group {
+    font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+.json_editor_btn_add .btn-group > .btn-group:not(:last-child) > .btn, .btn-group > .btn:not(:last-child):not(.dropdown-toggle) {
+    border-top-right-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.errormsg {
+    color: $state-danger-text;
+}
+
+// table cells that need to be fixed 70px width
+.width-70 {
+    width: 70px;
+}
+
+// Forum select wrap too close to text
+.forumselectwrap {
+    margin: 0 0 10px 10px;
+}
+
+.form-group.checkboxes .group-invite input[type="checkbox"] {
+    float: left;
+    top: 0;
+    margin-right: 5px;
 }

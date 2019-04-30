@@ -953,7 +953,7 @@ class ArtefactTypeComment extends ArtefactType {
             'class' => ($USER->is_logged_in() ? 'hide-label' : ''),
             'rows'  => 5,
             'cols'  => 80,
-            'rules' => array('maxlength' => 8192),
+            'rules' => array('maxlength' => 1000000),
         );
         if (get_config_plugin('artefact', 'comment', 'commentratings')) {
             $form['elements']['rating'] = array(
@@ -1181,7 +1181,7 @@ class ArtefactTypeComment extends ArtefactType {
         $dom = new DOMDocument();
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput = true;
-        $dom->loadHTML($comment);
+        $dom->loadHTML($comment, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
         $xpath = new DOMXPath($dom);
 
@@ -1461,7 +1461,7 @@ function delete_comment_submit(Pieform $form, $values) {
     // If this page is being marked, make comments un-deletable until released
     // unless it is the last comment still with in the editable timeframe
     $editableafter = time() - 60 * get_config_plugin('artefact', 'comment', 'commenteditabletime');
-    $lastcomment = $comment::last_public_comment($viewid, null);
+    $lastcomment = ($artefact) ? $comment::last_public_comment($viewid, $artefact) : $comment::last_public_comment($viewid, null);
     if ($comment->get('id') == $lastcomment->id && $comment->get('mtime') > $editableafter) {
         $candelete = 1;
     }
@@ -1843,7 +1843,8 @@ function add_feedback_form_submit(Pieform $form, $values) {
                                                            'view' => $view->get('id'),
                                                            'ctime' => db_format_timestamp(time()),
                                                            'unsubscribetoken' => get_random_key(24)));
-        $updatelink = ($artefact) ? get_string('removefromwatchlistartefact', 'view', $view->get('title')) : get_string('removefromwatchlist', 'view');
+        $updatelink = '<span class="icon icon-lg icon-eye-slash left" role="presentation" aria-hidden="true"></span>';
+        $updatelink .= ($artefact) ? get_string('removefromwatchlistartefact', 'view', hsc($view->get('title'))) : get_string('removefromwatchlist', 'view');
     }
 
     activity_occurred('feedback', $data, 'artefact', 'comment');

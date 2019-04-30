@@ -4,7 +4,7 @@
 {foreach from=$plans item=plan}
 <div class="card-body flush">
     {if $editing}
-        <div class="pull-right btn-group">
+        <div class="float-right btn-group">
             <a class="btn btn-secondary btn-sm" href="{$WWWROOT}artefact/plans/edit/index.php?id={$plan.id}{if $plan.view}&view={$plan.view}{/if}" title="{str(tag=editspecific arg1=$plan.title)|escape:html|safe}">
                 <span class="icon icon-pencil"></span>
                 <span class="sr-only">{str tag='edit'}</span>
@@ -37,7 +37,7 @@
                 <div id="tasklist_{$blockid}_plan{$tasks.planid}" class="list-group list-unstyled">
                     {$tasks.tablerows|safe}
                 </div>
-                {if $tasks.pagination}
+                {if $tasks.pagination && !$versioning}
                     <div id="plans_page_container_{$blockid}_plan{$tasks.planid}" class="d-none">
                         {$tasks.pagination|safe}
                     </div>

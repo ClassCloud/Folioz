@@ -116,8 +116,11 @@ label,
 .checkbox {
   position: relative;
   display: block;
-  // margin-top: 10px;
-  margin-bottom: 10px;
+  margin-top: 10px;
+  input.checkboxes,
+  input.radio {
+      z-index: 3;
+  }
 
   label {
     min-height: $line-height-computed; // Ensure the input doesn't jump when there is no text
@@ -197,11 +200,10 @@ textarea.resizable {
         border-bottom: 0 none;
         align-items: flex-start;
         display: inline-block;
-        div.checkbox {
-          input.checkbox {
-              width: auto;
-              margin-top: -6px;
-          }
+
+        input.checkbox {
+            width: auto;
+            margin-top: -6px;
         }
     }
     @include media-breakpoint-down(md) {
@@ -283,4 +285,17 @@ textarea.resizable {
             opacity: 0.5;
         }
     }
+}
+
+.progress {
+    background: repeating-linear-gradient(45deg, #f5f5f5, #f5f5f5 10px, #eeeeee 10px, #eeeeee 20px);
+    .progress-bar.small-progress {
+        span {
+            color: #666666;
+        }
+    }
+}
+
+input:disabled[type="text"] {
+    color: $black;
 }

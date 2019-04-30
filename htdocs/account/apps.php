@@ -17,10 +17,12 @@ define('SECTION_PAGE', 'apps');
 define('APPS', 1);
 
 require(dirname(dirname(__FILE__)) . '/init.php');
-define('TITLE', get_string('myapplications'));
+define('TITLE', get_string('connectedapps'));
+define('SUBSECTIONHEADING', get_string('overview'));
 
 $hasapps = apps_get_menu_tabs();
 
 $smarty = smarty();
+setpageicon($smarty, 'icon-globe');
 $smarty->assign('hasapps', !empty($hasapps));
 $smarty->display('account/apps.tpl');

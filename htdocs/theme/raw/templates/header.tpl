@@ -5,7 +5,7 @@
 {include file="header/head.tpl"}
 <body data-usethemedjs="true" class="no-js {if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}admin{/if} {if $loggedout}loggedout{/if} {if $pagename}{$pagename}{/if} {$presentation|default:'window'}">
     <div class="skiplink btn-group btn-group-top">
-        <a class="sr-only sr-only-focusable btn btn-secondary" href="#main">{str tag=skipmenu}</a>
+        <a class="sr-only sr-only-focusable btn btn-secondary" {if $headertype=='page'}href="#header-content"{else}href="#main"{/if}>{str tag=skipmenu}</a>
     </div>
 
     {if $USERMASQUERADING || !$PRODUCTIONMODE || $SITECLOSED || $SITETOP}
@@ -49,17 +49,22 @@
         <div class="navbar navbar-default navbar-main">
             <div class="container">
                 <div id="logo-area" class="logo-area">
-                    <a href="{$WWWROOT}" class="logo {if $sitelogosmall}change-to-small{/if} ">
-                        <img src="{$sitelogo}" alt="{$sitename}" data-customlogo="{$sitelogocustom}">
+                    <a href="{$WWWROOT}" class="logo {if $sitelogocustomsmall || (!$sitelogocustomsmall && !$sitelogocustom)}change-to-small{/if}">
+                        <img src="{$sitelogo}" alt="{$sitename}" data-customlogo="{$sitelogocustom}" >
                     </a>
-                    {if $sitelogosmall}
+                    {if $sitelogocustomsmall}
                         <a href="{$WWWROOT}" class="logoxs">
+                            <img src="{$sitelogocustomsmall}" alt="{$sitename}">
+                        </a>
+                    {/if}
+                    {if !$sitelogocustom && !$sitelogocustomsmall}
+                        <a href="{$WWWROOT}" class="logoxs change-to-small-default">
                             <img src="{$sitelogosmall}" alt="{$sitename}">
                         </a>
                     {/if}
                     {if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}
                         <div class="admin-title">
-                            <a href="{$WWWROOT}admin/" accesskey="a" class="admin-site">{str tag="administration"}</a>
+                            <a href="{$WWWROOT}admin/" class="admin-site">{str tag="administration"}</a>
                         </div>
                     {/if}
                     <div id="loading-box" class="loading-box d-none"></div>
@@ -78,7 +83,7 @@
                             </button>
                         {/if}
                         {if $LOGGEDIN}
-                            <a href="{profile_url($USER)}" class="user-icon" title='{str tag="profilepage"}'>
+                            <a href="{profile_url($USER)}" class="user-icon user-icon-25" title='{str tag="profilepage"}'>
                                 <img src="{profile_icon_url user=$USER maxheight=25 maxwidth=25}" alt="{str tag=profileimagefor section=artefact.internal arg1=display_name($USER->get('id'))}">
                             </a>
                             <button class="user-toggle navbar-toggle" type="button" data-toggle="collapse" data-target=".nav-main-user" aria-expanded="false" aria-controls="main-nav-user" title='{str tag="usermenu"}'>
@@ -113,6 +118,14 @@
             </div>
         </div>
     </header>
+
+    {if $headertype == "page"}
+        {include file="header/pageheader.tpl"}
+    {elseif $headertype == "profile"}
+        {include file="header/profileheader.tpl"}
+    {elseif $headertype == "matrix"}
+        {include file="header/matrixheader.tpl"}
+    {/if}
 
     <div class="container main-content">
         <div class="row">

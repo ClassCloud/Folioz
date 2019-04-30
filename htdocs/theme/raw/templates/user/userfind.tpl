@@ -1,45 +1,63 @@
 <div class="list-group-item {if $user->pending} list-group-item-warning{/if}">
-    <a href="{profile_url($user)}" class="outer-link">
-        <span class="sr-only">{$user->display_name}</span>
-     </a>
     <div class="row" id="friendinfo_{$user->id}">
         <div class="col-md-8">
             <div class="usericon-heading">
-                <div class="user-icon float-left">
+                <div class="user-icon user-icon-40 float-left">
                     <img src="{profile_icon_url user=$user maxwidth=40 maxheight=40}" alt="{str tag=profileimagetext arg1=$user|display_default_name}">
                 </div>
                 <h4 class="list-group-item-heading middle">
-                    {$user->display_name}
+                    <a href="{profile_url($user)}" >
+                        <span class="sr-only">{$user->display_name}</span>
+                        {$user->display_name}
+                    </a>
                     {if $user->pending}
                     <span class="pendingfriend text-small text-midtone">
-                        - {str tag='pending' section='group'}
+                        - {str tag='pendingsince' section='group' arg1=$user->pending_time}
                     </span>
                     {elseif $user->friend && $page == 'find'}
                     <span class="existingfriend text-small text-midtone">
                         - {str tag='existingfriend' section='group'}
                     </span>
                     {/if}
+
+                    {if $user->friend && $user->views}
+                    <p class="viewlist">
+                        <strong>
+                            {str tag='Portfolios' section='view'}:
+                        </strong>
+                        {foreach from=$user->views item=view name=addr}
+                        <a href="{$view->fullurl}">{$view->title}</a>{if !$dwoo.foreach.addr.last}, {/if}
+                        {/foreach}
+                    </p>
+                    {/if}
+
                 </h4>
+                {if $user->institutions}
+                <div class="memberof detail text-small">
+                    <span class="icon icon-lg text-default icon-university left" role="presentation" aria-hidden="true"></span>
+                    {$user->institutions|safe}
+                </div>
+                {/if}
             </div>
-            {if $user->institutions}
-            <div class="memberof detail text-small">
-                <span class="icon icon-lg text-default icon-university left" role="presentation" aria-hidden="true"></span>
-                {$user->institutions|safe}
-            </div>
-            {/if}
         </div>
         <div class="col-md-4">
-            <ul class="list-unstyled inner-link text-small user-action-list">
+            <ul class="list-unstyled inner-link user-action-list">
                 {if $user->pending}
-                <li class="approvefriend">
-                    <span class="icon icon-check icon-lg text-success" role="presentation" aria-hidden="true"></span>
-                    {$user->accept|safe}
-                </li>
-                <li class="denyrequest">
-                    <span class="icon icon-ban icon-lg text-danger left" role="presentation" aria-hidden="true"></span>
-                    <a href="{$WWWROOT}user/denyrequest.php?id={$user->id}&amp;returnto={$page}&amp;offset={$offset}" class="btn-deny">
-                        {str tag='denyrequest' section='group'}
-                    </a>
+                <p class="list-group-item-heading">{str tag="pendingfriend" section="group"}</p>
+                <span class="whymakemeyourfriend text-small">
+                    <strong>
+                        {str tag='whymakemeyourfriend' section='group'}
+                    </strong>
+                    <p>{$user->message|format_whitespace|safe}</p>
+                </span>
+                <li>
+                    <div class="btn-group">
+                        {$user->accept|safe}
+                        <a href="{$WWWROOT}user/denyrequest.php?id={$user->id}&amp;returnto={$page}&amp;offset={$offset}" class="btn btn-secondary">
+                            <span class="icon icon-ban icon-lg text-danger left" role="presentation" aria-hidden="true"></span>
+                            {str tag='deny' section='group'}
+                        </a>
+                    </div>
                 </li>
                 {/if}
                 {if $user->friend}

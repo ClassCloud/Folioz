@@ -153,8 +153,9 @@ function pieform_element_filebrowser(Pieform $form, $element) {
         $config['pluginname'] = $form->get_property('pluginname');
         $config['browsehelp'] = $element['browsehelp'];
     }
+    $config['showtags'] = !empty($config['tag']) ? 1 : 0;
+    $config['tagsowner'] = !empty($config['tag']) ? (int) $userid : 0;
 
-    $config['showtags'] = !empty($config['tag']) ? (int) $userid : 0;
     $config['editmeta'] = (int) ($userid && !$config['edit'] && !empty($config['tag']));
 
     $smarty->assign('config', $config);
@@ -350,7 +351,8 @@ function pieform_element_filebrowser_build_filelist($form, $element, $folder, $h
     $selectable = (int) $element['config']['select'];
     $selectfolders = (int) !empty($element['config']['selectfolders']);
     $publishing = (int) !empty($element['config']['publishing']);
-    $showtags = !empty($element['config']['tag']) ? (int) $userid : 0;
+    $showtags = !empty($element['config']['tag']) ? 1 : 0;
+    $tagsowner = !empty($element['config']['tag']) ? (int) $userid : 0;
     $editmeta = (int) ($userid && !$editable && !empty($element['config']['tag']));
     $querybase = $element['page'] . (strpos($element['page'], '?') === false ? '?' : '&');
     $prefix = $form->get_name() . '_' . $element['name'];
@@ -1277,6 +1279,10 @@ function pieform_element_filebrowser_update(Pieform $form, $element, $data) {
     $newtags = $data['tags'];
     $updatetags = $oldtags != $newtags;
     if ($updatetags) {
+        require_once(get_config('docroot') . 'lib/form/elements/tags.php');
+        if (!empty($newtags)) {
+            $newtags = array_map('remove_prefix', $newtags);
+        }
         $artefact->set('tags', $newtags);
     }
 
@@ -1649,7 +1655,6 @@ function pieform_element_filebrowser_get_headdata($element) {
     if ($element['config']['upload']) {
         // only add dropzone if filebrowser is allowed to upload
         $headdata[] = '<script src="' . get_config('wwwroot') . 'js/dropzone/min/dropzone.min.js?v=' . $cacheversion . '"></script>';
-        $headdata[] = '<link href="' . get_config('wwwroot') . 'js/dropzone/min/dropzone.css?v=' . $cacheversion . '" type="text/css" rel="stylesheet">';
         $headdata[] = '<script src="' . get_config('wwwroot') . 'artefact/file/js/filedropzone.js?v=' . $cacheversion . '"></script>';
     }
     if ($element['config']['edit']) {

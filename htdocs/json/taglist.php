@@ -21,13 +21,14 @@ $page = param_integer('page');
 if ($page < 1) {
     $page = 1;
 }
+$institution = param_variable('institution', null);
 $tagsperpage = 10;
 
 $more = true;
 $tmptag = array();
 
 while ($more && count($tmptag) < $tagsperpage) {
-    $tags = get_all_tags_for_user($request, $tagsperpage, $tagsperpage * ($page - 1));
+    $tags = get_all_tags_for_user($request, $tagsperpage, $tagsperpage * ($page - 1), $institution);
     $more = $tags['count'] > $tagsperpage * $page;
 
     if (!$tags['tags']) {
@@ -41,7 +42,7 @@ while ($more && count($tmptag) < $tagsperpage) {
         }
 
         $tmptag[] = (object) array('id' => $tag->tag,
-            'text' => display_tag($tag->tag, $tags['tags'])
+            'text' => display_tag($tag->tag, $tags['tags'], true)
         );
     }
     $page++;

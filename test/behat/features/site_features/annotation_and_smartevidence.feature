@@ -29,7 +29,7 @@ Scenario: Accessing annotation block
 
  # Make sure we have a matrix config form
  And I choose "SmartEvidence" in "Extensions" from administration menu
- And I follow "Add framework"
+ And I follow "Import" in the "Arrow-bar nav" property
  And I attach the file "example.matrix" to "Matrix file"
  And I press "Upload matrix"
 
@@ -38,8 +38,7 @@ Scenario: Accessing annotation block
 
  # Update 'Test collection' to have smart evidence
  And I choose "Pages and collections" in "Create" from main menu
- And I click on "Collection admin_01" panel menu
- And I click on "Edit" in "Collection admin_01" panel menu
+ And I click on "Edit" in "Collection admin_01" card menu
  And I select "Title of your framework" from "SmartEvidence framework"
  And I press "Save"
  And follow "Collection admin_01"

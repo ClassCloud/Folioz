@@ -1131,5 +1131,197 @@ function xmldb_core_upgrade($oldversion=0) {
         // Just need to fire off upgrade to get the cache to clear
     }
 
+    if ($oldversion < 2019031500) {
+        log_debug('Add existing assessments to peerassessment block version for timeline');
+        require_once(get_config('docroot') . '/blocktype/lib.php');
+        safe_require('blocktype', 'peerassessment');
+        // get all versions that could possibly contain 'peerassessment' blocks
+        $versions = get_records_sql_array("SELECT * FROM {view_versioning} WHERE blockdata LIKE '%peerassessment%'");
+
+        // to keep the currect artefacts of a peerassessment block
+        $existing_artefacts = array();
+
+        if ($versions) {
+            $count = 0;
+            $limit = 1000;
+            $total = count($versions);
+            foreach ($versions as $version) {
+                if (!empty($version->blockdata)) {
+                    $needsupdate = false;
+                    $blockdata = json_decode($version->blockdata);
+                    foreach ($blockdata->blocks as &$block) {
+                        if ($block->blocktype == 'peerassessment') {
+                            $blockid = $block->originalblockid;
+                            if (!isset($existing_artefacts[$blockid])) {
+                                //in case there are no artefacts in the block
+                                // or the blockinstance was deleted, we won't check again
+                                $existing_artefacts[$blockid] = null;
+
+                                try {
+                                    // get the artefacts use in the block
+                                    $bi = new BlockInstance($blockid);
+                                    if ($bi && $artefacts = PluginBlocktypePeerassessment::get_current_artefacts($bi)) {
+                                        foreach ($artefacts as $key => $artefact) {
+                                            if (isset($bi->configdata['artefactid']) && $bi->configdata['artefactid'] == $artefact) {
+                                                unset($artefacts[$key]);
+                                            }
+                                        }
+                                        $existing_artefacts[$blockid] = $artefacts;
+                                    }
+                                }
+                                catch (BlockInstanceNotFoundException $e) {}
+                            }
+                            // if we actually have artefact ids, save them in the version
+                            if ($existing_artefacts[$blockid]) {
+                                $block->configdata->existing_artefacts = $existing_artefacts[$blockid];
+                                $needsupdate = true;
+                            }
+                        }
+                    }
+                    $version->blockdata = json_encode($blockdata);
+                    if ($needsupdate) {
+                        update_record('view_versioning', $version);
+                    }
+                }
+                $count++;
+                if (($count % $limit) == 0 || $count == $total) {
+                    log_debug("$count/$total");
+                    set_time_limit(30);
+                }
+            }
+        }
+    }
+
+    if ($oldversion < 2019031900) {
+        log_debug('Clearing cache for new people menu structure');
+    }
+
+    if ($oldversion < 2019040400) {
+        log_debug('Adding timestamps to youtube videos');
+
+        $sql = "SELECT id FROM {block_instance} WHERE blocktype = 'externalvideo' AND configdata LIKE '%youtube%'";
+        $records = get_records_sql_array($sql, array());
+        if ($records) {
+            $key = 'youtube';
+            $count = 0;
+            $limit = 1000;
+            $total = count($records);
+            require_once(get_config('docroot').'blocktype/lib.php');
+            foreach ($records as $record) {
+                $bi = new BlockInstance($record->id);
+                $configdata = $bi->get('configdata');
+                if (isset($configdata['videoid']) && strpos($configdata['videoid'], $key) !== false ) {
+                    $configdata['videoid'] = preg_replace('/(\?|\&)(t=)/', '$1start=', $configdata['videoid']);
+                }
+                if (isset($configdata['html']) && strpos($configdata['html'], $key) !== false ) {
+                    $configdata['html'] = preg_replace('/(\?|\&)(t=)/', '$1start=', $configdata['html']);
+                }
+                $bi->set('configdata', $configdata);
+                $bi->commit();
+                $count++;
+                if (($count % $limit) == 0 || $count == $total) {
+                    log_debug("$count/$total");
+                    set_time_limit(30);
+                }
+            }
+        }
+    }
+    if ($oldversion < 2019040900) {
+        log_debug('Updating plan blocktype in view version');
+        $versions = get_records_sql_array("SELECT * FROM {view_versioning} WHERE blockdata LIKE '%\"blocktype\":\"plans\"%'");
+
+        // to keep the currect artefacts of a plans block
+        $existing_artefacts = array();
+
+        if ($versions) {
+            require_once(get_config('docroot') . '/blocktype/lib.php');
+            safe_require('blocktype', 'plans');
+            $count = 0;
+            $limit = 1000;
+            $total = count($versions);
+            foreach ($versions as $version) {
+                if (!empty($version->blockdata)) {
+                    $needsupdate = false;
+                    $blockdata = json_decode($version->blockdata);
+                    foreach ($blockdata->blocks as &$block) {
+                        if ($block->blocktype == 'plans') {
+                            $blockid = $block->originalblockid;
+                            if (!isset($existing_artefacts[$blockid])) {
+                                //in case there are no artefacts in the block
+                                // or the blockinstance was deleted, we won't check again
+                                $existing_artefacts[$blockid] = null;
+
+                                try {
+                                    // get the artefacts use in the block
+                                    $bi = new BlockInstance($blockid);
+                                    if ($bi && $artefacts = PluginBlocktypePlans::get_current_artefacts($bi)) {
+                                        foreach ($artefacts as $key => $artefact) {
+                                            if (isset($bi->configdata['artefactid']) && $bi->configdata['artefactid'] == $artefact) {
+                                                unset($artefacts[$key]);
+                                            }
+                                        }
+                                        $existing_artefacts[$blockid] = $artefacts;
+                                    }
+                                }
+                                catch (BlockInstanceNotFoundException $e) {}
+                            }
+                            // if we actually have artefact ids, save them in the version
+                            if ($existing_artefacts[$blockid]) {
+                                $block->configdata->existing_artefacts = $existing_artefacts[$blockid];
+                                $needsupdate = true;
+                            }
+                        }
+                    }
+                    $version->blockdata = json_encode($blockdata);
+                    if ($needsupdate) {
+                        update_record('view_versioning', $version);
+                    }
+                }
+                $count++;
+                if (($count % $limit) == 0 || $count == $total) {
+                    log_debug("$count/$total");
+                    set_time_limit(30);
+                }
+            }
+        }
+
+
+    }
+
+    if ($oldversion < 2019043000) {
+        log_debug('remove extra html from comment artefact descriptions');
+        // Get all the comment artefacts with the issue
+        $sql = "SELECT * FROM {artefact}
+            WHERE artefacttype = 'comment'
+            AND description " . db_ilike() . " '<!DOCTYPE%'";
+
+        if ($artefacts = get_records_sql_array($sql)) {
+            $count = 0;
+            $limit = 1000;
+            $total = count($artefacts);
+            // Loop through all of them and update the description
+            $dom = new DOMDocument();
+            $dom->preserveWhiteSpace = false;
+            $dom->formatOutput = true;
+            foreach ($artefacts as $artefact) {
+                $dom->loadHTML($artefact->description);
+                $xpath = new DOMXPath($dom);
+                $body = $xpath->query('/html/body');
+                $innerHtml = '';
+                foreach ($body->item(0)->childNodes as $child) {
+                    $innerHtml .= $dom->saveHTML($child);
+                }
+                $artefact->description = $innerHtml;
+                update_record('artefact', $artefact);
+
+                $count++;
+                if (($count % $limit) == 0 || $count == $total) {
+                    log_debug("$count/$total");
+                    set_time_limit(30);
+                }
+            }
+        }
+    }
+
     return $status;
 }

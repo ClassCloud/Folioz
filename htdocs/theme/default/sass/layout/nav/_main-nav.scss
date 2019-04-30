@@ -1,70 +1,66 @@
-.navbar-main {
-    border: 0;
 
+
+.navbar-main {
     .navbar-collapse {
-        border: 0;
+        border: 1px solid $navbar-default-link-border;
+
+        @include media-breakpoint-down(sm) {
+            border-width: 1px 0 0 0;
+        }
+        &.navbar-form {
+            border: 0;
+        }
     }
 
+    // Top level navigation items use colour variables from "navbar-default"
     .navbar-nav {
+
         > li > a {
-            color: #FFFFFF;
-            background-color: $theme-primary-color;
-            border-color: $link-hover-color;
+            color: $navbar-default-link-color;
+            background-color: $navbar-default-link-bg;
+            border-top: 1px solid $navbar-default-link-border;
+            border-bottom: 1px solid $navbar-default-link-border;
             &:hover,
             &:focus {
-                color: #FFFFFF;
-                background-color: #637e3a;
+                background-color: $navbar-default-link-hover-bg;
+                color: $navbar-default-link-hover-color;
             }
             @include media-breakpoint-up(md) {
-                border-color: $link-hover-color;
+                border: 1px solid $navbar-default-link-border;
             }
         }
-        .navbar-toggle {
-            color: #FFFFFF;
-            background-color: $link-hover-color;
 
+        > .active > a {
+            background-color: $navbar-default-active-bg;
+            color: $navbar-default-active-color;
             &:hover,
             &:focus {
-              background-color: $link-hover-color;
-              color: #FFFFFF;
+                background-color: $navbar-default-active-bg;
+                color: $navbar-default-active-color;
             }
-
-            &.collapsed {
-                background-color: transparent;
-                &:hover,
-                &:focus {
-                    background-color: $link-hover-color;
-                    color: #FFFFFF;
-                }
-            }
-
         }
+    }
 
-        .active {
-            > a {
-              font-weight: bold;
-              background-color: #3a4a22;
-              color: #ffffff;
-              &:hover,
-              &:focus {
-                  color: #FFFFFF;
-              }
-            }
-            .navbar-toggle {
-                .icon {
-                    color: #ffffff;
-                }
+    // Child navigation items
+    .child-nav {
+
+        li > a {
+            color: $navbar-inverse-link-color;
+            background-color: $navbar-inverse-bg;
+            &:hover,
+            &:focus {
+                background-color: $navbar-inverse-link-hover-bg;
+                color: $navbar-inverse-link-hover-color;
             }
         }
 
-        .child-nav {
-            li > a {
-                color: #ffffff;
-                background-color: #637e3a;
-                &:hover,
-                &:focus {
-                    background-color: #709042;
-                }
+        .active > a {
+            background-color: $navbar-inverse-link-active-bg;
+            color: $navbar-inverse-link-active-color;
+            &:hover,
+            &:focus {
+                background-color: $navbar-inverse-link-hover-bg;
+                color: $navbar-inverse-link-hover-color;
             }
         }
     }

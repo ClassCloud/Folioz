@@ -4,6 +4,7 @@
 @import "../layout/card/card-header";
 @import "../layout/card/card-secondary";
 
+@import "../layout/nav/main-nav";
 @import "../layout/nav/navbar";
 
 @import "../form/form";
@@ -11,6 +12,6 @@
 @import "../components/arrow-bar";
 @import "../components/btn";
 @import "../components/user-icon";
+@import "../components/toggles";
 
 @import "../features/dashboard-widget";
-@import "../features/collection-navigation";

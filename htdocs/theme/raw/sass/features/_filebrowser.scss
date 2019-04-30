@@ -85,13 +85,18 @@
         padding-left: 15px;
 
         li .icon {
-            color: $theme-primary-color-dark;
+            color: $theme-secondary-color;
         }
     }
 }
 
-.fileedittablewrap {
+.filelist-wrapper {
+    border: 0;
+}
+.table .fileedittablewrap {
     background-color: $table-accent-bg;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 // file browser inside modal screen

@@ -3,7 +3,7 @@
         color: $link-color;
         &:hover {
             color: $link-hover-color;
-            background-color: rgba(#9db577, 0.1);
+            background-color: scale-color($theme-primary-color, $lightness: 90%);
         }
     }
 }
@@ -20,7 +20,7 @@
     .list-group-item-controls,
     .btn-action-list,
     .list-group-item-heading {
-        .btn-group-top {
+        &.btn-group-top {
             @include media-breakpoint-up(lg) {
                 margin-top: -13px;
             }

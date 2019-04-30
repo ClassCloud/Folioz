@@ -343,6 +343,7 @@ $string['configurereport'] = 'Configure report';
 $string['Columns'] = 'Columns';
 
 // Site options
+$string['siteadminsonly'] = 'Site administrators only';
 $string['adminsonly'] = 'Administrators only';
 $string['adminsandstaffonly'] = 'Administrators and staff only';
 $string['advanced'] = 'Advanced';
@@ -518,7 +519,7 @@ $string['mathjax'] = 'Enable MathJax';
 $string['mathjaxdescription'] = 'MathJax renders LaTeX markup into properly formatted math and science equations on portfolio pages.';
 $string['mathjaxconfig'] = 'MathJax configuration';
 $string['timezone'] = 'Time zone';
-$string['sitetimezonedescription'] = 'The default time zone for the site. If not selected one will be chosen based on country, but this can be innaccurate if the counrty has multiple time zones.';
+$string['sitetimezonedescription'] = 'The default time zone for the site. If none is selected, one will be chosen based on the selected country. This can be innaccurate if the country has multiple time zones.';
 $string['notimezoneselected'] = 'No time zone selected';
 // Site content
 $string['about']               = 'About';
@@ -539,6 +540,10 @@ $string['termsandconditions']  = 'Terms and conditions';
 $string['uploadcopyright']     = 'Upload copyright statement';
 $string['privacypagedescription'] = 'Edit the privacy statement for the entire site. The version you edited last becomes the current privacy statement automatically.';
 $string['termspagedescription'] = 'Edit the terms and conditions for the entire site. The version you edited last becomes the current terms and conditions automatically.';
+
+// Isolated institutions
+$string['owngroupsonly'] = 'See own groups only';
+$string['owngroupsonlydescription'] = 'Allow users to see only groups that they own or that they are members of. They can also only search for other users who are in these groups. This setting requires that isolated institutions are turned on in the config.php file.';
 
 // Links and resources menu editor
 $string['sitefile']            = 'Site file';
@@ -668,6 +673,8 @@ $string['uploadcsverrorduplicateremoteuser'] = 'Line %s of the file specifies a 
 $string['uploadcsverrorremoteusertaken'] = 'Line %s of the file specifies a remote username "%s" that is already taken by the user "%s".';
 $string['uploadcsverrorusernotininstitution'] = 'Error on line %s: The user "%s" is not a member of the institution %s.';
 $string['uploadcsverroruserinaninstitution'] = 'Error on line %s: The user "%s" is a member of the following institutions: %s. You cannot update this user\'s authentication method to "No Institution".';
+$string['uploadcsverrorinvalidexpirydate'] = 'Error on line %s: The expiry "%s" is invalid. Please use a valid date format.';
+$string['uploadcsverrorexpirydateinpast'] = 'Error on line %s: The expiry "%s" cannot be in the past.';
 $string['uploadcsvpagedescription6'] = '<p>Here you can upload new users via a <acronym title="Comma Separated Values">CSV</acronym> file.</p>
 
 <p>The first row of your CSV file should specify the format of your CSV data. For example, it should look like this:</p>
@@ -689,6 +696,7 @@ $string['uploadcsvpagedescription6'] = '<p>Here you can upload new users via a <
 
 %s';
 $string['uploadcsverrortoomanyusers'] = 'You have too many lines in your CSV file. Your file should not contain more than %s.';
+$string['uploadcsverrordatamustbenumeric'] = 'Line %s: The value for category must be numeric';
 $string['uploadgroupcsverrordisplaynamealreadyexists'] = 'Error on line %s of your file: The displayname "%s" already exists.';
 $string['uploadgroupcsverrorinvalidshortname'] = 'Error on line %s of your file: The shortname "%s" is invalid.';
 $string['uploadgroupcsverrorshortnamemissing'] = 'Error on line %s of your file: The group with the shortname "%s" does not exist.';
@@ -698,6 +706,9 @@ $string['uploadgroupcsverrorshortnamealreadytaken1'] = 'Error on line %s of your
 $string['uploadgroupcsverrorusernamesnotlastfield'] = 'The "usernames" field must be the last field in the header.';
 $string['uploadgroupcsverroropencontrolled'] = 'Line %s: Groups cannot have both open and controlled membership.';
 $string['uploadgroupcsverroropenrequest'] = 'Line %s: Groups with open membership cannot allow membership requests.';
+$string['uploadgroupcsverrorviewnotifyrequest'] = 'Line %s: The value for viewnotify must be numerical in the range of %s-%s.';
+$string['uploadgroupcsverrordoesnotallowgroupcategory1'] = 'Line %s: This site does not allow for group categories. If you want to use them, a site administrator can turn them on in the administration area → Groups → Group categories.';
+$string['uploadgroupcsverrorcategorydoesnotexist'] = 'Line %s: The category "%s" does not exist.';
 $string['uploadgroupcsvpagedescription2'] = '<p>You may use this facility to upload new groups via a <acronym title="Comma Separated Values">CSV</acronym> file.</p>
 
 <p>The first row of your CSV file should specify the format of your CSV data. For example, it should look like this:</p>
@@ -975,13 +986,13 @@ $string['licensedefaultdescription'] = 'The default license for content created 
 $string['licensedefaultmandatory'] = 'If users are required to choose a license, you need to choose a default license here. If you do not want to choose a default license, do not make it required for users.';
 
 $string['Logo'] = 'Logo';
-$string['Logosmall'] = 'Small logo';
+$string['Logomobile'] = 'Mobile logo';
 $string['logodescription1'] = 'You can upload an image here that will be displayed to your institution\'s members as logo for your theme. The logo will be resized to fit the space available.';
 $string['logoxsdescription'] = 'You can upload a second logo that is to be used on small devices when there is not much space. The logo should be square for best results.';
 $string['deletelogo'] = 'Delete logo';
-$string['deletelogoxs'] = 'Delete small logo';
+$string['deletelogoxsmobile'] = 'Delete mobile logo';
 $string['deletelogodescription2'] = 'Revert to the standard header logo for your institution\'s theme.';
-$string['deletelogoxsdescription2'] = 'Revert to the standard header small logo for your institution\'s theme.';
+$string['deletelogoxsdescription3'] = 'Revert to the standard header mobile logo for your institution\'s theme.';
 $string['customtheme'] = 'Custom theme configuration';
 $string['customtheme.background'] = 'Header background';
 $string['customtheme.backgroundfg'] = 'Text on header background';
@@ -1111,10 +1122,10 @@ $string['denyregistrationmessage'] = 'This will deny the registration for the us
 $string['nopendingregistrations'] = 'No pending registrations were found for this institution.';
 $string['pendingregistration'] = 'Pending registration';
 $string['pendingregistrations'] = 'Pending registrations';
-$string['pendingregistrationspagedescription1'] = '<p>On this page you can see users who have self-registered and requested membership of your institution and approve or deny their registration.<p>
-<p>On approving their registration, they are notified with further instructions about activating their account. When they follow the activation link supplied they are added as a member of the institution. The activation link expires after 24 hours and their details are removed. If they still want to register they will need to begin the process again.</p>
-<p>On denying their registration, they will be notified that their application was denied by an automated response email.</p>';
-$string['pendingregistrationdesc'] = 'Approve or deny membership of your institution to self-registering users';
+$string['pendingregistrationspagedescription2'] = '<p>On this page you can see users who have self-registered and requested membership in your institution. You can approve or deny their registration request.<p>
+<p>On approving their registration, they are notified with further instructions about activating their account. When they follow the activation link supplied, they are added as a member of the institution. The activation link expires after 24 hours and their details are removed. If they still want to register, they will need to begin the process again.</p>
+<p>On denying their registration, they will be notified of that automatically.</p>';
+$string['pendingregistrationdesc'] = 'Approve or deny membership in your institution to self-registering users';
 $string['pendingdeletiondesc'] = 'Approve or deny the deletion of users who wish to remove their accounts';
 $string['pendingusercompletion'] = 'Approval sent, waiting on user completion';
 $string['nosuchinstitution'] = 'No such institution.';

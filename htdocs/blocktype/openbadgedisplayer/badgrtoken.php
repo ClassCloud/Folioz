@@ -22,7 +22,8 @@ define('APPS', 1);
 
 require('./../../init.php');
 safe_require('blocktype', 'openbadgedisplayer');
-define('TITLE', get_string('badgrtokentitle', 'blocktype.openbadgedisplayer'));
+define('TITLE', get_string('connectedapps'));
+define('SUBSECTIONHEADING', get_string('badgrtokentitle', 'blocktype.openbadgedisplayer'));
 
 // Users shouldn't be able to access this page if openbadgedisplayer blocktype is not active.
 if (!is_plugin_active('openbadgedisplayer','blocktype')) {
@@ -31,7 +32,7 @@ if (!is_plugin_active('openbadgedisplayer','blocktype')) {
 
 $sources = PluginBlocktypeOpenbadgedisplayer::get_backpack_source();
 if (empty($sources['badgr'])) {
-    throw new AccessDeniedException(get_string('badgrsourcemissing', 'blocktype.openbadgedisplayer'));
+    throw new AccessDeniedException(get_string('badgrsourcemissing1', 'blocktype.openbadgedisplayer'));
 }
 $token = get_field('usr_account_preference', 'value', 'field', 'badgr_token', 'usr', $USER->get('id'));
 

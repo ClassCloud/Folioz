@@ -5,24 +5,20 @@
             <tr>
                 <th class="icon-cell"></th>
                 <th>{str tag=Name section=artefact.file}</th>
-                <th class="d-none d-md-block">{str tag=Description section=artefact.file}</th>
+                <th class="d-none d-md-block">{str tag=Descriptionandtags section=artefact.file}</th>
                 <th class="filesize">
                     {str tag=Size section=artefact.file}
                 </th>
-                {if !$showtags && !$editmeta}
+                {if !$selectable}
                 <th class="filedate">
                     {str tag=Date section=artefact.file}
                 </th>
                 {/if}
-                {if !$selectable}
-                <th class="right nowrap">
-                </th>
-                {/if}
-                {if ($showtags && $editmeta) || $selectable}
+                {if $editmeta || $selectable}
                 <th class="right nowrap"></th>
                 {/if}
-                {if $editable}
-                <th></th>
+                {if $editable && !$file->isparent}
+                <th class="right nowrap"></th>
                 {/if}
             </tr>
         </thead>
@@ -89,25 +85,22 @@
                     </a>
                 {/if}
             </td>
-            <td class="filedescription d-none d-md-block">
+            <td class="filedescription d-none d-md-table-cell">
                 {$file->description|safe|clean_html}
                 {if $showtags}
                     {if $file->tags}
                     <div class="tags filetags text-small">
                         {str tag=tags}:
                         <span>
-                            {list_tags tags=$file->tags owner=$showtags}
+                            {list_tags tags=$file->tags owner=$tagsowner showtags=$showtags}
                         </span>
                     </div>
                     {/if}
                 {/if}
             </td>
 
-            {if $showtags && $editmeta}
             <td class="filesize">{if $file->foldersize}{$file->foldersize}{elseif $file->size}{$file->size}{/if}</td>
-            {/if}
-            {if !$showtags && !$editmeta}
-            <td class="filesize">{if $file->foldersize}{$file->foldersize}{elseif $file->size}{$file->size}{/if}</td>
+            {if !$selectable}
             <td class="filedate">{tif $file->mtime ?: ''}</td>
             {/if}
             {if $editmeta || $selectable}

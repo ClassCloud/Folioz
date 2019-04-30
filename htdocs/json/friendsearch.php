@@ -20,22 +20,33 @@ $offset = param_integer('offset', 0);
 $limit  = param_integer('limit', 10);
 $filter = param_alpha('filter', 'all');
 
-$page = 'myfriends';
+$searchtype = 'myfriends';
+$is_admin = $USER->get('admin') || $USER->get('staff');
+
 if ($extradata = param_variable('extradata', null)) {
     $extradata = json_decode($extradata);
-    if ($extradata->page) {
-        $page = $extradata->page;
+    if ($extradata->searchtype) {
+        $searchtype = $extradata->searchtype;
     }
 }
 
-if ($page == 'myfriends') {
-    $data = search_friend($filter, $limit, $offset);
+if ($searchtype == 'myfriends') {
+    $data = search_friend($filter, $limit, $offset, $query);
     $data['filter'] = $filter;
 }
 else {
     $options = array('exclude' => $USER->get('id'));
     if ($filter == 'myinstitutions') {
         $options['myinstitutions'] = true;
+    }
+    if (is_isolated() && !$is_admin) {
+        $options['myinstitutions'] = true;
+        if ($filter == 'myinstitutions') {
+            $options['showadmins'] = false;
+        }
+        else {
+            $options['showadmins'] = true;
+        }
     }
     $data = search_user($query, $limit, $offset, $options);
     $data['query'] = $query;
@@ -46,7 +57,7 @@ else {
 
 require_once('group.php');
 $admingroups = (bool) group_get_user_admintutor_groups();
-build_userlist_html($data, $page, $admingroups);
+build_userlist_html($data, $searchtype, $admingroups, $filter, $query);
 unset($data['data']);
 
 json_reply(false, array('data' => $data));

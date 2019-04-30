@@ -1123,13 +1123,52 @@ jQuery(function($) {
 });
 
 /**
- * Wire up menu so that links with submenu but no url just toggle the child collapse
+ * Custom handling for the navigation accessibility
  */
 jQuery(function($) {
+    /**
+     * Wire up menu so that links with submenu but no url just toggle the child collapse
+     */
     $('nav .menu-dropdown-toggle').on('click', function(e) {
         e.stopPropagation();
         e.preventDefault();
         $(this).next().trigger('click');
+    });
+
+    /**
+     * Send focus to first menu item unless it's an element of a sub menu
+     * Closes menu and returns focus to menu button
+     */
+    $('nav .navbar-collapse').on('shown.bs.collapse', function(e) {
+        var parent = $(this);
+
+        if (!$(e.target).hasClass('child-nav collapse show')) {
+            $(this).find('ul li:first a').focus();
+        }
+
+        // Return focus to menu button from last submenu button
+        $($(this).find('button.navbar-showchildren:last')).on('blur', function() {
+            if ($(this).hasClass('collapsed')) {
+                var id = $(parent).attr('id');
+                $('button[aria-controls="' + id + '"]').focus();
+                $(parent).collapse('hide');
+            }
+        });
+
+        // Return focus to menu button from last element in menu when tabbing away
+        $(this).find('ul li:last a').on('blur', function() {
+            var id = $(parent).attr('id');
+            $('button[aria-controls="' + id + '"]').focus();
+            $(parent).collapse('hide');
+        });
+    });
+
+    // Returns focus back to the menu button when the menu is closed
+    $('nav .navbar-collapse').on('hide.bs.collapse', function(e) {
+        if (!$(e.target).hasClass('child-nav collapse show')) {
+            var id = $(this).attr('id');
+            $('button[aria-controls=' + id + ']').focus();
+        }
     });
 });
 
@@ -1164,3 +1203,17 @@ function pmeter_presubmit(form, btn) {
 
     formStartProcessing(form, btn);
 }
+
+function showmatchall() {
+    if ($('#searchviews_type').val() == 'tagsonly') {
+        $('#searchviews_matchalltags_container').parent().find('.d-none').removeClass('d-none'); // because the d-none from form is on container and input
+    }
+    else {
+        $('#searchviews_matchalltags_container').addClass('d-none');
+    }
+}
+$(function() {
+    $('#searchviews_type').on('change', function() {
+        showmatchall();
+    });
+});

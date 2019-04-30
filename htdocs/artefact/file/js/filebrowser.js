@@ -340,12 +340,19 @@ var FileBrowser = (function($) {
         if (self.filedata[id].tags) {
             for (var x in self.filedata[id].tags) {
                 var option = document.createElement("option");
-                option.text = option.value = self.filedata[id].tags[x];
+                option.text = self.filedata[id].tags[x];
+                option.value = x;
                 option.selected = "selected";
                 $('#' + self.id + '_edit_tags').append(option);
             }
         }
         $('#' + self.id + '_edit_messages').empty();
+        if (self.filedata[id].uploadedby) {
+            $('#' + self.id + '_edit_uploadedby').text(self.filedata[id].uploadedby);
+        }
+        else {
+            $('#' + self.id + '_edit_uploadedby').parent().hide();
+        }
         $('#' + self.id + '_edit_row input.permission').each(function () {
             var perm = $(this).prop('name').split(':');
             if (self.filedata[id].permissions[perm[1]] && self.filedata[id].permissions[perm[1]][perm[2]] == 1) {
@@ -407,6 +414,7 @@ var FileBrowser = (function($) {
                         'sesskey': self.config.sesskey,
                         'offset': 0,
                         'limit': 10,
+                        'institution': $('#institutionselect_institution').val(),
                     };
                 },
                 processResults: function(data, page) {

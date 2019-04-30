@@ -150,11 +150,18 @@
         position: relative;
         padding-left: 50px;
         min-height: 50px;
+        line-height: 28px;
 
         .user-icon {
             position: absolute;
             left: 20px;
             top: 15px;
+        }
+
+        .user-name {
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1.5;
         }
     }
 }
@@ -198,7 +205,7 @@
                 margin-top: 5px;
             }
             @include media-breakpoint-up(lg) {
-                margin-top: -10px;
+                margin-top: -13px;
             }
         }
     }
@@ -216,15 +223,10 @@
         padding-bottom: 8px;
         .user-icon {
             display: block;
-            margin: 0 10px 0 0;
-            &.small-icon {
-                width: 35px;
-                height: 35px;
-            }
+            margin: 0 5px 0 0;
         }
         .list-group-item-heading {
             margin: 0;
-            width: 50%;
             &.middle {
                 margin: 10px 0;
             }
@@ -295,6 +297,11 @@
         margin-bottom: 0;
         .list-group-item:last-child {
             border-bottom: 0;
+        }
+    }
+    .list-group-item {
+        .list-group-item-heading {
+            float: none;
         }
     }
 }

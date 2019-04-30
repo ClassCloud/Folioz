@@ -6,11 +6,14 @@
         border-color: transparent;
     }
     .admin & {
-        border-color: $card-border-color; // TODO: This might affect other things elsewhere
+        border-color: $card-border-color;
+    }
+    .admin .user-page-content & {
+        border-color: transparent;
     }
     > .card-header {
         font-family: $font-family-serif;
-        border-bottom: 2px solid $card-border-color;
+        border-bottom: 2px solid $card-secondary-border;
         font-size: $h4-font-size;
         margin-top: 0;
     }
@@ -21,8 +24,8 @@
         }
     }
     > .card-header, .card-header-nested {
-        border-bottom: 2px solid $card-border-color;
-        padding: 10px 8px;
+        border-bottom: 2px solid $card-secondary-border;
+        padding: 10px 8px 10px 0px;
         background: transparent;
 
         // In page builder we can choose to not have a heading,
@@ -36,6 +39,9 @@
             .blockinstance-header {
                 opacity:0.6;
             }
+        }
+        &.drag-handle {
+            padding-left: 8px;
         }
     }
     &.card-warning {
@@ -60,7 +66,7 @@
     }
     > .card-body,
     > .block > .card-body {
-        padding: 15px 8px;
+        padding: 15px 0px;
         &.flush {
             padding: 15px 0 0 0;
         }
@@ -72,6 +78,13 @@
         }
         .has-attachment {
             margin: 0;
+        }
+    }
+
+    // wallpost blocks don't need secdonary card border color
+    .wallpost {
+        .card-header {
+            border-color: $card-border-color;
         }
     }
 }

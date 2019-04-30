@@ -3,8 +3,8 @@
     data-viewtype="{{$viewtype}}"
     data-user-roles='{{$userroles}}'
     data-group-roles='{{$grouproles}}' >
-    {{if  $viewtype == "profile" }}
-        <h2 class="card-header">{{str tag=profile section=view}}</h2>
+    {{if $viewtype == "profile" }}
+        <h2 class="card-header">{{str tag=Profile section=view}}</h2>
     {{/if}}
 
     <table id="accesslisttable" class="fullwidth accesslists table">
@@ -52,9 +52,9 @@
                     <option data-type="" {% if (!o.presets.type) { %}selected{% } %} value="">{%={{jstr tag=sharewith section=view}}%}</option>
 
                     <optgroup label="{%={{jstr tag=searchfor section=view}}%}">
-                        <option data-search-option="true" id="friend" value="friend"{% if (o.presets.type == "friend") { %} selected{% } %}>{{str tag=friends section=view}}</option>
-                        <option data-search-option="true" id="group" value="group"{% if (o.presets.type == "group") { %} selected{% } %}>{{str tag=groups}}</option>
-                        <option data-search-option="true" id="user" value="user"{% if (o.presets.type == "user") { %} selected{% } %}>{{str tag=users}}</option>
+                        <option data-search-option="true" id="friend" value="friend"{% if (o.presets.type == "friend") { %} selected{% } %}>{{str tag=friend section=view}}</option>
+                        <option data-search-option="true" id="group" value="group"{% if (o.presets.type == "group") { %} selected{% } %}>{{str tag=group section=view}}</option>
+                        <option data-search-option="true" id="user" value="user"{% if (o.presets.type == "user") { %} selected{% } %}>{{str tag=user section=view}}</option>
                     </optgroup>
 
                     <optgroup label="{%={{jstr tag=general section=view}}%}" id="potentialpresetitemssharewith">
@@ -185,6 +185,17 @@ jQuery(function($) {
                 if (selectedDate !== "") {
                     formchangemanager.setFormStateById('{{$formname}}', FORM_CHANGED);
                 }
+            });
+
+            // ugly fix for open issue in tempusdominus bootstrap lib not getting the value from html tag
+            // https://github.com/tempusdominus/bootstrap-4/issues/126
+            target.each(function() {
+                var value = $(this).attr('value');
+                $(this).datetimepicker({
+                    format: "{{str(tag='pieform_calendar_dateformat' section='langconfig')|pieform_element_calendar_convert_dateformat}} {{str(tag='pieform_calendar_timeformat' section='langconfig')|pieform_element_calendar_convert_timeformat}}",
+                    date: value
+                });
+                $(this).val(value);
             });
         }
 
@@ -368,7 +379,7 @@ jQuery(function($) {
                 presets: presets,
                 viewtype: viewtype,
                 roles: roles,
-                defaultText: defaultText
+                defaultText: defaultText,
             };
 
             $('#accesslistitems').append(tmpl("row-template", data));

@@ -20,6 +20,7 @@ Scenario: Checking menu items are available as a student (Bug 1467368)
  Given I log in as "UserA" with password "Kupuh1pa!"
  # Checking the main menu navigation headings
  When I click on "Show main menu"
+ And I wait "1" seconds
  And I follow "Dashboard"
  Then I should not see "Administration" in the "Administration menu" property
  And I should not see "Site information" in the "Administration menu" property
@@ -42,8 +43,7 @@ Scenario: Checking menu items are available as a student (Bug 1467368)
  # Checking the sub navigation in Engage
  When I follow "Engage"
  Then I should see "Groups" in the "Engage sub-menu" property
- And I should see "My friends" in the "Engage sub-menu" property
- And I should see "Find people" in the "Engage sub-menu" property
+ And I should see "People" in the "Engage sub-menu" property
  And I should see "Discussion topics" in the "Engage sub-menu" property
  And I should see "Institution membership" in the "Engage sub-menu" property
 
@@ -57,6 +57,7 @@ Scenario: Checking menu items are available as site staff (Bug 1467368)
  Then I should not see "Administration" in the "Main menu" property
  # The one major difference a site staff has is site info link that leads to other links
  And I click on "Show administration menu"
+ And I wait "1" seconds
  And I follow "User search"
  And I click on "Show administration menu"
  Then I follow "Reports"
@@ -65,6 +66,7 @@ Scenario: Checking menu items are available as Admin User (Bug 1467368)
  Given I log in as "admin" with password "Kupuh1pa!"
  # Checking the sub navigation in Administration
  And I click on "Show administration menu"
+ And I wait "1" seconds
  Then I should see "Admin home" in the "Administration menu" property
  And I should see "Configure site" in the "Administration menu" property
  And I should see "Users" in the "Administration menu" property
@@ -87,6 +89,7 @@ Scenario: Checking menu items are available as Admin User (Bug 1467368)
  And I should see "Pages and collections" in the "Configure site sub-menu" property
  And I should see "Journals" in the "Configure site sub-menu" property
  And I should see "Share" in the "Configure site sub-menu" property
+ And I scroll to the base of id "navadmin"
  And I should see "Files" in the "Configure site sub-menu" property
  And I should see "Cookie Consent" in the "Configure site sub-menu" property
  # Checking the sub navigation in Users
@@ -117,6 +120,7 @@ Scenario: Checking menu items are available as Admin User (Bug 1467368)
  And I should see "Profile completion" in the "Institutions sub-menu" property
  And I should see "Pages and collections" in the "Institutions sub-menu" property
  And I should see "Journals" in the "Institutions sub-menu" property
+ And I scroll to the base of id "navadmin"
  And I should see "Share" in the "Institutions sub-menu" property
  And I should see "Files" in the "Institutions sub-menu" property
  And I should see "Pending registrations" in the "Institutions sub-menu" property
@@ -162,7 +166,7 @@ Scenario: Checking menu items are available as Institution Administrator (Bug 14
  And I should see "Update group members by CSV" in the "Admin Groups sub-menu" property
  # Checking the sub navigation in Institutions
  And I press "Show menu for Institutions"
- Then I should not see "Profile completion" in the "Institutions sub-menu" property
+ Then I should see "Profile completion" in the "Institutions sub-menu" property
  And I should see "Settings" in the "Institutions sub-menu" property
  And I should see "Static pages" in the "Institutions sub-menu" property
  And I should see "Legal" in the "Institutions sub-menu" property
@@ -173,6 +177,7 @@ Scenario: Checking menu items are available as Institution Administrator (Bug 14
  And I should see "Pages and collections" in the "Institutions sub-menu" property
  And I should see "Share" in the "Institutions sub-menu" property
  And I should see "Files" in the "Institutions sub-menu" property
+ And I scroll to the base of id "navadmin"
  And I should see "Pending registrations" in the "Institutions sub-menu" property
  # Checking Reports menu
  And I should see "Reports"
@@ -188,5 +193,5 @@ Scenario: Checking menu items are available as Institution Administrator (Bug 14
  Then I should see "Preferences"
  And I should see "Legal"
  And I should see "Notifications"
- And I should see "Apps"
+ And I should see "Connected apps"
  And I should see "Logout"

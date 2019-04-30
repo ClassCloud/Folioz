@@ -12,6 +12,7 @@
 defined('INTERNAL') || die();
 
 // Constants for the different group roles
+define ('GROUP_ROLES_NONE', 0);
 define('GROUP_ROLES_ALL', 1);
 define('GROUP_ROLES_NONMEMBER', 2);
 define('GROUP_ROLES_ADMIN', 3);
@@ -450,7 +451,7 @@ function group_create($data) {
             'description'    => isset($data['description']) ? $data['description'] : null,
             'urlid'          => isset($data['urlid']) ? $data['urlid'] : null,
             'grouptype'      => $data['grouptype'],
-            'category'       => isset($data['category']) ? intval($data['category']) : null,
+            'category'       => isset($data['category']) && !empty($data['category']) ? intval($data['category']) : null,
             'jointype'       => $jointype,
             'ctime'          => $data['ctime'],
             'mtime'          => $data['ctime'],
@@ -472,7 +473,7 @@ function group_create($data) {
             'editwindowstart' => $data['editwindowstart'],
             'editwindowend'  => $data['editwindowend'],
             'sendnow'        => isset($data['sendnow']) ? $data['sendnow'] : null,
-            'viewnotify'     => isset($data['viewnotify']) ? $data['viewnotify'] : null,
+            'viewnotify'     => !empty($data['viewnotify']) ? $data['viewnotify'] : null,
             'feedbacknotify' => isset($data['feedbacknotify']) ? $data['feedbacknotify'] : null,
         ),
         'id',
@@ -1713,7 +1714,8 @@ function group_prepare_usergroups_for_display($groups) {
         else if ($group->membershiptype == 'invite') {
             $group->invite = group_get_accept_form('invite' . $i++, $group->id);
         }
-        else if ($group->jointype == 'open') {
+        // When 'isolatedinstitutions' is set, people cannot join public groups by themselves
+        else if ($group->jointype == 'open' && !(is_isolated() && $group->public == 1)) {
             $group->groupjoin = group_get_join_form('joingroup' . $i++, $group->id);
         }
 
@@ -2457,6 +2459,31 @@ function group_can_create_groups() {
     return $creators == 'staff' && ($USER->get('staff') || $USER->is_institutional_staff());
 }
 
+function group_can_create_public_groups() {
+    global $USER;
+
+    $creators = get_config('createpublicgroups');
+
+    // Only site administrators can create public groups when 'isolatedinstitutions' is set
+    if (is_isolated()) {
+        if ($USER->get('admin')) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    // Different user roles can create public groups when 'isolatedinstitutions' is not set
+    if ($creators == 'all' && !is_isolated()) {
+        return true;
+    }
+    if (($USER->get('admin') || $USER->is_institutional_admin()) && !is_isolated()) {
+        return true;
+    }
+    return $creators == 'staff' && (($USER->get('staff') || $USER->is_institutional_staff()) && !is_isolated());
+}
+
 /* Returns groups containing a given member which accept view submissions */
 function group_get_user_course_groups($userid=null) {
     if (is_null($userid)) {
@@ -2569,7 +2596,7 @@ function install_system_grouphomepage_view() {
         'template'    =>  View::SITE_TEMPLATE,
         'numrows'     => 1,
         'columnsperrow' => array((object)array('row' => 1, 'columns' => 1)),
-        'title'       => get_string('grouphomepage', 'view'),
+        'title'       => get_string('Grouphomepage', 'view'),
     ));
     $view->set_access(array(array(
         'type' => 'loggedin'
@@ -2850,6 +2877,8 @@ function group_get_allowed_group_csv_keys() {
         'hidemembersfrommembers',
         'invitefriends',
         'suggestfriends',
+        'viewnotify',
+        'category',
     );
 
     if ($USER->get('admin')) {

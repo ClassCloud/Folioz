@@ -1,26 +1,10 @@
 .sidebar {
     .card {
-        border-color: $accent-color;
-
-        .list-group-item-link a:hover {
-            //background-colour: $accent-color;
-        }
+        border-color: $theme-secondary-color;
     }
 }
 .card.bg-warning {
     .card-header a {
         border-width: 0;
-    }
-    .card-body {
-        background-color: inherit;
-    }
-}
-
-.card-collection,
-.card-view {
-    .bg-warning {
-        .card-body {
-            background: $white;
-        }
     }
 }

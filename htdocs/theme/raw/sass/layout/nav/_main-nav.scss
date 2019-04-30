@@ -30,7 +30,7 @@
         position: static;
         clear: both;
         max-height: none;
-        border: 1px solid $navbar-default-border;
+        border: 1px solid $navbar-default-link-border;
 
         @include media-breakpoint-up(md) {
             position: absolute;
@@ -39,11 +39,18 @@
             max-width: 300px;
 
             z-index: 5;
-            max-height: 88vh;
+            @for $i from 1 through 5 {
+                .header.message-count-#{$i} & {
+                    max-height: calc(100vh - (#{$navbar-height} + (#{$i} * 33px) + 20px));
+                }
+            }
             overflow-y: hidden;
             overflow-x: hidden;
             margin-right: 0;
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+            &.show {
+                overflow-y: auto;
+            }
         }
 
         @include media-breakpoint-down(sm) {
@@ -82,8 +89,8 @@
             background-color: $navbar-default-link-bg;
             padding: 10px 15px;
             font-weight: normal;
-            border-top: 1px solid $navbar-default-border;
-            border-bottom: 1px solid $navbar-default-border;
+            border-top: 1px solid $navbar-default-link-border;
+            border-bottom: 1px solid $navbar-default-link-border;
             margin-top: -1px;
             &:hover,
             &:focus {
@@ -91,8 +98,12 @@
                 text-decoration:none;
                 color: $navbar-default-link-hover-color;
             }
+            &.disabled {
+                color: $btn-link-disabled-color;
+                cursor: not-allowed;
+            }
             @include media-breakpoint-up(md) {
-                border: 1px solid $navbar-default-border;
+                border: 1px solid $navbar-default-link-border;
             }
             .icon {
                 margin-right: 5px;

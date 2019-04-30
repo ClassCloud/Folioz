@@ -173,9 +173,9 @@ Switchboxes are used for Yes/No, On/Off or other true/false type fields. They ar
 This button is used to show there are more options available. An example can be found on a regular portfolio page where the items of the "Watchlist" and "Objectionable content" are available via the "More options" button. Note: Styles are only added for layout here in the style guide.
 ```
 <div class="btn-group" style="margin-left: 200px;">
-    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" title="{str tag='moreoptions'}" aria-expanded="false">
         <span class="icon icon-ellipsis-h icon-lg" role="presentation" aria-hidden="true"></span>
-        <span class="sr-only">{str tag=more...}</span>
+        <span class="sr-only">{str tag=moreoptions}</span>
     </button>
     <ul class="dropdown-menu dropdown-menu-right" role="menu">
         <li class="dropdown-item">
@@ -703,7 +703,7 @@ This is the general layout of blocks. An example of this being used is the 'Late
     <h2>{str tag=Collection section=collection}: Collection 1</h2>
     <p class="navlabel">{str tag=navtopage section=collection}</p>
     <nav class="custom-dropdown dropdown">
-        <ul class="d-none">
+        <ul id="pagelist" class="collapse">
             <li>
                 <a href="" data-index="0">Page 1</a>
             </li>
@@ -714,7 +714,7 @@ This is the general layout of blocks. An example of this being used is the 'Late
                 <a href="" data-index="2">Page 3</a>
             </li>
         </ul>
-        <span class="picker form-control">{str tag=viewingpage section=collection}
+        <span class="picker form-control" tabindex="0" data-toggle="collapse" data-target="#pagelist" aria-expanded="false" role="button" aria-controls="#pagelist">{str tag=viewingpage section=collection}
             <span id="currentindex" data-currentindex="1">2</span>
             /3
         </span>
@@ -740,7 +740,7 @@ This card is used to show a page.
         <div class="card-footer">
             <div class="page-access"></div>
             <div class="page-controls">
-                <a href="#" class="dropdown-toggle moremenu btn btn-link" data-toggle="dropdown" aria-expanded="false" title="More...">
+                <a href="#" class="dropdown-toggle moremenu btn btn-link" data-toggle="dropdown" aria-expanded="false" title="{str tag='moreoptions'}">
                     <span class="icon icon-chevron-down open-indicator" role="presentation" aria-hidden="true"></span>
                     <span class="icon icon-ellipsis-v close-indicator" role="presentation" aria-hidden="true"></span>
                     <span class="sr-only">More options for "Dashboard page"</span>
@@ -811,7 +811,7 @@ section .card-quarter:nth-child(4n) .page-access .dropdown-menu {
                 </ul>
             </div>
             <div class="page-controls">
-                <a href="#" class="dropdown-toggle moremenu btn btn-link" data-toggle="dropdown" aria-expanded="false" title="More...">
+                <a href="#" class="dropdown-toggle moremenu btn btn-link" data-toggle="dropdown" aria-expanded="false" title="{str tag='moreoptions'}">
                     <span class="icon icon-chevron-down open-indicator" role="presentation" aria-hidden="true"></span>
                     <span class="icon icon-ellipsis-v close-indicator" role="presentation" aria-hidden="true"></span>
                     <span class="sr-only">More options for "Dashboard page"</span>
@@ -883,7 +883,7 @@ section .card-quarter:nth-child(4n) .page-access .dropdown-menu {
                 </ul>
             </div>
             <div class="page-controls">
-                <a href="#" class="dropdown-toggle moremenu btn btn-link" data-toggle="dropdown" aria-expanded="false" title="More...">
+                <a href="#" class="dropdown-toggle moremenu btn btn-link" data-toggle="dropdown" aria-expanded="false" title="{str tag='moreoptions'}">
                 <span class="icon icon-chevron-down open-indicator" role="presentation" aria-hidden="true"></span>
                 <span class="icon icon-ellipsis-v close-indicator" role="presentation" aria-hidden="true"></span>
                 <span class="sr-only">More options for "collection"</span>
@@ -1224,7 +1224,7 @@ The profile picture size that is used on side cards. The example is the profile 
     <div id="sb-profile" class="sideblock-1 user-card">
         <div class="card">
             <h3 class="card-header profile-block">
-                <a href="" class="username">Side card</a> <a href="" title="{str tag=editprofileicon section=artefact.file}" class="user-icon">
+                <a href="" class="username">Side card</a> <a href="" title="{str tag=editprofileicon section=artefact.file}" class="user-icon user-icon-60">
                     <img src="{profile_icon_url user=$sbdata.id maxheight=60 maxwidth=60}" alt="{str tag=editprofileicon section=artefact.file}">
                 </a>
             </h3>
@@ -1252,7 +1252,7 @@ This size of profile picture is used mainly on comment blocks.
 This size and style of profile picture is used in the friends list.
 ```
 <div class="user-thumbnails">
-    <a href="" class="item user-icon metadata user-icon-larger {cycle values='d0,d1'}">
+    <a href="" class="item user-icon metadata user-icon-100 {cycle values='d0,d1'}">
         <img src="{profile_icon_url user=$sbdata.id maxheight=100 maxwidth=100}" alt="{str tag=profileimagetext section=mahara arg1='John Smith'}">
         <p class="member-name">John Smith</p>
     </a>

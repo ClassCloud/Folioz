@@ -23,7 +23,7 @@ require_once('group.php');
 require_once(get_config('libroot') . 'view.php');
 
 if (param_variable('acceptfriend_submit', null)) {
-    acceptfriend_form(param_integer('id'));
+    acceptfriend_form(param_integer('id'), 'modal');
 }
 else if (param_variable('addfriend_submit', null)) {
     addfriend_form(param_integer('id'));
@@ -52,6 +52,8 @@ else {
 if ($userid == 0) {
     redirect();
 }
+
+isolatedinstitution_access($userid);
 
 // Get the user's details
 if (!isset($user)) {
@@ -276,7 +278,7 @@ if (!empty($loggedinid) && $loggedinid != $userid) {
         $relationship = 'none';
         $friendscontrol = get_account_preference($userid, 'friendscontrol');
         if ($friendscontrol == 'auto') {
-            $remoteusernewfriendform = addfriend_form($userid);
+            $remoteusernewfriendform = true;
         }
         $remoteuserfriendscontrol = $friendscontrol;
     }
@@ -325,10 +327,10 @@ if ($remoteusermessage) {
     $smarty->assign('message', $record->message);
 }
 if ($remoteuseracceptform) {
-    $smarty->assign('acceptform', acceptfriend_form($userid));
+    $smarty->assign('acceptform', acceptfriend_form($userid, 'modal'));
 }
 if ($remoteusernewfriendform) {
-    $smarty->assign('newfriendform', addfriend_form($userid));
+    $smarty->assign('newfriendform', addfriend_form($userid, 'pageactions'));
 }
 if ($remoteuserfriendscontrol) {
     $smarty->assign('friendscontrol', $friendscontrol);

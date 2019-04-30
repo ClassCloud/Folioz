@@ -63,7 +63,7 @@ class PluginArtefactResume extends PluginArtefact {
             ),
             'index' => array(
                 'page'  => 'index',
-                'url'   => 'artefact/resume',
+                'url'   => 'artefact/resume/index.php',
                 'title' => get_string('introduction', 'artefact.resume'),
             ),
             'employment' => array(
@@ -981,7 +981,7 @@ function compositeSaveCallback(form, data) {
     });
     // Also need to clear the innerHTML for textareas
     \$j('#' + form.id + ' textarea').each(function() {
-        document.getElementById(\$j(this).attr('id')).innerHTML = '';
+        tinyMCE.get(\$(this).attr('id')).setContent('');
     });
 
     \$j('#' + key + 'form').collapse('hide');
@@ -1338,7 +1338,7 @@ EOF;
                 'type' => 'wysiwyg',
                 'rows' => 10,
                 'cols' => 50,
-                'rules' => array('maxlength' => 65536),
+                'rules' => array('maxlength' => 1000000),
                 'title' =>  get_string('positiondescription', 'artefact.resume'),
             ),
             'attachments' => array(
@@ -1508,7 +1508,7 @@ EOF;
                 'type' => 'wysiwyg',
                 'rows' => 10,
                 'cols' => 50,
-                'rules' => array('maxlength' => 65536),
+                'rules' => array('maxlength' => 1000000),
                 'title' => get_string('qualdescription', 'artefact.resume'),
             ),
             'attachments' => array(
@@ -1648,7 +1648,7 @@ class ArtefactTypeCertification extends ArtefactTypeResumeComposite {
                 'type' => 'wysiwyg',
                 'rows' => 10,
                 'cols' => 50,
-                'rules' => array('maxlength' => 65536),
+                'rules' => array('maxlength' => 1000000),
                 'title' => get_string('description'),
             ),
             'attachments' => array(
@@ -1784,7 +1784,7 @@ EOF;
                 'type' => 'wysiwyg',
                 'rows' => 10,
                 'cols' => 50,
-                'rules' => array('maxlength' => 65536),
+                'rules' => array('maxlength' => 1000000),
                 'title' => get_string('detailsofyourcontribution', 'artefact.resume'),
             ),
             'attachments' => array(
@@ -1914,7 +1914,7 @@ class ArtefactTypeMembership extends ArtefactTypeResumeComposite {
                 'type' => 'wysiwyg',
                 'rows' => 10,
                 'cols' => 50,
-                'rules' => array('maxlength' => 65536),
+                'rules' => array('maxlength' => 1000000),
                 'title' => get_string('description', 'artefact.resume'),
             ),
             'attachments' => array(
@@ -2180,7 +2180,7 @@ function simple_resumefield_form($defaults, $goto, $options = array()) {
                     'rows'  => 100,
                     'cols'  => 365,
                     'defaultvalue' => $content,
-                    'rules' => array('maxlength' => 65536),
+                    'rules' => array('maxlength' => 1000000),
                 ),
                 $t . 'display' => array(
                     'type' => 'html',

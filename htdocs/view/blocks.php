@@ -86,7 +86,7 @@ else if ($view->get('type') == 'dashboard') {
     define('TITLE', $title );
 }
 else if ($view->get('type') == 'grouphomepage') {
-    $title = get_string('grouphomepage', 'view');
+    $title = get_string('Grouphomepage', 'view');
     if ($view->get('template') != View::SITE_TEMPLATE) {
         $groupurl = group_homepage_url(get_group_by_id($view->get('group'), true), false);
     }
@@ -157,7 +157,7 @@ $inlinejs .= pieform_element_select_get_inlinejs();
 $inlinejs .= "jQuery(window).on('pageupdated', {}, function() { dock.init(jQuery(document)); });";
 // The form for adding blocks via the keyboard
 $addform = pieform(array(
-    'name' => 'addblock',
+    'name' => 'newblock',
     'method' => 'post',
     'jsform' => true,
     'renderer' => 'div',

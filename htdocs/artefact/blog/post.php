@@ -132,7 +132,7 @@ $form = pieform(array(
             'title' => get_string('postbody', 'artefact.blog'),
             'description' => get_string('postbodydesc', 'artefact.blog'),
             'rules' => array(
-                'maxlength' => 65536,
+                'maxlength' => 1000000,
                 'required' => true
             ),
             'defaultvalue' => $description,
@@ -143,6 +143,7 @@ $form = pieform(array(
             'title'        => get_string('tags'),
             'description'  => get_string('tagsdesc'),
             'help' => true,
+            'institution'  => $institutionname,
         ),
         'license' => license_form_el_basic(isset($blogpostobj) ? $blogpostobj : null),
         'licensing_advanced' => license_form_el_advanced(isset($blogpostobj) ? $blogpostobj : null),

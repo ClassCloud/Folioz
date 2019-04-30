@@ -704,6 +704,7 @@ class BlockInstance {
     private $artefacts = array();
     private $temp = array();
     private $tags = array();
+    private $inedit = false;
 
     public function __construct($id=0, $data=null) {
          if (!empty($id)) {
@@ -1007,7 +1008,7 @@ class BlockInstance {
 
         safe_require('blocktype', $this->get('blocktype'));
         $movecontrols = array();
-
+        $this->inedit = true;
         $blocktypeclass = generate_class_name('blocktype', $this->get('blocktype'));
         try {
             $title = $this->get_title();
@@ -1109,8 +1110,11 @@ class BlockInstance {
         $smarty->assign('javascript', defined('JSON'));
         $smarty->assign('strnotitle', get_string('notitle', 'view'));
         $smarty->assign('strmovetitletext', $title == '' ? get_string('movethisblock', 'view') : get_string('moveblock', 'view', "'$title'"));
+        $smarty->assign('strmovetitletexttooltip', get_string('moveblock2', 'view'));
         $smarty->assign('strconfigtitletext', $title == '' ? get_string('configurethisblock1', 'view', $id) : get_string('configureblock1', 'view', "'$title'", $id));
+        $smarty->assign('strconfigtitletexttooltip', get_string('configureblock2', 'view'));
         $smarty->assign('strremovetitletext', $title == '' ? get_string('removethisblock1', 'view', $id) : get_string('removeblock1', 'view', "'$title'", $id));
+        $smarty->assign('strremovetitletexttooltip', get_string('removeblock2', 'view'));
         $smarty->assign('lockblocks', ($this->get_view()->get('lockblocks') && $this->get_view()->get('owner'))); // Only lock blocks for user's portfolio pages
 
         if (!$configure && $title) {
@@ -1174,6 +1178,11 @@ class BlockInstance {
 
         $classname = generate_class_name('blocktype', $this->get('blocktype'));
         $displayforrole = call_static_method($classname, 'display_for_roles', $user_roles);
+        $checkview = $this->get_view();
+        if ($checkview->get('owner') == NULL ||
+            ($USER->is_admin_for_user($checkview->get('owner')) && $checkview->is_objectionable())) {
+            $displayforrole = true;
+        }
         if (!$displayforrole) {
             $content = '';
             $smarty->assign('loadbyajax', false);
@@ -1238,7 +1247,7 @@ class BlockInstance {
         }
 
         $smarty->assign('content', $content);
-        if (isset($configdata['retractable']) && $title) {
+        if (isset($configdata['retractable']) && $title && !$exporting) {
             $smarty->assign('retractable', $configdata['retractable']);
             if (isset($configdata['retractedonload'])) {
                 $smarty->assign('retractedonload', $configdata['retractedonload']);

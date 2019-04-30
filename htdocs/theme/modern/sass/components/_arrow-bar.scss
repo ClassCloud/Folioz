@@ -1,32 +1,35 @@
 .arrow-bar {
-    background-color: #157c62;
+    background-color: $arrow-bar-bg;
 
     .arrow {
+        background-color: $arrow-color;
+        &:after {
+            border-left: 14px solid $arrow-color;
+        }
         .text {
-            color: #FFF;
+            color: $arrow-text-color;
         }
     }
-    .nav-inpage.nav {
-        li {
-            a {
-                color: #FFF;
-                &:hover {
-                    color: #FFF;
-                    background-color: $accent-color;
-                }
+}
+
+
+.nav-inpage {
+    &.nav > li {
+        > a, button {
+            color: $arrow-link-color;
+            &:hover,
+            &:focus {
+                background: scale-color($arrow-bar-bg, $lightness: 5%);
+                color: $arrow-link-hover-color;
             }
-            button {
-                color: #FFF;
-                &:hover {
-                    color: #FFF;
-                    background-color: $accent-color;
-                    text-decoration: none;
-                }
-            }
-            &.active a,
-            &.active button {
-                background-color: #FFF;
-                color: #333;
+        }
+        &.active > a,
+        &.active > button  {
+            color: $theme-text-color;
+            background: $arrow-link-background-color;
+            &:hover,
+            &:focus {
+                color: $arrow-link-active-color;
             }
         }
     }

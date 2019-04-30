@@ -3906,57 +3906,16 @@ function profile_sideblock() {
 function onlineusers_sideblock() {
     global $USER;
 
-    if (!$USER->is_logged_in() || in_admin_section()) {
+    if (!$USER->is_logged_in() || in_admin_section() || !get_config('showonlineuserssideblock')) {
         return null;
     }
-    // Determine what level of users to show
-    // 0 = none, 1 = institution/s only, 2 = all users
-    $showusers = 2;
-    $institutions = $USER->institutions;
-    if (!empty($institutions)) {
-        $showusers = 0;
-        foreach ($institutions as $i) {
-            if ($i->showonlineusers == 2) {
-                $showusers = 2;
-                break;
-            }
-            if ($i->showonlineusers == 1) {
-                $showusers = 1;
-            }
-        }
-    }
-    if (!get_config('showonlineuserssideblock') || $showusers == 0) {
-        return null;
-    }
-
     $maxonlineusers = get_config('onlineuserssideblockmaxusers');
-    switch ($showusers) {
-        case 1: // show institution only
-            $sql = 'SELECT DISTINCT u.* FROM {usr} u JOIN {usr_institution} i ON u.id = i.usr
-                WHERE i.institution IN ('.join(',', array_map('db_quote', array_keys($institutions))).')
-                AND lastaccess > ? AND deleted = 0 ORDER BY lastaccess DESC';
-            break;
-        case 2: // show all
-            $sql = 'SELECT * FROM {usr} WHERE lastaccess > ? AND deleted = 0 ORDER BY lastaccess DESC';
-            break;
-    }
+    $results = get_onlineusers($maxonlineusers, 0, 'lastaccess DESC');
 
-    $onlineusers = get_records_sql_array($sql, array(db_format_timestamp(time() - get_config('accessidletimeout'))), 0, $maxonlineusers);
-    if ($onlineusers) {
-        foreach ($onlineusers as &$user) {
-            $user->profileiconurl = profile_icon_url($user, 20, 20);
-
-            // If the user is an MNET user, show where they've come from
-            $authobj = AuthFactory::create($user->authinstance);
-            if ($authobj->authname == 'xmlrpc') {
-                $peer = get_peer($authobj->wwwroot);
-                $user->loggedinfrom = $peer->name;
-            }
-        }
+    if ($results['showusers'] == 0 || empty($results['count'])) {
+        return null;
     }
-    else {
-        $onlineusers = array();
-    }
+    $onlineusers = $results['onlineusers'];
 
     $sideblock = array(
         'name'   => 'onlineusers',
@@ -4958,6 +4917,14 @@ function generate_csv($data, $csvfields, $csvheaders = array()) {
 function check_if_institution_tag($tag) {
     global $USER;
     $institutions = $USER->get('institutions');
+    if ($USER->get('admin') && $institutiontags = get_records_sql_array("
+        SELECT id FROM {tag}
+        WHERE tag = ?
+        AND resourcetype = ?
+        AND ownertype = ?",
+        array($tag, 'institution', 'institution'))) {
+        $tag = 'tagid_' . $institutiontags[0]->id;
+    }
     if ($institutions && $institutiontags = get_records_sql_array("
         SELECT id FROM {tag}
         WHERE tag = ?
@@ -5636,8 +5603,9 @@ function get_institutions_to_associate() {
     global $USER;
 
     $institutions = array();
-    if (is_array($USER->institutions) && count($USER->institutions) > 0) {
+    if (is_array($USER->institutions) && count($USER->institutions) > 0 && !$USER->get('admin')) {
         // Get all institutions where user is member
+        // This does not apply for site admins
         foreach ($USER->institutions as $inst) {
             if (empty($inst->suspended)) {
                 $institutions = array_merge($institutions, array($inst->institution => $inst->displayname));
@@ -5694,6 +5662,39 @@ function get_password_policy_description($type = 'generic') {
         $description = get_string('passworddescriptionbase', 'mahara', $numbervalue) . ' ' . get_string('passworddescription.' . $formatvalue, 'mahara');
     }
     return $description;
+}
+
+/**
+ *
+ * Check if this site is using isolated institutions
+ */
+function is_isolated() {
+    global $CFG;
+    // If isolated institutions are turned on in $config.php we need to make sure
+    // that the correct site settings exist in case they don't edit / save the Admin -> Config form
+    // Note: we ned to save 'isolatedinstitutionset' in db as it needs to be different to the one set in $cfg
+    if (isset($CFG->isolatedinstitutions) && $CFG->isolatedinstitutions && !get_field('config', 'value', 'field', 'isolatedinstitutionset')) {
+        // Setting $cfg->isolatedinstitutions to true
+        set_config('loggedinprofileviewaccess', false);
+        set_config('creategroups', 'staff');
+        set_config('createpublicgroups', 'siteadmins');
+        set_config('usersallowedmultipleinstitutions', false);
+        set_config('requireregistrationconfirm', true);
+        set_config('isolatedinstitutionset', true); // set this in Db so we only do this check/update once
+        // Set the institution 'showonlineusers' to institution only if currently all
+        execute_sql('UPDATE {institution} SET showonlineusers = ? WHERE showonlineusers = ?', array(1, 2));
+    }
+    else if ((isset($CFG->isolatedinstitutions) && !$CFG->isolatedinstitutions) && get_field('config', 'value', 'field', 'isolatedinstitutionset')) {
+        // Setting $cfg->isolatedinstitutions to false
+        set_config('owngroupsonly', false);
+        set_config('isolatedinstitutionset', false); // set this in Db so we only do this check/update once
+    }
+    else if (!isset($CFG->isolatedinstitutions) && get_field('config', 'value', 'field', 'isolatedinstitutionset')) {
+        // Removing $cfg->isolatedinstitutions line
+        set_config('owngroupsonly', false);
+        set_config('isolatedinstitutionset', false); // set this in Db so we only do this check/update once
+    }
+    return (bool)get_config('isolatedinstitutions');
 }
 
 function get_homepage_redirect_results($request, $limit, $offset, $type = null, $id = null) {

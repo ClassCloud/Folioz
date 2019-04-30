@@ -716,10 +716,11 @@ EOF;
     $smarty->assign('sitelogocustom', $sitelogocustom);
     $sitelogo = $THEME->header_logo();
     $sitelogo = append_version_number($sitelogo);
-    $sitelogosmall = $THEME->header_logo_small();
-    $sitelogosmall = ($sitelogosmall ? append_version_number($sitelogosmall) : null);
+    $sitelogocustomsmall = $THEME->header_logo_small_custom();
+    $sitelogocustomsmall = ($sitelogocustomsmall ? append_version_number($sitelogocustomsmall) : null);
     $smarty->assign('sitelogo', $sitelogo);
-    $smarty->assign('sitelogosmall', $sitelogosmall);
+    $smarty->assign('sitelogosmall', $THEME->header_logo_small());
+    $smarty->assign('sitelogocustomsmall', $sitelogocustomsmall);
     $smarty->assign('sitelogo4facebook', $THEME->facebook_logo());
     $smarty->assign('sitedescription4facebook', get_string('facebookdescription', 'mahara'));
 
@@ -1290,11 +1291,16 @@ class Theme {
         return $this->get_image_url('site-logo');
     }
 
+    /* Set the default theme's small logo */
+    public function header_logo_small() {
+        return $this->get_image_url('site-logo-small');
+    }
+
     /**
      * Displaying of the small header logo of an institution
      * false will be returned if no small logo for the institution or site small logo is found
      */
-    public function header_logo_small() {
+    public function header_logo_small_custom() {
         if (!empty($this->headerlogosmall)) {
             return get_config('wwwroot') . 'thumb.php?type=logobyid&id=' . $this->headerlogosmall;
         }
@@ -1302,8 +1308,8 @@ class Theme {
             require_once('ddl.php');
             $table = new XMLDBTable('institution');
             $field = new XMLDBField('logoxs');
-            if (field_exists($table, $field) && $sitelogosmallid = get_field('institution', 'logoxs', 'name', 'mahara')) {
-                return get_config('wwwroot') . 'thumb.php?type=logobyid&id=' . $sitelogosmallid;
+            if (field_exists($table, $field) && $sitelogocustomsmallid = get_field('institution', 'logoxs', 'name', 'mahara')) {
+                return get_config('wwwroot') . 'thumb.php?type=logobyid&id=' . $sitelogocustomsmallid;
             }
         }
         return false;
@@ -1405,7 +1411,7 @@ function jsstrings() {
                 'element.calendar.opendatepicker',
                 'rule.maxlength.maxlength',
                 'rule.required.required',
-            )
+            ),
         ),
         'tablerenderer' => array(
             'mahara' => array(
@@ -2231,7 +2237,6 @@ function admin_nav() {
             'url'    => 'admin/index.php',
             'title'  => get_string('adminhome', 'admin'),
             'weight' => 10,
-            'accesskey' => 'a',
             'iconclass' => 'home',
         ),
         'adminhome/home' => array(
@@ -2251,7 +2256,6 @@ function admin_nav() {
             'url'    => 'admin/site/options.php',
             'title'  => get_string('configsite', 'admin'),
             'weight' => 20,
-            'accesskey' => 's',
             'iconclass' => 'cogs',
         ),
         'configsite/siteoptions' => array(
@@ -2319,7 +2323,6 @@ function admin_nav() {
             'url'    => 'admin/users/search.php',
             'title'  => get_string('users'),
             'weight' => 30,
-            'accesskey' => 'u',
             'iconclass' => 'user',
         ),
         'configusers/usersearch' => array(
@@ -2370,7 +2373,6 @@ function admin_nav() {
             'title'  => get_string('groups', 'admin'),
             'accessibletitle' => get_string('administergroups', 'admin'),
             'weight' => 40,
-            'accesskey' => 'r',
             'iconclass' => 'users',
         ),
         'managegroups/groups' => array(
@@ -2408,7 +2410,6 @@ function admin_nav() {
             'url'    => 'admin/users/institutions.php',
             'title'  => get_string('Institutions', 'admin'),
             'weight' => 50,
-            'accesskey' => 'i',
             'iconclass' => 'university',
         ),
         'manageinstitutions/institutions' => array(
@@ -2501,7 +2502,6 @@ function admin_nav() {
             'url'    => 'admin/extensions/plugins.php',
             'title'  => get_string('Extensions', 'admin'),
             'weight' => 70,
-            'accesskey' => 'e',
             'iconclass' => 'puzzle-piece',
         ),
         'configextensions/pluginadmin' => array(
@@ -2588,7 +2588,6 @@ function institutional_admin_nav() {
             'url'    => 'admin/users/search.php',
             'title'  => get_string('users'),
             'weight' => 10,
-            'accesskey' => 'u',
             'iconclass' => 'user',
         ),
         'configusers/usersearch' => array(
@@ -2627,7 +2626,6 @@ function institutional_admin_nav() {
             'title'  => get_string('groups', 'admin'),
             'accessibletitle' => get_string('administergroups', 'admin'),
             'weight' => 20,
-            'accesskey' => 'g',
             'iconclass' => 'users',
         ),
         'managegroups/archives' => array(
@@ -2653,7 +2651,6 @@ function institutional_admin_nav() {
             'url'    => 'admin/users/institutions.php',
             'title'  => get_string('Institutions', 'admin'),
             'weight' => 30,
-            'accesskey' => 'i',
             'iconclass' => 'university',
         ),
         'manageinstitutions/institutions' => array(
@@ -2697,6 +2694,12 @@ function institutional_admin_nav() {
             'url'    => 'admin/users/notifications.php',
             'title'  => get_string('adminnotifications', 'admin'),
             'weight' => 50,
+        ),
+        'manageinstitutions/progressbar' => array(
+            'path'   => 'manageinstitutions/progressbar',
+            'url'    => 'admin/users/progressbar.php',
+            'title'  => get_string('progressbar', 'admin'),
+            'weight' => 55,
         ),
         'manageinstitutions/institutionviews' => array(
             'path'   => 'manageinstitutions/institutionviews',
@@ -2777,7 +2780,6 @@ function staff_nav() {
             'url'    => 'admin/users/search.php',
             'title'  => get_string('usersearch', 'admin'),
             'weight' => 10,
-            'accesskey' => 'u',
             'iconclass' => 'user',
         ),
         'reports' => array(
@@ -2785,7 +2787,6 @@ function staff_nav() {
             'url'    => 'admin/users/statistics.php',
             'title'  => get_string('reports', 'statistics'),
             'weight' => 30,
-            'accesskey' => 'i',
             'iconclass' => 'pie-chart',
         ),
     );
@@ -2820,7 +2821,6 @@ function institutional_staff_nav() {
             'url'    => 'admin/users/search.php',
             'title'  => get_string('usersearch', 'admin'),
             'weight' => 10,
-            'accesskey' => 'u',
             'iconclass' => 'user',
         ),
         'reports' => array(
@@ -2828,7 +2828,6 @@ function institutional_staff_nav() {
             'url'    => 'admin/users/statistics.php',
             'title'  => get_string('reports', 'statistics'),
             'weight' => 20,
-            'accesskey' => 'i',
             'iconclass' => 'pie-chart',
         ),
     );
@@ -2854,7 +2853,6 @@ function mahara_standard_nav() {
             'url' => '',
             'title' => get_string('dashboard', 'view'),
             'weight' => 10,
-            'accesskey' => 'd',
             'iconclass' => 'tachometer'
         ),
         'create' => array(
@@ -2883,7 +2881,6 @@ function mahara_standard_nav() {
             'url' => 'view/index.php',
             'title' => get_string('Viewscollections', 'view'),
             'weight' => 10,
-            'accesskey' => 'p',
         ),
         'create/tags' => array(
             'path' => 'create/tags',
@@ -2924,24 +2921,17 @@ function mahara_standard_nav() {
             'weight' => 40,
             'iconclass' => 'wrench',
         ),
+        'engage/people' => array(
+            'path' => 'engage/people',
+            'url' => 'user/index.php',
+            'title' => get_string('people'),
+            'weight' => 10,
+        ),
         'engage/index' => array(
             'path' => 'engage/index',
             'url' => 'group/index.php',
             'title' => get_string('groups'),
-            'weight' => 10,
-            'accesskey' => 'g',
-        ),
-        'engage/myfriends' => array(
-            'path' => 'engage/myfriends',
-            'url' => 'user/myfriends.php',
-            'title' => get_string('myfriends'),
             'weight' => 30,
-        ),
-        'engage/findfriends' => array(
-            'path' => 'engage/findfriends',
-            'url' => 'user/find.php',
-            'title' => get_string('findpeople'),
-            'weight' => 40,
         ),
         'engage/institutionmembership' => array(
             'path' => 'engage/institutions',
@@ -3118,7 +3108,7 @@ function right_nav() {
         'settings/apps' => array(
             'path' => 'settings/apps',
             'url' => 'account/apps.php',
-            'title' => get_string('myapps'),
+            'title' => get_string('connectedapps'),
             'weight' => 50
         ),
         'settings/notifications' => array(
@@ -3215,7 +3205,6 @@ function footer_menu($all=false) {
             $helpkeys[] = 'new';
         }
     }
-
     // To handle when things have an explicit 'filter' state
     if (param_exists('filter')) {
         $helpkeys[] = param_alphanum('filter', null);
@@ -3245,7 +3234,6 @@ function footer_menu($all=false) {
             }
         }
     }
-
     return $menu;
 }
 
@@ -3841,6 +3829,10 @@ function clean_html($text, $xhtml=false) {
     if (!empty($customfilters)) {
         $config->set('Filter.Custom', $customfilters);
     }
+
+    require_once('htmlpurifiercustom/MixedContent.php');
+    $uri = $config->getDefinition('URI');
+    $uri->addFilter(new HTMLPurifier_URIFilter_MixedContent(), $config);
 
     if ($def = $config->maybeGetRawHTMLDefinition()) {
         $def->addAttribute('a', 'target', 'Enum#_blank,_self');
@@ -4499,18 +4491,18 @@ function build_pagination_pagelink($class, $text, $title, $disabled=false, $url=
     }
 
 
-    $result = "<li class='$class'>";
+    $result = "<li class='page-item $class'>";
 
     if (!empty($title)) {
         $text .= '<span class="sr-only">' . $title . '</span>';
     }
 
     if ($disabled) {
-        $result .= '<span>';
+        $result .= '<span class="page-link">';
         $result .= $text;
         $result .= '</span>';
     } else {
-        $result .= '<a href="' . hsc($url) . '" title="' . $title . '">';
+        $result .= '<a class="page-link" href="' . hsc($url) . '" title="' . $title . '">';
         $result .= $text;
         $result .= '</a>';
     }

@@ -53,8 +53,8 @@ $form['elements']['save'] = array(
     'type'  => 'submitcancel',
     'class' => 'btn-primary',
     'value' => array(
-          get_string('save'),
-          get_string('cancel')
+        get_string('save'),
+        get_string('cancel')
     ),
     'goto' => get_config('wwwroot') . 'module/framework/frameworks.php',
 );
@@ -62,6 +62,7 @@ $form['elements']['save'] = array(
 $form = pieform($form);
 
 $smarty = smarty();
+$smarty->assign('SUBPAGENAV', PluginModuleFramework::submenu_items('overview'));
 $smarty->assign('form', $form);
 $smarty->assign('plugintype', $plugintype);
 $smarty->assign('pluginname', $pluginname);
@@ -94,5 +95,4 @@ function frameworkconfig_submit(Pieform $form, $values) {
     else {
         $form->json_reply(PIEFORM_ERR, array('message' => get_string('settingssavefailed')));
     }
-
 }

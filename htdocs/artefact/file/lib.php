@@ -553,7 +553,7 @@ abstract class ArtefactTypeFileBase extends ArtefactType {
         global $USER;
         $select = '
             SELECT
-                a.id, a.artefacttype, a.mtime, f.size, fi.orientation, a.title, a.description, a.license, a.licensor, a.licensorurl, a.locked, a.allowcomments, u.profileicon AS defaultprofileicon,
+                a.id, a.artefacttype, a.mtime, f.size, fi.orientation, a.title, a.description, a.license, a.licensor, a.licensorurl, a.locked, a.allowcomments, u.profileicon AS defaultprofileicon, a.author,
                 COUNT(DISTINCT c.id) AS childcount, COUNT (DISTINCT aa.artefact) AS attachcount, COUNT(DISTINCT va.view) AS viewcount, COUNT(DISTINCT s.id) AS skincount,
                 COUNT(DISTINCT api.id) AS profileiconcount, COUNT(DISTINCT fpa.id) AS postcount';
         $from = '
@@ -611,7 +611,7 @@ abstract class ArtefactTypeFileBase extends ArtefactType {
         }
         else if ($group) {
             $select .= ',
-                r.can_edit, r.can_view, r.can_republish, a.author';
+                r.can_edit, r.can_view, r.can_republish';
             $from .= '
                 LEFT OUTER JOIN (
                     SELECT ar.artefact, ar.can_edit, ar.can_view, ar.can_republish
@@ -692,6 +692,11 @@ abstract class ArtefactTypeFileBase extends ArtefactType {
                     if ($group && $item->author == $USER->get('id')) {
                         $item->can_edit = 1;    // This will show the delete, edit buttons in filelist, but doesn't change the actual permissions in the checkbox
                     }
+                    if ($group || $institution || ($USER->get('id') != $item->author)) {
+                        $userobj = new User();
+                        $userobj->find_by_id($item->author);
+                        $item->uploadedby = display_name($userobj, null, true);
+                    }
                 }
                 if ($item->artefacttype == 'folder') {
                     if ($item->childcount > 0 && defined('FOLDER_SIZE')) {
@@ -718,8 +723,11 @@ abstract class ArtefactTypeFileBase extends ArtefactType {
                 LEFT JOIN {institution} i ON i.name = t2.ownerid
                 WHERE t.resourcetype = 'artefact' AND t.resourceid IN (" . $tagwhere . ")");
             if ($tags) {
+                require_once(get_config('docroot') . 'lib/form/elements/tags.php');
+                $alltags = get_all_tags_for_user();
                 foreach ($tags as $t) {
-                    $filedata[$t->resourceid]->tags[] = $t->tag;
+                    $tagname = remove_prefix($t->tag);
+                    $filedata[$t->resourceid]->tags[$tagname] = display_tag($tagname, $alltags['tags']);
                 }
             }
             $where = 'artefact IN (' . join(',', array_keys($filedata)) . ')';
@@ -811,6 +819,7 @@ abstract class ArtefactTypeFileBase extends ArtefactType {
                         'createfolder'    => $editfilesfolders,
                         'edit'            => $editfilesfolders,
                         'select'          => false,
+                        'tag'             => true,
                     ),
                 ),
             ),
@@ -1378,13 +1387,25 @@ class ArtefactTypeFile extends ArtefactTypeFileBase {
             $filetype = $this->get('oldextension') . ' ' . get_string('file', 'artefact.file');
         }
 
+        $uploadedby = null;
+        if ($this->group || $this->institution || ($USER->get('id') != $this->author)) {
+            $uploader = new User();
+            $uploader->find_by_id($this->author);
+            $uploadedby = display_name($uploader, null, true);
+        }
+
         $smarty = smarty_core();
         // $smarty->assign('iconpath', $this->get_icon($options));
         $smarty->assign('downloadpath', $downloadpath);
         $smarty->assign('filetype', $filetype);
-        if ($USER->is_logged_in()) {
+        if ($this->group) {
+            $group =  get_group_by_id($this->group);
+            $smarty->assign('ownername', 'Group "' . $group->name .'"');
+        }
+        else if ($USER->is_logged_in()) {
             $smarty->assign('ownername', $this->display_owner());
         }
+        $smarty->assign('uploadedby', $uploadedby);
         $smarty->assign('view', (isset($options['viewid']) ? $options['viewid'] : null));
         $smarty->assign('created', strftime(get_string('strftimedaydatetime'), $this->get('ctime')));
         $smarty->assign('modified', strftime(get_string('strftimedaydatetime'), $this->get('mtime')));
@@ -1702,7 +1723,7 @@ class ArtefactTypeFile extends ArtefactTypeFileBase {
                     'rows'         => 10,
                     'cols'         => 80,
                     'defaultvalue' => get_field('site_content', 'content', 'name', 'uploadcopyright', 'institution', 'mahara'),
-                    'rules'        => array('maxlength' => 65536),
+                    'rules'        => array('maxlength' => 1000000),
                 ),
             ),
             'collapsible' => true,

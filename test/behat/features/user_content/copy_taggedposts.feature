@@ -23,8 +23,7 @@ Feature: Mahara users can allow their tagged blogs tags to be copied
   Given I log in as "UserA" with password "Kupuh1pa!"
   # Add a taggedblogs block to a page
   And I choose "Pages and collections" in "Create" from main menu
-  And I click on "Page UserA_01" panel menu
-  And I click on "Edit" in "Page UserA_01" panel menu
+  And I click on "Edit" in "Page UserA_01" card menu
   And I expand "Journals" node in the "blocktype sidebar" property
   And I follow "Tagged journal entries" in the "blocktype sidebar" property
   And I press "Add"
@@ -43,6 +42,7 @@ Feature: Mahara users can allow their tagged blogs tags to be copied
   # Copy the page as same user
   And I choose "Pages and collections" in "Create" from main menu
   And I follow "Page UserA_01"
+  And I press "More options"
   And I follow "Copy"
   And I press "Save"
   Then I should see "Journal entries with tags \"blog\", \"one\" but not tag \"two\""
@@ -53,7 +53,7 @@ Feature: Mahara users can allow their tagged blogs tags to be copied
   Given I log in as "UserB" with password "Kupuh1pa!"
   And I scroll to the id "editdashboard"
   And I follow "Page UserA_01"
-  And I scroll to the base of id "copyview-button"
+  And I press "More options"
   And I follow "Copy"
   And I press "Save"
   Then I should see "Journal entries with tags \"blog\", \"one\" but not tag \"two\""
