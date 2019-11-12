@@ -89,7 +89,7 @@
                 padding: 20px 0;
                 border-bottom: 1px solid $list-group-border-color;
                 &.alert {
-                    padding: 5px 10px;
+                    padding: 10px 50px;
                 }
                 &:last-child,
                 &.last {
@@ -114,7 +114,7 @@
                         padding: 5px 5px 5px 0 !important;
                         border: 0;
                         background-color: $card-bg !important;
-                        color: $link-color !important;
+                        color: $link-color;
                         font-size: $font-size-base !important;
                         font-weight: 400 !important;
                         &:hover,
@@ -155,17 +155,6 @@
 // @todo: Rethink this, it's too complex
 .card.collapsible:not(.card-secondary) {
     border-width: 0;
-    // For attachment collapsible
-    &.has-attachment {
-        border-radius: $border-radius-sm;
-        border-width: 0 0 1px 0;
-        .card-header a {
-            border-width: 0;
-            &:not(.collapsed) {
-                border-bottom-width: 1px;
-            }
-        }
-    }
 
     // Remove border from heading - add to link tag.
     // In this case we have a nested a tag that takes up the whole of the heading space
@@ -209,6 +198,13 @@
     &.last .card-header a.collapsed {
         border-bottom-width: 1px;
     }
+
+    // For attachment collapsible
+    &.has-attachment {
+        border-radius: $border-radius-sm;
+        border-width: 1px;
+        margin-bottom: 10px;
+    }
 }
 
 .collapse > .collapse {
@@ -225,4 +221,8 @@
             padding: 10px 15px;
         }
     }
+}
+
+.post .has-attachment {
+    margin-bottom: 10px;
 }

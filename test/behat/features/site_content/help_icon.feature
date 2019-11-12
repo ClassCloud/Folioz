@@ -73,7 +73,8 @@ Scenario: Showing contextual help for pages under menu "Portfolio" (Bug 809297).
   Then I should see "You can design your own skin"
   # Import skin
   And I choose "Skins" in "Create" from main menu
-  And I follow "Import skin(s)"
+  And I press "More options"
+  And I follow "Import" in the ".btn-top-right" "css_element"
   And I click on "Help"
   And I should see "You can import skins from other Mahara sites."
   # Export
@@ -86,34 +87,35 @@ Scenario: Showing contextual help for pages under menu "Portfolio" (Bug 809297).
   And I click on "Help"
   Then I should see "You can import your (or any valid Leap2a) portfolio from another Mahara site yourself."
 
-# Commented out for Bug 1778438; @TODO, put back in - see Bug 1778439
-# Scenario: Showing correct external manual help file for mahara page
-  # Test by going to pages and collections help for user / institution / site / group
-  # When I log in as "admin" with password "Kupuh1pa!"
-  # And I choose "Pages and collections" in "Create" from main menu
-  # And I follow "Help" in the ".footer-nav" "css_element"
-  # And I switch to the new window
-  # And I scroll to the center of id "overview-page"
-  # And I should see "5.1.1. Overview page" in "h2" on the screen
-  # And I switch to the main window
-  # When I am on homepage
-  # And I choose "Pages and collections" in "Institutions" from administration menu
-  # And I follow "Help" in the ".footer-nav" "css_element"
-  # And I switch to the new window
-  # And I scroll to the center of id "institution-pages"
-  # And I should see "10.6.12. Institution pages and collections" in "h2" on the screen
-  # And I switch to the main window
-  # When I am on homepage
-  # And I choose "Pages and collections" in "Configure site" from administration menu
-  # And I follow "Help" in the ".footer-nav" "css_element"
-  # And I switch to the new window
-  # And I scroll to the center of id "site-pages-and-collections"
-  # And I should see "10.3.7. Site pages and collections" in "h2" on the screen
-  # And I switch to the main window
-  # When I am on homepage
-  # And I follow "GroupA"
-  # And I follow "Pages and collections (tab)"
-  # And I follow "Help" in the ".footer-nav" "css_element"
-  # And I switch to the new window
-  # And I should see "6.4.4. Pages and collections" in "h2" on the screen
-  # And I switch to the main window
+Scenario: Showing correct external manual help file for mahara page
+  #Test by going to pages and collections help for user / institution / site / group
+  When I log in as "admin" with password "Kupuh1pa!"
+  And I choose "Pages and collections" in "Create" from main menu
+  And I follow "Help" in the ".footer-nav" "css_element"
+  And I wait "1" seconds
+  And I switch to the new window
+  And I scroll to the center of id "overview-page"
+  And I should see "4.1.1. Overview page" in "h2" on the screen
+  And I switch to the main window
+  When I am on homepage
+  And I choose "Pages and collections" in "Institutions" from administration menu
+  And I follow "Help" in the ".footer-nav" "css_element"
+  And I switch to the new window
+  And I scroll to the center of id "institution-pages"
+  And I should see "11.6.12. Institution pages and collections" in "h2" on the screen
+  And I switch to the main window
+  When I am on homepage
+  And I choose "Pages and collections" in "Configure site" from administration menu
+  And I follow "Help" in the ".footer-nav" "css_element"
+  And I switch to the new window
+  And I scroll to the center of id "site-pages-and-collections"
+  And I should see "11.3.7. Site pages and collections" in "h2" on the screen
+  And I switch to the main window
+  When I am on homepage
+  And I follow "GroupA"
+  And I follow "Pages and collections (tab)"
+  And I follow "Help" in the ".footer-nav" "css_element"
+  And I switch to the new window
+  And I scroll to the center of id "pages-and-collections"
+  And I should see "6.4.4. Pages and collections" in "h2" on the screen
+  And I switch to the main window

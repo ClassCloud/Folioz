@@ -176,4 +176,5 @@ class PluginBlocktypeInbox extends MaharaCoreBlocktype {
     public static function get_artefacts(BlockInstance $instance) {
         return array();
     }
+
 }

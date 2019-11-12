@@ -65,8 +65,8 @@
         z-index: 1;
         background: rgba(#fff, 0.8);
         &:before {
-            content: "\25BE";
-            font-family: "FontAwesome";
+            @include fonttype(solid);
+            content: fa-content($fa-var-caret-down);
             margin-top: 9px;
             position: absolute;
             right: 0%;

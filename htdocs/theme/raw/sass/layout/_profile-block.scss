@@ -1,7 +1,7 @@
 .profile-block.card-header {
     padding:0;
     .username {
-        padding: 10px 75px 10px 15px;
+        padding: 10px 90px 10px 15px;
         display: block;
         word-break: break-word;
     }
@@ -21,7 +21,7 @@
         &:after {
             @include transition(opacity 0.5s);
             @include fa-icon();
-            border-radius: 3px;
+            border-radius: $border-radius;
             bottom: 0;
             background: $gray-100;
             color: $gray-700;

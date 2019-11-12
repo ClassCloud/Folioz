@@ -18,32 +18,31 @@ Scenario: Clicking ID's (Bug 1428456)
  And I follow "Edit"
 
  # Checking if we can add a block
- And I follow "Text"
+ When I follow "Drag to add a new block" in the "blocktype sidebar" property
  And I press "Add"
+ And I click on "Text" in the "Content types" property
  And I set the following fields to these values:
  | Block title | Ulysses |
  | Block content | <p>Stately, plump Buck Mulligan came from the stairhead, bearing a bowl of lather on which a mirror and a razor lay crossed ...</p> |
  And I press "Save"
  Then I should see "Buck Mulligan"
- And I reload the page
- And I wait "1" seconds
- And I scroll to the top
- And I follow "Text"
+ When I follow "Drag to add a new block" in the "blocktype sidebar" property
  And I press "Add"
+ And I click on "Text" in the "Content types" property
  And I set the following fields to these values:
  | Block title | The Sun Also Rises |
  | Block content | <p>Robert Cohn was once middleweight boxing champion of Princeton. Do not think that I am very much impressed by that as a boxing title, but it meant a lot to Cohn...</p> |
  And I press "Save"
  Then I should see "Robert Cohn"
-
- And I scroll to the base of id "content-editor-foldable"
- And I follow "Text"
+ When I follow "Drag to add a new block" in the "blocktype sidebar" property
  And I press "Add"
+ And I click on "Text" in the "Content types" property
  And I set the following fields to these values:
  | Block title | 1984 |
  | Block content | <p>It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin nuzzled into his breast in an effort to escape the vile wind...</p> |
  And I press "Save"
  Then I should see "Winston Smith"
+ And I scroll to the top
 
  # Checking if we can edit a block
  When I configure the block "About me"
@@ -65,31 +64,17 @@ Scenario: Clicking ID's (Bug 1428456)
 
  # Checking we can add a block, make config changes, then delete the block
  # without it causing 'unsaved changes' popup when navigating away
- And I follow "Text"
+ When I follow "Drag to add a new block" in the "blocktype sidebar" property
  And I press "Add"
+ And I click on "Text" in the "Content types" property
  And I set the following fields to these values:
  | Block title | Crime and punishment |
  | Block content | <p>On an exceptionally hot evening early in July a young man came out of the garret in which he lodged in S. Place and walked slowly, as though in hesitation, towards K. bridge...</p> |
  And I close the config dialog
  And I scroll to the top
 
- # Checking if we can change page layout
- And I follow "Settings" in the "Toolbar buttons" property
- And I expand all fieldsets
- And I scroll to the base of id "addrow"
- And I press "Add a row"
- And I select "25 - 50 - 25" from "selectcollayoutrow_2"
- And I press "Add a row"
- And I select "5" from "selectnumcolsrow_3"
- And I select "20 - 20 - 20 - 20 - 20" from "selectcollayoutrow_3"
- And I press "Add a row"
- And I press "Create new layout"
- Then I should see "4 rows"
- And I press "Save"
- Then I should see "Page saved successfully"
-
 Scenario: Profile and dashboard pages basic settings and skins can't be edited - Bug 1718806
- # Check we can edit layout for dashboard and profile page views
+ # Check we can edit basics for dashboard and profile page views
  # but not be able to change title or skin
 
  Given I log in as "admin" with password "Kupuh1pa!"
@@ -100,7 +85,6 @@ Scenario: Profile and dashboard pages basic settings and skins can't be edited -
  And I scroll to the base of id "viewh1"
  And I follow "Edit"
  And I follow "Settings" in the "Toolbar buttons" property
- And I should see "Layout"
  And I should not see "Basics"
  And I should see "Skin"
  And I press "Save"
@@ -110,7 +94,6 @@ Scenario: Profile and dashboard pages basic settings and skins can't be edited -
  And I choose "Dashboard" from main menu
  And I follow "Edit dashboard"
  And I follow "Settings" in the "Toolbar buttons" property
- And I should see "Layout"
  And I should not see "Basics"
  And I should see "Skin"
  And I press "Save"

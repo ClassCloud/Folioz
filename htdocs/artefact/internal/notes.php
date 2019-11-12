@@ -27,7 +27,7 @@ if ($group = param_integer('group', null)) {
     define('GROUP', $group);
     require_once('group.php');
     if (!group_user_can_edit_views($group, $USER->get('id'))) {
-        throw new AccessDeniedException(get_string('accessdenied', 'error'));
+        throw new AccessDeniedException();
     }
     $groupobj = group_current_group();
     $pageheading = get_string('notesfor', 'artefact.internal', $groupobj->name);
@@ -49,7 +49,7 @@ else if ($institution = param_alpha('institution', null)) {
         $pageheading = get_string('notesfor', 'artefact.internal', $institutionobj->displayname);
     }
     if (!$USER->can_edit_institution($institution)) {
-        throw new AccessDeniedException(get_string('accessdenied', 'error'));
+        throw new AccessDeniedException();
     }
     $where = 'institution = ?';
     $values = array($institution);
@@ -201,7 +201,7 @@ jQuery(function($) {
 });';
 
 $smarty = smarty(array('paginator'));
-setpageicon($smarty, 'icon-pencil-square-o');
+setpageicon($smarty, 'icon-regular icon-edit');
 $smarty->assign('PAGEHEADING', $pageheading);
 $smarty->assign('INLINEJAVASCRIPT', $js);
 $smarty->assign('data', $data);
@@ -227,7 +227,7 @@ function deletenote_form($id, $notedata) {
                 'usebuttontag' => true,
                 'class' => 'btn-secondary btn-sm last',
                 'elementtitle' => get_string('delete'),
-                'value' => '<span class="icon icon-trash text-danger icon-lg" role="presentation" aria-hidden="true"></span> ',
+                'value' => '<span class="icon icon-trash-alt text-danger icon-lg" role="presentation" aria-hidden="true"></span> ',
             ),
         ),
     );

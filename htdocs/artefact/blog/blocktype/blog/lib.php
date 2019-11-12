@@ -41,7 +41,7 @@ class PluginBlocktypeBlog extends MaharaCoreBlocktype {
     public static function get_link(BlockInstance $instance) {
         $configdata = $instance->get('configdata');
         if (!empty($configdata['artefactid'])) {
-            $data = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $configdata['artefactid'] . '&view=' . $instance->get('view');
+            $data = get_config('wwwroot') . 'view/view.php?id=' . $instance->get('view') . '&modal=1&block=' . $instance->get('id') . '&artefact=' . $configdata['artefactid'];
             return sanitize_url($data);
         }
     }
@@ -88,8 +88,7 @@ class PluginBlocktypeBlog extends MaharaCoreBlocktype {
 
             $smarty = smarty_core();
             if (isset($configdata['viewid'])) {
-                $artefacturl = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $blog->get('id') . '&view='
-                    . $configdata['viewid'];
+                $artefacturl = get_config('wwwroot') . 'view/view.php?id=' . $configdata['viewid'] . '&modal=1&artefact= ' . $blog->get('id');
                 $smarty->assign('artefacttitle', '<a href="' . $artefacturl . '">' . hsc($blog->get('title')) . '</a>');
                 if ($exporter && $posts['count'] > $limit) {
                     $posts['pagination'] = '<a href="' . $artefacturl . '">'
@@ -279,5 +278,4 @@ class PluginBlocktypeBlog extends MaharaCoreBlocktype {
                 . $configdata['artefactid'] . '&view=' . $instance->get('view');
         }
     }
-
 }

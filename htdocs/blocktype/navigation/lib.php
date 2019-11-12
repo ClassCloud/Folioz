@@ -43,8 +43,14 @@ class PluginBlocktypeNavigation extends MaharaCoreBlocktype {
         $smarty = smarty_core();
 
         if (!empty($configdata['collection'])) {
-            $views = $instance->get_data('collection', (int) $configdata['collection'])->views();
+            $collection = $instance->get_data('collection', (int) $configdata['collection']);
+            $views = $collection->get('views');
             if (!empty($views)) {
+                if ($collection->has_framework()) {
+                    // Add the framework link to start of list
+                    $framework = $collection->collection_nav_framework_option();
+                    array_unshift($views['views'], $framework);
+                }
                 $smarty->assign('views', $views['views']);
             }
         }
@@ -156,10 +162,11 @@ class PluginBlocktypeNavigation extends MaharaCoreBlocktype {
                             $bi = new BlockInstance(0,
                                 array(
                                     'blocktype'  => 'navigation',
-                                    'title'      => '',
-                                    'row'        => $instance->get('row'),
-                                    'column'     => $instance->get('column'),
-                                    'order'      => 1,
+                                    'title'      => $values['title'],
+                                    'positionx'  => 0,
+                                    'positiony'  => 0,
+                                    'width'      => 4,
+                                    'height'     => 3,
                                     'configdata' => array(
                                         'collection' => $values['collection'],
                                         'retractable' => $values['retractable'],

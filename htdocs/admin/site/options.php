@@ -78,6 +78,8 @@ $siteoptionform = array(
                     'options'      => array('' => get_string('nocountryselected')) + $countries,
                     'help'         => true,
                     'disabled'     => in_array('country', $OVERRIDDEN),
+                    'description'  => get_string('countryisodisclaimer', 'mahara') . '<br>' .
+                                      get_string('countryisocustomise', 'mahara'),
                 ),
                 'timezone' => array(
                     'type'         => 'select',
@@ -370,7 +372,7 @@ $siteoptionform = array(
             ),
         ),
         'accountsettings' => array(
-            'iconclass'=>'clock-o',
+            'iconclass'=> 'user-cog',
             'type'         => 'fieldset',
             'collapsible'  => true,
             'collapsed'    => true,
@@ -528,7 +530,7 @@ $siteoptionform = array(
         ),
         # TODO: this should become "Network Settings" at some point
         'proxysettings' => array(
-            'iconclass'=>'exchange',
+            'iconclass'=>'exchange-alt',
             'type'         => 'fieldset',
             'collapsible'  => true,
             'collapsed'    => true,
@@ -782,7 +784,7 @@ $siteoptionform = array(
             ),
         ),
         'loggingsettings' => array(
-            'iconclass'=>'exclamation-triangle',
+            'iconclass'=>'truck-loading',
             'class' => 'last',
             'type'         => 'fieldset',
             'collapsible'  => true,

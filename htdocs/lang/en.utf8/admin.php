@@ -59,8 +59,12 @@ $string['clisitename'] = 'The site name';
 $string['cliupdatesitenamefailed'] = 'Updating site name failed.';
 $string['cliinstallerdescription'] = 'Install Mahara and create required data directories';
 $string['cliinstallingmahara'] = 'Installing Mahara';
-$string['cliupgraderdescription'] = 'Upgrade the Mahara database and data to the version of Mahara installed';
-$string['cliupgradingmahara'] = 'Upgrading Mahara';
+// CLI upgrade script
+$string['cli_upgrade_description'] = 'Upgrade the Mahara database and data to the version of Mahara installed.';
+$string['cli_upgrade_title'] = 'Upgrading Mahara';
+$string['cli_upgrade_force'] = 'Force the upgrade to rerun';
+$string['cli_upgrade_flag'] = 'An unfinished upgrade was detected. To try upgrading again, add the "-f" option to the command.';
+
 $string['cliclearingcaches'] = 'Clearing Mahara caches.';
 $string['cliclearcachesdescription'] = 'Clearing caches will delete cached data from the server. There is no danger in clearing caches, but your site may appear slower for a while until the server and clients calculate new information and cache it.';
 $string['clearcachesheading'] = 'Clear caches';
@@ -163,6 +167,7 @@ $string['pluginadmindescription'] = 'Install and configure plugins';
 $string['missingplugindisabled1'] = 'The installed plugin "%s" could not be found and has been disabled';
 $string['installedpluginsmissing'] = 'The following plugins are installed but can no longer be found';
 $string['ensurepluginsexist'] = 'Please make sure all your installed plugins are available under %s and readable by the webserver.';
+$string['plugintypedescription_blocktype'] = 'Move individual blocks to change the order in which they appear in the placeholder block that is put on a page. The numbers indicate how many times a specific block type is already in use on the site.';
 
 $string['htmlfilters'] = 'HTML filters';
 $string['htmlfiltersdescription'] = 'Enable new filters for HTML Purifier';
@@ -221,6 +226,8 @@ $string['addcategories'] = 'Add categories';
 $string['allowgroupcategoriesdescription1'] = 'Allow site administrators to create categories for users to assign their groups';
 $string['groupoptionsset'] = 'Group options have been updated.';
 $string['groupcategorydeleted'] = 'Category deleted';
+$string['groupcategoryupdated'] = 'Category updated';
+$string['groupcategoryadded'] = 'Category added';
 $string['confirmdeletecategory'] = 'Do you really want to delete this category?';
 $string['groupcategoriespagedescription'] = 'The categories listed here can be assigned to groups during group creation and used to filter groups during searches.';
 $string['groupquotas'] = "Group quota for '%s'";
@@ -316,8 +323,11 @@ $string['statsmaxquotaused1'] = 'Has used about %s of disk quota<br>(<a href="%s
 $string['groupcountsbytype'] = 'Number of groups by group type';
 $string['groupcountsbyjointype'] = 'Number of groups by access type';
 $string['blockcountsbytype'] = 'Most frequently used blocks in portfolio pages';
-$string['uptodate'] = 'up to date';
-$string['latestversionis'] = 'latest version is <a href="%s">%s</a>';
+$string['uptodate'] = 'Your local codebase is up to date with Mahara core.';
+$string['latestversionis'] = 'Most recent major release: <a href="%s">%s</a>';
+$string['latestbranchversionis'] = 'Latest minor version of this release: <a href="%s">%s</a>';
+$string['versionnotinsupport'] = '%s is out of support.';
+$string['versionnotinsupportdev'] = 'Development version not in support';
 $string['viewsbytype'] = 'Pages by type';
 $string['institutionloginstabletitle'] = 'Active institutions';
 $string['institutionloginstablesubtitle'] = 'For %s - %s';
@@ -762,20 +772,28 @@ $string['showupdatedetails'] = 'Show update details';
 
 // Bulk Leap2A import
 $string['bulkleap2aimport'] = 'Import users from Leap2A files';
-$string['bulkleap2aimportdescription'] = '<p>You can import users in bulk from a collection of Leap2A files on your server. You must specify a ZIP file on the server file system, which contains all the Leap2A ZIP files and a single CSV file called usernames.csv mapping usernames to filenames.</p>
+$string['bulkleap2aimportdescription1'] = '<p>You can import users in bulk from a collection of Leap2A files on your server. You must specify a ZIP file on the server file system, which contains all the Leap2A ZIP files and a single CSV file called usernames.csv mapping usernames to filenames.</p>
 <p>usernames.csv will look something like this:</p>
 <pre>
 &nbsp;&nbsp;bob,mahara-export-leap-user8-1265165366.zip<br>
 &nbsp;&nbsp;nigel,mahara-export-leap-user1-1266458159.zip
 </pre>
 <p>where mahara-export-leap-user8-1265165366.zip and mahara-export-leap-user1-1266458159.zip are files in a subdirectory called users.</p>
+<p>The structure of your ZIP file, e.g. "import.zip" file will be:</p>
+<pre>
+import.zip<br>
+<span class="icon icon-file icon-regular"></span> usernames.csv<br>
+<span class="icon icon-folder-open icon-regular"></span> users<br>
+    <span class="icon icon-file icon-regular"></span> mahara-export-leap-user8-1265165366.zip<br>
+    <span class="icon icon-file icon-regular"></span> mahara-export-leap-user1-1266458159.zip<br>
+</pre>
 <p>This ZIP file should normally be generated using the bulk export built into Mahara.</p>
 <p>If you are importing a lot of users, please be patient. The import process can take a long time.</p>';
 $string['importfile'] = 'Bulk export file';
 $string['importfilemissinglisting'] = 'The bulk export file is missing a file named usernames.csv. Did you use the Mahara bulk exporter to export these users?';
 $string['importfilenotafile'] = 'Error during form submission: file was not recognised.';
 $string['importfilenotreadable'] = 'Error during form submission: file was not readable.';
-$string['bulkleap2aimportfiledescription'] = 'The ZIP file on your server containing all exported users (in Leap2A format) along with a CSV listing of usernames';
+$string['bulkleap2aimportfiledescription1'] = 'Enter the path to the ZIP file on your server that contains all exported users (in Leap2A format) along with a CSV listing of usernames, e.g. "/home/example/data/import.zip"';
 $string['importednuserssuccessfully'] = 'Imported %d of %d users successfully.';
 $string['Import'] = 'Import';
 $string['bulkimportdirdoesntexist'] = 'The directory %s does not exist.';
@@ -1346,6 +1364,7 @@ $string['cli_langpack_backup_failed'] = '*** WARNING *** Unable to make backup o
 $string['cli_langpack_en'] = 'You do not need to update the English langpack as the strings are defined in Mahara itself. You can set special lang strings in local/lang/.';
 $string['cli_langpack_extract_done'] = 'Copied new "%s" langpack into place';
 $string['cli_langpack_extract_failed'] = '*** WARNING *** Unable to extract files from "%s". Reason: %s';
+$string['cli_langpack_ignore'] = 'The language pack "%s" is already current so will skip updating';
 $string['cli_langpack_info'] = 'To update your language packs via the command line.
 You can:
 1) Install or update langpacks by listing the languages by their code, e.g. de = German, fr = French:
@@ -1470,6 +1489,7 @@ $string['hasrefused'] = 'has refused the privacy statement';
 $string['privacylowcase'] = 'privacy statement';
 $string['termsandconditionslowcase'] = 'terms and conditions';
 $string['hasrefused'] = 'has refused the %s';
+$string['suspendaccount'] = 'Suspend account';
 $string['privacyandtotheterms'] = 'privacy statement and to the terms and conditions';
 $string['privacyandtheterms'] = 'privacy statement and the terms and conditions';
 $string['consentdate'] = 'Date of consent / rejection';
@@ -1497,3 +1517,5 @@ $string['userdeletiondeniedsuccessful'] = 'Request denied successfully.';
 $string['userdeletiondeniedunsuccessful'] = 'The attempted user account deletion denial failed.';
 $string['consented'] = 'Consented';
 $string['groupid'] = 'Group ID';
+
+$string['blocktypeupdatedsuccess'] = 'Updated blocktype sort order';

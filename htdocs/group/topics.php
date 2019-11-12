@@ -21,7 +21,7 @@ require_once('group.php');
 define('TITLE', get_string('discussiontopics', 'interaction.forum'));
 
 if (!$USER->is_logged_in()) {
-    throw new AccessDeniedException(get_string('accessdenied', 'error'));
+    throw new AccessDeniedException();
 }
 
 $limit  = param_integer('limit', 10);
@@ -41,7 +41,7 @@ $pagination = build_pagination(array(
 ));
 
 $smarty = smarty(array('paginator'));
-setpageicon($smarty, 'icon-commenting-o');
+setpageicon($smarty, 'icon-regular icon-comment-dots');
 $smarty->assign('topics', $data['data']);
 $smarty->assign('pagination', $pagination['html']);
 $smarty->assign('INLINEJAVASCRIPT', 'jQuery(function() { p = ' . $pagination['javascript'] . '});');

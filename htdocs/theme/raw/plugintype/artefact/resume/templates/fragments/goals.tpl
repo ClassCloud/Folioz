@@ -13,13 +13,13 @@
                 {if $n->exists}
                     <a id="goals_edit_{$n->artefacttype}" href="{$WWWROOT}artefact/resume/editgoalsandskills.php?id={$n->id}" title="{str tag=edit$n->artefacttype section=artefact.resume}">
                     {str tag=$n->artefacttype section='artefact.resume'}
-                    <span class="icon icon-pencil float-right" role="presentation" aria-hidden="true"></span>
+                    <span class="icon icon-pencil-alt float-right" role="presentation" aria-hidden="true"></span>
                     <span class="sr-only">{str tag=edit}</span>
                     </a>
                 {else}
                     <a id="goals_edit_{$n->artefacttype}" href="{$WWWROOT}artefact/resume/editgoalsandskills.php?type={$n->artefacttype}" title="{str tag=edit$n->artefacttype section=artefact.resume}">
                           {str tag=$n->artefacttype section='artefact.resume'}
-                    <span class="icon icon-pencil float-right" role="presentation" aria-hidden="true"></span>
+                    <span class="icon icon-pencil-alt float-right" role="presentation" aria-hidden="true"></span>
                     <span class="sr-only">{str tag=edit}</span>
                     </a>
                 {/if}
@@ -38,9 +38,8 @@
                 <a class="collapsible collapsed card-footer" aria-expanded="false" href="#attach_goal_{$.foreach.default.index}" data-toggle="collapse">
                     <p class="text-left">
                         <span class="icon left icon-paperclip" role="presentation" aria-hidden="true"></span>
-
                         <span class="text-small">{str tag=attachedfiles section=artefact.blog}</span>
-                         <span class="metadata">({$n->count})</span>
+                        <span class="metadata">({$n->count})</span>
                         <span class="icon icon-chevron-down float-right collapse-indicator" role="presentation" aria-hidden="true"></span>
                     </p>
                 </a>

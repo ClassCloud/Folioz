@@ -194,6 +194,9 @@ textarea.resizable {
     position: relative;
     label {
         display: block;
+        &.inline-label {
+            display: inline-block;
+        }
     }
     .form-group {
         padding: 0;
@@ -254,17 +257,18 @@ textarea.resizable {
     padding-right: 20px;
 }
 .hasDatepickerwrapper:after {
-    font-family: "FontAwesome";
-    font-size: 16px;
-    content: "\f073";
+    @include fonttype(regular);
+    content: fa-content($fa-var-calendar-alt);
+    font-size: 18px;
     color: scale-color($theme-text-color, $lightness: 25%);
     position:relative;
     right: 25px;
+    pointer-events: none;
+    cursor: text;
 }
 .hasDatepickerwrapperacl:after {
-    font-family: "FontAwesome";
-    font-size: 16px;
-    content: "\f073";
+    @include fonttype(regular);
+    content: fa-content($fa-var-calendar-alt);
     color: scale-color($theme-text-color, $lightness: 25%);
     right: 10px;
     position: absolute;

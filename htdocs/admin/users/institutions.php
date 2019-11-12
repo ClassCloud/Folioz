@@ -92,24 +92,37 @@ if ($institution || $add) {
         }
 
         function delete_submit(Pieform $form, $values) {
-            global $SESSION;
+            global $SESSION, $USER;
 
             $authinstanceids = get_column('auth_instance', 'id', 'institution', $values['i']);
             $collectionids = get_column('collection', 'id', 'institution', $values['i']);
             $viewids = get_column('view', 'id', 'institution', $values['i']);
             $artefactids = get_column('artefact', 'id', 'institution', $values['i']);
             $regdataids = get_column('institution_registration', 'id', 'institution', $values['i']);
+            $host = get_field('host', 'wwwroot', 'institution', $values['i']);
 
             db_begin();
+            require_once(get_config('libroot') . 'collection.php');
+            if ($submittedcolids = get_column('collection', 'id', 'submittedhost', $host)) {
+                foreach ($submittedcolids as $id) {
+                    $collection = new Collection($id);
+                    $collection->release($USER);
+                }
+            }
             if ($collectionids) {
-                require_once(get_config('libroot') . 'collection.php');
                 foreach ($collectionids as $collectionid) {
                     $collection = new Collection($collectionid);
                     $collection->delete();
                 }
             }
+            require_once(get_config('libroot') . 'view.php');
+            if ($submittedviewids = get_column('view', 'id', 'submittedhost', $host)) {
+                foreach ($submittedviewids as $id) {
+                    $view = new View($id);
+                    $view->release($USER);
+                }
+            }
             if ($viewids) {
-                require_once(get_config('libroot') . 'view.php');
                 foreach ($viewids as $viewid) {
                     $view = new View($viewid);
                     $view->delete();
@@ -172,6 +185,7 @@ if ($institution || $add) {
 
             execute_sql("UPDATE {group} SET institution = 'mahara' WHERE institution = ?", array($values['i']));
             delete_records('auth_instance', 'institution', $values['i']);
+
             delete_records('host', 'institution', $values['i']);
             delete_records('institution_locked_profile_field', 'name', $values['i']);
             delete_records('usr_institution_request', 'institution', $values['i']);
@@ -180,7 +194,9 @@ if ($institution || $add) {
             delete_records('institution_registration', 'institution', $values['i']);
             delete_records('site_content', 'institution', $values['i']);
             delete_records('institution_config', 'institution', $values['i']);
-            delete_records('usr_custom_layout', 'institution', $values['i']);
+            if (db_table_exists('usr_custom_layout')) {
+                delete_records('usr_custom_layout', 'institution', $values['i']);
+            }
             delete_records('usr_registration', 'institution', $values['i']);
             if ($versions = get_records_assoc('site_content_version', 'institution', $values['i'])) {
                 foreach($versions as $version) {
@@ -254,7 +270,6 @@ if ($institution || $add) {
             }
             $inuse = implode(',',$inuserecords);
         }
-        $authtypes = auth_get_available_auth_types($institution);
     }
     else {
         $data = new stdClass();
@@ -277,8 +292,6 @@ if ($institution || $add) {
         $data->commentsortorder = 'earliest';
         $data->commentthreaded = false;
         $lockedprofilefields = array();
-
-        $authtypes = auth_get_available_auth_types();
     }
     $themeoptions = get_institution_themes($institution);
     $themeoptions['sitedefault'] = '- ' . get_string('sitedefault', 'admin') . ' (' . $themeoptions[get_config('theme')] . ') -';
@@ -353,12 +366,11 @@ if ($institution || $add) {
             'type'    => 'authlist',
             'title'   => get_string('authplugin', 'admin'),
             'options' => $authinstances,
-            'authtypes' => $authtypes,
             'instancearray' => $instancearray,
             'instancestring' => $instancestring,
             'institution' => $institution,
             'help'   => true,
-            'ignore' => count($authtypes) == 0 || $institution == ''
+            'ignore' => ($add)
         );
     }
 
@@ -1303,9 +1315,8 @@ jQuery(function($) {
 });
 ';
 
-$smarty = smarty();
+$smarty = smarty(array('tinymce'));
 setpageicon($smarty, 'icon-university');
-
 
 $smarty->assign('INLINEJAVASCRIPT', $themeoptionsjs);
 $smarty->assign('institution_form', $institutionform);

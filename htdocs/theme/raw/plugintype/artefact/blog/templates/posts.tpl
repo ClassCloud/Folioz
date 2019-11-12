@@ -31,7 +31,7 @@
                         <input type="hidden" name="id" value="{$post->id}">
                         <div class="first">
                             <button type="submit" class="submit btn btn-secondary btn-sm" title="{str(tag=edit)|escape:html|safe}">
-                                <span class="icon icon-pencil icon-lg" role="presentation" aria-hidden="true"></span>
+                                <span class="icon icon-pencil-alt icon-lg" role="presentation" aria-hidden="true"></span>
                                 <span class="sr-only">{str tag=editspecific arg1=$post->title |escape:html|safe}</span>
                             </button>
                         </div>
@@ -42,14 +42,14 @@
             </div>
         </div>
         <div id="postdetails_{$post->id}" class="postdetails postdate">
-            <span class="icon icon-calendar left" role="presentation" aria-hidden="true"></span>
+            <span class="icon icon-regular icon-calendar-alt left" role="presentation" aria-hidden="true"></span>
             <strong>
                 {str tag=postedon section=artefact.blog}:
             </strong>
             {$post->ctime}
             {if $post->lastupdated}
                 <br>
-                <span class="icon icon-calendar left" role="presentation" aria-hidden="true"></span>
+                <span class="icon icon-regular icon-calendar-alt left" role="presentation" aria-hidden="true"></span>
                 <strong>
                     {str tag=updatedon section=artefact.blog}:
                 </strong>
@@ -70,16 +70,16 @@
 
         {if $post->files}
         <div class="has-attachment card collapsible" id="postfiles_{$post->id}">
-            <h5 class="card-header has-link">
+            <div class="card-header has-link">
                 <a class="text-left collapsed" data-toggle="collapse" href="#attach_{$post->id}" aria-expanded="false">
-                    <span class="icon left icon-paperclip" role="presentation" aria-hidden="true"></span>
+                    <span class="icon left icon-paperclip icon-sm" role="presentation" aria-hidden="true"></span>
                     <span class="text-small"> {str tag=attachedfiles section=artefact.blog} </span>
                      <span class="metadata">
                         ({$post->files|count})
                     </span>
                     <span class="icon icon-chevron-down collapse-indicator float-right" role="presentation" aria-hidden="true"></span>
                 </a>
-            </h5>
+            </div>
             <div class="collapse" id="attach_{$post->id}">
                 <ul class="list-group list-unstyled">
                 {foreach from=$post->files item=file}

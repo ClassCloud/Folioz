@@ -92,14 +92,14 @@ function pieform_element_calendar(Pieform $form, $element) {
         },
         tooltips: ' . $tooltips . ',
         icons: {
-            time: "icon icon-clock-o",
-            date: "icon icon-calendar",
+            time: "icon icon-regular icon-clock",
+            date: "icon icon-regular icon-calendar-alt",
             up: "icon icon-arrow-up",
             down: "icon icon-arrow-down",
             previous: "icon icon-chevron-left",
             next: "icon icon-chevron-right",
             close: "icon icon-times",
-            clear: "icon icon-trash",
+            clear: "icon icon-trash-alt",
             today: "icon icon-crosshairs",
         },
     });
@@ -271,8 +271,8 @@ function pieform_element_calendar_get_headdata($element) {
 
     $libjs = $element['jsroot'] . 'js/jquery-ui.min.js';
     $libcss = $element['jsroot'] . 'css/smoothness/jquery-ui.min.css';
-    $bootstrapdatetimejs = '/js/bootstrap-datetimepicker/tempusdominus-bootstrap-4.js';
-    $momentjs = '/js/momentjs/moment-with-locales.min.js';
+    $bootstrapdatetimejs = get_config('wwwroot') . 'js/bootstrap-datetimepicker/tempusdominus-bootstrap-4.js';
+    $momentjs = get_config('wwwroot') . 'js/momentjs/moment-with-locales.min.js';
     $prev = get_string('datepicker_prevText');
     $next = get_string('datepicker_nextText');
     $result = array(
@@ -333,7 +333,12 @@ function pieform_element_calendar_convert_to_epoch($date) {
     // (See http://php.net/manual/en/function.strtotime.php#refsect1-function.strtotime-notes)
     $dateformat = get_string('pieform_calendar_dateformat', 'langconfig');
     if (preg_match('/%[ed].*%[m].*%[yY]/', $dateformat)) {
-         $value = strtotime(preg_replace('/[^0-9]/', '.', $date));
+        $timesuffix = preg_match('/(am|pm)$/i', $date, $match);
+        $fixdate = preg_replace('/[^0-9]/', '.', $date);
+        if ($timesuffix) {
+            $fixdate = preg_replace('/[^\d](\.+)$/', $match[1], $fixdate);
+        }
+        $value = strtotime($fixdate);
     }
 
     // If that didn't work, then just try doing strtotime on the plain value

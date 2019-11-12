@@ -102,7 +102,7 @@ jQuery(function($) {
         'title':{$getstring['edit']},
         'alt':{$getstring['editspecific']}.replace('%s', item.name)
       });
-      edit.append($('<span>', {'class':'icon icon-cog icon-lg', 'role':'presentation'}));
+      edit.append($('<span>', {'class':'icon icon-pencil-alt icon-lg', 'role':'presentation'}));
       edit.append($('<span class="sr-only">' + {$getstring['editspecific']}.replace('%s', item.name) + '</span>'));
 
       edit.on('click', function (e) { e.preventDefault(); edititem(item); });
@@ -115,7 +115,7 @@ jQuery(function($) {
         'title':{$getstring['delete']},
         'alt':{$getstring['deletespecific']}.replace('%s', item.name)
       });
-      del.append($('<span>', {'class':'icon icon-trash text-danger icon-lg', 'role':'presentation'}));
+      del.append($('<span>', {'class':'icon icon-trash-alt text-danger icon-lg', 'role':'presentation'}));
       del.append($('<span class="sr-only">' + {$getstring['deletespecific']}.replace('%s', item.name) + '</span>'));
 
       del.on('click', function (e) { e.preventDefault(); delitem(item.id); });
@@ -142,7 +142,7 @@ jQuery(function($) {
 
       // Either a save, a cancel button, or both.
       var savecancel = [];
-      var save = $('<input>', {'type':'button','class':'button btn btn-secondary btn-add-group'});
+      var save = $('<input>', {'type':'button','class':'button btn btn-sm btn-secondary'});
       save.on('click', function () { saveitem(item.id); });
 
       var rowtype = 'add';
@@ -151,6 +151,7 @@ jQuery(function($) {
           item.label = {$getstring['addnewgroupcategory']};
           // The save button says 'add', and there's no cancel button.
           save.prop('value',{$getstring['add']});
+          save.removeClass('btn-sm btn-secondary').addClass('btn-primary');
           savecancel = [save];
       }
       else { // Editing an existing menu item.
@@ -159,7 +160,8 @@ jQuery(function($) {
           save.prop('value',{$getstring['update']});
           var cancel = $('<input>', {'type':'button','class':'button btn btn-sm btn-secondary','value':{$getstring['cancel']}});
           cancel.on('click', closeopenedits);
-          savecancel = [save,cancel];
+          var savecancelwrapper = $('<span class="btn-group btn-add-group">').append(save).append(cancel);
+          savecancel = [savecancelwrapper];
           item.label = {$getstring['edit']};
       }
 
@@ -174,7 +176,7 @@ jQuery(function($) {
       });
       var parentspan = $('<span>').append(label,name);
       var row = $('<tr>', {'id':'row'+item.id, 'class':rowtype});
-      row.append($('<td>').append(parentspan), $('<td>').append(savecancel));
+      row.append($('<td>').append(parentspan), $('<td>', {'class':rowtype}).append(savecancel));
       return row;
   }
 
@@ -213,16 +215,29 @@ jQuery(function($) {
   // Send the menu item in the form to the database.
   function saveitem(itemid) {
     var f = $('#form');
-    var name = $('#name'+itemid).val();
+    var name = $('#name' + itemid).val();
+    var names = [];
+
     if (name == '') {
         displayMessage(get_string('namedfieldempty', 'mahara', {$getstring['name']}), 'error');
         return false;
     }
 
+    $("[id^=menuitem_]:not(.d-none) td:first-child").each(function() {
+        names.push($(this).text().toLowerCase());
+    });
+
+    if (names.length > 0) {
+        if (names.includes(name.toLowerCase())) {
+            displayMessage(get_string('duplicatenamedfield', 'mahara', {$getstring['name']}), 'error');
+            return false;
+        }
+    }
+
     var data = {'name':name,
                 'itemid':itemid};
     sendjsonrequest('updategroup.json.php', data, 'POST', function(r) {
-        getitems(r);
+        getitems(r.data);
     });
     return false;
   }
@@ -232,7 +247,7 @@ jQuery(function($) {
 EOJS;
 
 $smarty = smarty();
-setpageicon($smarty, 'icon-users');
+setpageicon($smarty, 'icon-users-cog');
 
 $smarty->assign('PAGEHEADING', hsc(get_string('groupcategories', 'admin')));
 $smarty->assign('INLINEJAVASCRIPT', $ijs);

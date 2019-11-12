@@ -45,7 +45,8 @@ $width-sm: 90%;
         @include border-bottom-radius(3px);
         max-height: 90%;
         height: 90%;
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
         &.flush {
             padding: 0;
         }
@@ -59,6 +60,9 @@ $width-sm: 90%;
         }
         &.blockinstance-content {
             padding: 0 15px;
+        }
+        .file-icon-render-in-modal {
+            margin-left: 10px;
         }
     }
     .modal-dialog {
@@ -79,6 +83,9 @@ $width-sm: 90%;
     }
     .btn.submit {
         margin-top: 15px;
+        &.unselect {
+            margin-top: 0;
+        }
     }
     .artefactchooser-search {
         .btn.submit {
@@ -176,20 +183,14 @@ $width-sm: 90%;
         }
         .close {
            @include box-shadow(-2px 0 2px rgba(0,0,0,0.3));
-            border-radius:3px 0 0 3px;
+            border-radius: $border-radius 0 0 $border-radius;
             opacity: 1;
             position: absolute;
             top: 1px;
-            left: -29px;
-            padding: 10px 7px 9px;
+            left: -26px;
+            padding: 8px 7px 14px;
             background: $modal-header-color;
-            border: 1px solid $modal-header-border-color;
-            border-right:0;
-
-            @include media-breakpoint-down(md) {
-                left:-22px;
-                padding: 10px 4px 9px 3px;
-            }
+            border: 0;
             .times {
                 color: $theme-text-midtone-color;
                 opacity:0.4;

@@ -410,7 +410,7 @@ class Framework {
     }
 
     function set_config_fields() {
-        if (table_exists(new XMLDBTable('framework_config'))) {
+        if (db_table_exists('framework_config')) {
             $status = new stdClass();
 
             $status->framework = $this->get('id');
@@ -575,7 +575,7 @@ class Framework {
         $states = array(
             'begun' => array(
                 'state' => (int) $state === self::EVIDENCE_BEGUN ? 1 : 0,
-                'classes' => 'icon icon-circle-o begun',
+                'classes' => 'icon icon-regular icon-circle begun',
             ),
             'incomplete' => array(
                 'state' => (int) $state === self::EVIDENCE_INCOMPLETE ? 1 : 0,
@@ -668,25 +668,18 @@ class Framework {
             // Get the title for the option
             $title = get_field('framework_standard_element', 'shortname', 'id', $data->option);
 
-            // Find out which is the last lefthand 'cell' on the page
-            $lastrow = get_field('view', 'numrows', 'id', $data->view);
-            if ($lastrow === false) {
-                throw new MaharaException('An error occurred. A valid view should not have an empty "numrows" column');
-            }
-            // Find out how many blocks already exist for this 'cell'.
-            $maxorder = get_field_sql(
-                'SELECT MAX("order") FROM {block_instance} WHERE "view"=? AND "row"=? AND "column"=?',
-                array($data->view, $lastrow, 1)
-            );
+            $view = new View($data->view);
+            $blockpositiony = $view->bottomfreeposition();
 
             // Create the block at the end of the 'cell'.
             $annotation = new BlockInstance(0, array(
                 'blocktype'  => 'annotation',
                 'title'      => (get_string('Annotation', 'artefact.annotation') . ': ' . $title),
                 'view'       => $data->view,
-                'row'        => $lastrow,
-                'column'     => 1,
-                'order'      => (int)$maxorder + 1,
+                'positionx'  => 0,
+                'positiony'  => (int)$blockpositiony,
+                'width'      => 4,
+                'height'     => 3,
             ));
             $annotation->commit();
             $new = true;
@@ -859,77 +852,74 @@ class Framework {
         $collection = $view->get('collection');
         $evidence = get_record('framework_evidence', 'annotation', $annotation->get('id'));
         $defaultval = $evidence->state;
+        $selfassess = get_field('framework', 'selfassess', 'id', $evidence->framework);
 
         if (!is_object($collection) || !$collection->get('framework')) {
             return false;
         }
 
+        $annotationhtml = clean_html($text);
+        $annotationdivhtml = '<div class="modal-header modal-section">' . get_string("assessment", "module.framework") . '</div>';
+        $assessmenthtml = '<div class="top-line select form-group">
+                            <span class="pseudolabel">' . get_string("assessment", "module.framework") . '</span>
+                            ' . self::get_evidence_statuses($collection->get('framework'))[$defaultval] . '
+                          </div>';
+
         $options = self::get_my_assessment_options_for_user($view, $evidence->framework);
-        if (!$options) {
+        if (!$options || !array_key_exists($defaultval, $options)
+            || ($view->get('owner') == $USER->get('id') && !$selfassess)
+            || ($view->get('owner') != $USER->get('id') && $selfassess)
+            ) {
             // not allowed to set the assessment so we just show the current state as html
-            $choices = self::get_evidence_statuses($collection->get('framework'));
-            $assessment = array(
-                'type' => 'html',
-                'title' => get_string('assessment', 'module.framework'),
-                'value' => $choices[$defaultval],
-                'class' => 'top-line',
-            );
+            $smarty = smarty_core();
+            $smarty->assign('annotationhtml', $annotationhtml);
+            $smarty->assign('annotationdivhtml', $annotationdivhtml);
+            $smarty->assign('assessmenthtml', $assessmenthtml);
+            $content = $smarty->fetch('module:framework:evidencestatus.tpl');
         }
         else {
-            if (!array_key_exists($defaultval, $options)) {
-                // not allowed to set the assessment to current state so show current state as html
-                $choices = self::get_evidence_statuses($collection->get('framework'));
-                $assessment = array(
-                    'type' => 'html',
-                    'title' => get_string('assessment', 'module.framework'),
-                    'value' => $choices[$defaultval],
-                    'class' => 'top-line',
-                );
-            }
-            else {
-                // Show the select box with current state selected
-                $assessment = array(
-                    'type' => 'select',
-                    'title' => get_string('assessment', 'module.framework'),
-                    'options' => $options,
-                    'defaultvalue' => $defaultval,
-                    'width' => '280px',
-                    'class' => 'top-line',
-                );
-            }
-        }
+            // Show the select box with current state selected
+            $assessment = array(
+                'type' => 'select',
+                'title' => get_string('assessment', 'module.framework'),
+                'options' => $options,
+                'defaultvalue' => $defaultval,
+                'width' => '280px',
+                'class' => 'top-line',
+            );
 
-        $form = array(
-            'name' => 'annotationfeedback',
-            'jsform' => true,
-            'renderer' => 'div',
-            'plugintype' => 'module',
-            'pluginname' => 'framework',
-            'jssuccesscallback' => 'updateAnnotation',
-            'elements'   => array(
-                'annotation' => array(
-                    'type' => 'html',
-                    'value' => clean_html($text),
+            $form = array(
+                'name' => 'annotationfeedback',
+                'jsform' => true,
+                'renderer' => 'div',
+                'plugintype' => 'module',
+                'pluginname' => 'framework',
+                'jssuccesscallback' => 'updateAnnotation',
+                'elements'   => array(
+                    'annotation' => array(
+                        'type' => 'html',
+                        'value' => $annotationhtml,
+                    ),
                 ),
-            ),
-        );
-        if ($options || (!$options && $view->get('owner') == $USER->get('id'))) {
-            $form['elements']['annotationdiv'] = array(
-                'type' => 'html',
-                'value' => '<div class="modal-header modal-section">' . get_string("assessment", "module.framework") . '</div>',
             );
-            $form['elements']['assessment'] = $assessment;
+            if ($options) {
+                $form['elements']['annotationdiv'] = array(
+                    'type' => 'html',
+                    'value' => $annotationdivhtml,
+                );
+                $form['elements']['assessment'] = $assessment;
+            }
+            $frameworkurl = $collection->collection_nav_framework_option();
+            if ($options) {
+                $form['elements']['submitcancel'] = array(
+                    'type' => 'submitcancel',
+                    'class' => 'btn-secondary',
+                    'value' => array(get_string('save'), get_string('cancel')),
+                    'goto' => $frameworkurl->fullurl,
+                );
+            }
+            $content = pieform($form);
         }
-        $frameworkurl = $collection->collection_nav_framework_option();
-        if ($options) {
-            $form['elements']['submitcancel'] = array(
-                'type' => 'submitcancel',
-                'class' => 'btn-secondary',
-                'value' => array(get_string('save'), get_string('cancel')),
-                'goto' => $frameworkurl->fullurl,
-            );
-        }
-        $content = pieform($form);
         list($feedbackcount, $annotationfeedback) = ArtefactTypeAnnotationfeedback::get_annotation_feedback_for_matrix($artefact, $view, $annotation->get('id'));
         $content .= $annotationfeedback;
 
@@ -1077,7 +1067,7 @@ class Framework {
 
     function get_config($value) {
         $record = false;
-        if (table_exists(new XMLDBTable('framework_config')) &&
+        if (db_table_exists('framework_config') &&
             $record = get_record('framework_config', 'framework', $this->id, 'field', $value)) {
             return $record->value;
         }
@@ -1113,7 +1103,7 @@ class Framework {
     public function get_framework_config_options() {
         // check if the plugin has been upgraded
         // if not, all status settings should be greyed out
-        $disabled = !table_exists(new XMLDBTable('framework_config'));
+        $disabled = !db_table_exists('framework_config');
         $warning = array();
         if ($disabled) {
             $warning['plugin_warning'] = array(

@@ -40,6 +40,9 @@ var FileBrowser = (function($) {
         if (self.config.edit || self.config.editmeta) {
             self.edit_init();
         }
+        $('#' + self.id + '_resizeonuploaduserenable').on('change', function (e) {
+            self.clear_create_folder_messages();
+        });
 
     };
 
@@ -88,6 +91,7 @@ var FileBrowser = (function($) {
                 }
             });
         }
+        $('#' + self.id + '_userfile').on('click', self.clear_create_folder_messages);
         $('#' + self.id + '_userfile').off('change');
         $('#' + self.id + '_userfile').on('change', self.upload_submit);
     };
@@ -97,6 +101,10 @@ var FileBrowser = (function($) {
             return get_string('youmustagreetothecopyrightnotice');
         }
         return false;
+    };
+
+    this.clear_create_folder_messages = function() {
+        $('#' + self.id + '_createfolder_messages').empty();
     };
 
     this.upload_validate = function () {
@@ -197,11 +205,15 @@ var FileBrowser = (function($) {
             $('#' + self.id + '_createfolder_messages').empty().append(makeMessage(message, 'error'));
             return false;
         }
+        else {
+            $('#' + self.id + '_createfolder_messages').empty().append(makeMessage(get_string('createfoldersuccess', 'artefact.file'), 'ok'));
+        }
         progressbarUpdate('folder');
     };
 
     this.edit_submit = function (e) {
         var message;
+        self.clear_create_folder_messages();
         var name = $('#' + self.id + '_edit_title');
         if (!name.length) {
             message = get_string('namefieldisrequired');
@@ -227,6 +239,7 @@ var FileBrowser = (function($) {
 
     this.callback_feedback = function (data) {
         var infoclass = 'info';
+        var temp = false;
         if (data.problem) {
             infoclass = 'warning';
         }
@@ -235,6 +248,7 @@ var FileBrowser = (function($) {
         }
         else {
             infoclass = 'ok';
+            temp = true;
         }
 
         quotaUpdate(data.quotaused, data.quota);
@@ -242,17 +256,21 @@ var FileBrowser = (function($) {
             // pass the artefacttype to update progress bar
             progressbarUpdate(data.artefacttype, data.deleted);
         }
-        var newmessage = makeMessage($('<div>').append(data.message), infoclass);
+        var newmessage = makeMessage($('<div>').append(data.message), infoclass, temp);
         $(newmessage).prop('id', 'uploadstatusline' + data.uploadnumber);
         if (data.uploadnumber) {
             $('#uploadstatusline'+data.uploadnumber).remove();
         }
         $('#' + self.id + '_upload_messages').append(newmessage);
+        if ($(newmessage).hasClass('alert-temp')) {
+            $(newmessage).delay(3000).fadeOut(500);
+        }
     };
 
     this.hide_edit_form = function () {
 
         var editrow = $('#' + self.id + '_edit_row');
+        self.clear_create_folder_messages();
         if (!editrow.hasClass('d-none')) {
             if ((typeof formchangemanager !== 'undefined') && !formchangemanager.confirmLeavingForm()) {
                 return false;
@@ -277,10 +295,19 @@ var FileBrowser = (function($) {
 
         // In IE, this.value is set to the button text
         var id = $(this).prop('name').replace(/.*_edit\[(\d+)\]$/, '$1');
+        self.clear_create_folder_messages();
 
         if (!self.hide_edit_form()) {
             return;
         }
+
+        $('[id^=' + self.id + '_edit_]').on('change', function (e) {
+            self.clear_create_folder_messages();
+        });
+        $('#' + self.id + '_rotator').on('change', function (e) {
+            self.clear_create_folder_messages();
+        });
+
         $('#' + self.id + '_edit_heading').html(self.filedata[id].artefacttype == 'folder' ? get_string('editfolder') : get_string('editfile'));
         var descriptionrow = $('#' + self.id + '_edit_description').closest('tr');
         if (self.filedata[id].artefacttype == 'profileicon') {
@@ -307,6 +334,7 @@ var FileBrowser = (function($) {
                 rotatorimg.css({'transform': 'rotate(' + (angle - origangle) + 'deg)', 'transition': 'all 1s ease'});
                 rotatorimg.data('angle', angle);
                 $('#' + self.id + '_edit_orientation').val(angle % 360);
+                self.clear_create_folder_messages();
             });
         }
         else {
@@ -382,6 +410,7 @@ var FileBrowser = (function($) {
                 $('#' + self.id + '_edit_row').addClass('d-none');
                 $(this).off();
                 $(this).on('click', self.edit_form);
+                self.clear_create_folder_messages();
             }
             $(this).trigger('resize.bs.modal');
             return false;
@@ -408,6 +437,7 @@ var FileBrowser = (function($) {
                 type: 'POST',
                 delay: 250,
                 data: function(params) {
+                    self.clear_create_folder_messages();
                     return {
                         'q': params.term,
                         'page': params.page || 0,
@@ -418,6 +448,7 @@ var FileBrowser = (function($) {
                     };
                 },
                 processResults: function(data, page) {
+                    self.clear_create_folder_messages();
                     return {
                         results: data.results,
                         pagination: {
@@ -486,6 +517,7 @@ var FileBrowser = (function($) {
 
                         if (warn != '') {
                             $(this).on('click', function (e) {
+                                self.clear_create_folder_messages();
                                 if (!confirm(warn)) {
                                     e.preventDefault();
                                     return false;
@@ -505,6 +537,7 @@ var FileBrowser = (function($) {
                 return false;
             });
             $('#' + self.id + '_edit_artefact').on('click', self.edit_submit);
+            self.clear_create_folder_messages();
 
             if (self.config.edit) {
 
@@ -521,6 +554,7 @@ var FileBrowser = (function($) {
                 var href = $(this).prop('href');
                 $('#' + self.id + '_changeowner').val(1);
                 $('#' + self.id + '_owner').val(getUrlParameter('owner', href));
+                self.clear_create_folder_messages();
                 if (getUrlParameter('ownerid', href)) {
                     $('#' + self.id + '_ownerid').val(getUrlParameter('ownerid', href));
                 }
@@ -542,6 +576,7 @@ var FileBrowser = (function($) {
                 if (self.config.edit) {
                     if ((typeof formchangemanager !== 'undefined') && !formchangemanager.confirmLeavingForm()) {
                         e.preventDefault();
+                        self.clear_create_folder_messages();
                         return false;
                     }
                 }
@@ -552,6 +587,7 @@ var FileBrowser = (function($) {
                     $('#' + self.id + '_ownerid').val(getUrlParameter('ownerid', href));
                 }
                 self.submitform();
+                self.clear_create_folder_messages();
                 $('#' + self.id + '_changefolder').val('');
                 e.preventDefault();
                 return false;
@@ -595,7 +631,7 @@ var FileBrowser = (function($) {
                             e.preventDefault();
                         }
                     });
-                    ul.append($('<li><span class="icon icon-long-arrow-right left"></span>').append(link));
+                    ul.append($('<li><span class="icon icon-long-arrow-alt-right left"></span>').append(link));
                 }
             }
         });
@@ -685,6 +721,7 @@ var FileBrowser = (function($) {
             });
         }
         $('#' + self.id + '_selectlist button.unselect').each(function () {
+            self.clear_create_folder_messages();
             $(this).on('click', self.unselect);
         });
     };
@@ -711,6 +748,7 @@ var FileBrowser = (function($) {
             $(this).on('click', function(e) {
 
                 e.preventDefault();
+                self.clear_create_folder_messages();
                 var previewimg = $('#previewimg');
                 if (previewimg.length === 0) {
                     previewimg = $('<img id="previewimg" src="">');

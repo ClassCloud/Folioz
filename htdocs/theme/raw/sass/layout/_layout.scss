@@ -11,6 +11,9 @@ body {
         @include media-breakpoint-up(md) {
             padding-bottom:50px;
         }
+        .grouphomepage {
+            padding-top: 30px;
+        }
     }
 }
 
@@ -43,12 +46,11 @@ body {
     clear:both;
 }
 
-.wallpost {
-    &:first-child {
-        margin-top: 20px;
-    }
-    p {
-        margin-bottom: 0;
+.wall {
+    margin-top: 20px;
+    .lead {
+        background-color: $gray-100;
+        padding: $alert-padding-y $alert-padding-x;
     }
 }
 
@@ -66,6 +68,7 @@ body {
 
 .viewfooter {
     clear: both;
+    margin-top: 2rem;
 }
 
 // Needed to clear the float when dropzone is visible
@@ -123,17 +126,17 @@ iframe {
 }
 
 .view-container {
-    margin-top: 30px;
+    margin-top: 15px;
     clear: both;
 }
 
 .view-description {
-    margin-top: 15px;
-    @include media-breakpoint-up(sm) {
-        margin-top: 30px;
-    }
+    margin-bottom: 2rem;
     &.with-toolbar {
         margin-right: 20px;
+    }
+    &.with-addblock {
+        margin-bottom: 2rem;
     }
 }
 
@@ -164,6 +167,9 @@ body.presentation-iframe {
 
 .peoplelistinfo {
     clear: both;
+    .profile img {
+      margin-right: 10px;
+    }
     .leftdiv {
         float: left;
         margin-bottom: 5px;
@@ -188,6 +194,9 @@ body.presentation-iframe {
         right: -1px;
         margin-top: 30px;
         z-index: $zindex-fixed;
+        .btn.first-of-group {
+            border-top-left-radius: $border-radius;
+        }
     }
 }
 
@@ -231,19 +240,40 @@ body.presentation-iframe {
 }
 
 // push in the right page margin to allow room for floating menu
-.pageheader-actions,
-.pageheader-actions + .main-content {
-    padding-right: 50px;
+.pageheader-actions {
+    padding-right: 0;
+
+    .pageheader-content {
+        @media (max-width: 1270px) {
+            padding-right: 50px;
+        }
+    }
+}
+form#settings,
+.view-instructions {
+    @media (max-width: 1270px) {
+        padding-right: 50px;
+    }
 }
 
 // Profile page accept friends form
 .pendingfriendscard {
-    margin-top: 40px;
-    padding-top: 30px;
+    margin-top: 60px;
     margin-bottom: 20px;
 
     @include media-breakpoint-down(md) {
         margin-top: -30px;
-        padding-top: 0;
+    }
+}
+
+// make footer colour extend below footer on short pages
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .main-content {
+      flex: 1;
     }
 }

@@ -5,40 +5,44 @@
 {include file="header/head.tpl"}
 <body data-usethemedjs="true" class="no-js {if $ADMIN || $INSTITUTIONALADMIN || $STAFF || $INSTITUTIONALSTAFF}admin{/if} {if $loggedout}loggedout{/if} {if $pagename}{$pagename}{/if} {$presentation|default:'window'}">
     <div class="skiplink btn-group btn-group-top">
-        <a class="sr-only sr-only-focusable btn btn-secondary" {if $headertype=='page'}href="#header-content"{else}href="#main"{/if}>{str tag=skipmenu}</a>
+        <a class="sr-only sr-only-focusable btn btn-secondary" {if $headertype=='page'}href="#header-target-main"{else}href="#header-main"{/if}>{str tag=skipmenu}</a>
     </div>
 
     {if $USERMASQUERADING || !$PRODUCTIONMODE || $SITECLOSED || $SITETOP}
-        <div class="site-messages text-center">
+        <div class="site-messages">
     {/if}
 
         {if $USERMASQUERADING}
             <div class="site-message alert alert-warning" role="alert">
-                <span class="icon icon-lg icon-exclamation-triangle left" role="presentation" aria-hidden="true"></span>
-                <span>{$masqueradedetails}</span>
-                <a href="{$becomeyoulink}">{$becomeyouagain}</a>
+                <div class="container">
+                    <span>{$masqueradedetails}</span>
+                    <a href="{$becomeyoulink}">{$becomeyouagain}</a>
+                </div>
             </div>
         {/if}
         {if !$PRODUCTIONMODE}
             <div class="site-message alert alert-info" role="alert">
-                <span class="icon icon-lg icon-info-circle left" role="presentation" aria-hidden="true"></span>
-                {str tag=notproductionsite section=error}
+                <div class="container">
+                    {str tag=notproductionsite section=error}
+                </div>
             </div>
         {/if}
         {if $SITEOUTOFSYNC}
             <div class="site-message alert alert-warning" role="alert">
-                <span class="icon icon-lg icon-info-circle left" role="presentation" aria-hidden="true"></span>
-                {str tag=siteoutofsyncfor section=error arg1=$SITEOUTOFSYNC}
+                <div class="container">
+                    {str tag=siteoutofsyncfor section=error arg1=$SITEOUTOFSYNC}
+                </div>
             </div>
         {/if}
         {if $SITECLOSED}
             <div class="site-message alert alert-danger" role="alert">
-                <span class="icon icon-lg icon-lock left" role="presentation" aria-hidden="true"></span>
-                {if $SITECLOSED == 'logindisabled'}{str tag=siteclosedlogindisabled section=mahara arg1="`$WWWROOT`admin/upgrade.php"}{else}{str tag=siteclosed}{/if}
+                <div class="container">
+                    {if $SITECLOSED == 'logindisabled'}{str tag=siteclosedlogindisabled section=mahara arg1="`$WWWROOT`admin/upgrade.php"}{else}{str tag=siteclosed}{/if}
+                </div>
             </div>
         {/if}
         {if $SITETOP}
-            <div id="switchwrap">{$SITETOP|safe}</div>
+           <div id="switchwrap">{$SITETOP|safe}</div>
         {/if}
 
     {if $USERMASQUERADING || !$PRODUCTIONMODE || $SITECLOSED || $SITETOP}
@@ -129,6 +133,7 @@
 
     <div class="container main-content">
         <div class="row">
+            <a id="header-main"></a>
             <main id="main" class="{if $SIDEBARS}{if $SIDEBLOCKS.right}col-lg-9 {else}col-lg-9 order-md-2 {/if}{else}col-md-12{/if} main">
                 <div id="content" class="main-column{if $selected == 'content'} editcontent{/if}">
                     <div id="main-column-container">

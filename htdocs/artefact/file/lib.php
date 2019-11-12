@@ -57,7 +57,7 @@ class PluginArtefactFile extends PluginArtefact {
                 'url' => 'artefact/file/profileicons.php',
                 'title' => get_string('profileicons', 'artefact.file'),
                 'weight' => 15,
-                'iconclass' => 'id-badge',
+                'iconclass' => 'portrait',
             ),
         );
     }
@@ -126,39 +126,13 @@ class PluginArtefactFile extends PluginArtefact {
     public static function set_quota_triggers() {
         set_config_plugin('artefact', 'file', 'quotanotifylimit', 80);
         set_config_plugin('artefact', 'file', 'quotanotifyadmin', false);
-
-        // Create triggers to reset the quota notification flag
         if (is_postgres()) {
             $sql = "DROP FUNCTION IF EXISTS {unmark_quota_exeed_upd_set}() CASCADE;";
             execute_sql($sql);
-
-            db_create_trigger(
-                'unmark_quota_exceed_upd_usr_set',
-                'AFTER', 'UPDATE', 'usr', "
-                UPDATE {usr_account_preference}
-                SET value = 0 FROM {artefact_config}
-                WHERE {usr_account_preference}.field = 'quota_exceeded_notified'
-                AND {usr_account_preference}.usr = NEW.id
-                AND {artefact_config}.plugin = 'file'
-                AND {artefact_config}.field = 'quotanotifylimit'
-                AND CAST(NEW.quotaused AS float)/CAST(NEW.quota AS float) < CAST({artefact_config}.value AS float)/100;"
-            );
         }
         else {
             $sql = "DROP TRIGGER IF EXISTS {unmark_quota_exceed_upd_set}";
             execute_sql($sql);
-
-            db_create_trigger(
-                'unmark_quota_exceed_upd_usr_set',
-                'AFTER', 'UPDATE', 'usr', "
-                UPDATE {usr_account_preference}, {artefact_config}
-                SET {usr_account_preference}.value = 0
-                WHERE {usr_account_preference}.field = 'quota_exceeded_notified'
-                AND {usr_account_preference}.usr = NEW.id
-                AND {artefact_config}.plugin = 'file'
-                AND {artefact_config}.field = 'quotanotifylimit'
-                AND NEW.quotaused/NEW.quota < {artefact_config}.value/100;"
-            );
         }
     }
 
@@ -192,6 +166,7 @@ class PluginArtefactFile extends PluginArtefact {
                     'confirmdeletefile',
                     'confirmdeletefolder',
                     'confirmdeletefolderandcontents',
+                    'createfoldersuccess',
                     'defaultprofileicon',
                     'editfile',
                     'editfolder',
@@ -564,7 +539,7 @@ abstract class ArtefactTypeFileBase extends ArtefactType {
                 LEFT OUTER JOIN {artefact} api ON api.parent = a.id AND api.artefacttype = \'profileicon\'
                 LEFT OUTER JOIN {view_artefact} va ON va.artefact = a.id
                 LEFT OUTER JOIN {artefact_attachment} aa ON aa.attachment = a.id
-                LEFT OUTER JOIN {skin} s ON (s.bodybgimg = a.id OR s.viewbgimg = a.id)
+                LEFT OUTER JOIN {skin} s ON (s.bodybgimg = a.id OR s.headingbgimg = a.id)
                 LEFT OUTER JOIN {interaction_forum_post_attachment} fpa ON fpa.attachment = a.id
                 LEFT OUTER JOIN {usr} u ON a.id = u.profileicon AND a.owner = u.id';
 
@@ -2169,6 +2144,9 @@ class ArtefactTypeFolder extends ArtefactTypeFileBase {
         $smarty->assign('simpledisplay', isset($options['simpledisplay']) ? $options['simpledisplay'] : false);
         $smarty->assign('folderid', $this->get('id'));
         $smarty->assign('downloadfolderzip', get_config_plugin('blocktype', 'folder', 'folderdownloadzip') ? !empty($options['folderdownloadzip']) : false);
+        if (isset($options['editing'])) {
+            $smarty->assign('editing', $options['editing']);
+        }
 
         $childrecords = false;
         if (!empty($options['existing_artefacts'])) {
@@ -2179,6 +2157,7 @@ class ArtefactTypeFolder extends ArtefactTypeFileBase {
         }
 
         if ($childrecords) {
+            safe_require('artefact', 'comment');
             $sortorder = (isset($options['sortorder']) && $options['sortorder'] == 'desc') ? 'my_files_cmp_desc' : 'my_files_cmp';
             usort($childrecords, array('ArtefactTypeFileBase', $sortorder));
             $children = array();
@@ -2187,10 +2166,25 @@ class ArtefactTypeFolder extends ArtefactTypeFileBase {
                 $child->title = $child->hovertitle = $c->get('title');
                 $child->date = format_date(strtotime($child->mtime), 'strftimedaydatetime');
                 $child->iconsrc = call_static_method(generate_artefact_class_name($child->artefacttype), 'get_icon', array('id' => $child->id, 'viewid' => isset($options['viewid']) ? $options['viewid'] : 0));
+                $count = ArtefactTypeComment::count_comments(null, array($child->id));
+                if ($count) {
+                    $child->commentcount = $count[$child->id]->comments;
+                }
+                else {
+                    $child->commentcount = 0;
+                }
             }
             $smarty->assign('children', $childrecords);
         }
-        return array('html' => $smarty->fetch('artefact:file:folder_render_self.tpl'),
+        if (isset($options['blockid'])) {
+            $smarty->assign('blockid', $options['blockid']);
+        }
+        $template = 'artefact:file:folder_render_self.tpl';
+        if (isset($options['modal'])) {
+            $smarty->assign('modal', $options['modal']);
+            $template = 'artefact:file:folder_render_in_modal.tpl';
+        }
+        return array('html' => $smarty->fetch($template),
                      'javascript' => null);
     }
 
@@ -2475,19 +2469,22 @@ class ArtefactTypeImage extends ArtefactTypeFile {
 
     public function render_self($options) {
         $downloadpath = get_config('wwwroot') . 'artefact/file/download.php?file=' . $this->id;
-        $url = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $this->id;
         if (isset($options['viewid'])) {
             $downloadpath .= '&view=' . $options['viewid'];
-            $url .= '&view=' . $options['viewid'];
         }
-        $metadataurl = $url . '&details=1';
+        if (isset($options['viewid'])) {
+            $metadataurl = get_config('wwwroot') . 'view/view.php?id=' . $options['viewid'] . '&modal=1&artefact=' . $this->id;
+        }
+        else {
+            $metadataurl = null;
+        }
         if (empty($options['metadata'])) {
             $smarty = smarty_core();
             $smarty->assign('id', $this->id);
             $smarty->assign('title', $this->get('title'));
             $smarty->assign('description', $this->get('description'));
             $smarty->assign('downloadpath', $downloadpath);
-            $smarty->assign('metadataurl', $metadataurl);
+            // $smarty->assign('metadataurl', $metadataurl);
             return array('html' => $smarty->fetch('artefact:file:image_render_self.tpl'), 'javascript' => '');
         }
         $result = parent::render_self($options);

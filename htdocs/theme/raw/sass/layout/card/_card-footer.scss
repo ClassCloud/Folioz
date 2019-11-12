@@ -24,6 +24,11 @@ a.card-footer {
     background-color: $card-bg;
 }
 
+// only to get top row of boxes on goals and skills page to not hide under boxes below
+.goals-wrapper .has-attachment {
+    z-index: 2;
+}
+
 .card-footer {
     background-color: $card-footer-bg;
     p {
@@ -64,4 +69,8 @@ a.card-footer {
 
 .fieldset-body .card-footer {
     margin: 20px -15px -10px;
+}
+
+.blockinstance .blockinstance-content .card-footer {
+    border-top: 0;
 }

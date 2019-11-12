@@ -426,14 +426,7 @@ function edituser_site_validate(Pieform $form, $values) {
                 $form->set_error('email', get_string('invalidemailaddress', 'artefact.internal'));
             }
 
-            if (record_exists_sql('
-                    SELECT id
-                    FROM {usr}
-                    WHERE deleted != 1 AND email = ? AND id != ?', array($email, $user->id))
-                || record_exists_sql('
-                    SELECT owner
-                    FROM {artefact_internal_profile_email}
-                    WHERE email = ? AND owner != ?', array($email, $user->id))) {
+            if (check_email_exists($email, $user->id)) {
                 $form->set_error('email', get_string('emailalreadytakenbyothers', 'auth.internal'));
             }
         }
@@ -760,7 +753,7 @@ $deleteform = pieform(array(
             'type' => 'button',
             'usebuttontag' => true,
             'class' => 'btn-secondary',
-            'value'          => '<span class="icon icon-trash icon-lg text-danger left" role="presentation" aria-hidden="true"></span><span>'. get_string('deleteuser', 'admin') . '</span>',
+            'value'          => '<span class="icon icon-trash-alt icon-lg text-danger left" role="presentation" aria-hidden="true"></span><span>'. get_string('deleteuser', 'admin') . '</span>',
             'confirm' => get_string('confirmdeleteuser', 'admin'),
         ),
     ),
@@ -1016,6 +1009,7 @@ $smarty->assign('institutionform', $institutionform);
 $smarty->assign('loginas', $id != $USER->get('id') && is_null($USER->get('parentuser')));
 $smarty->assign('PAGEHEADING', display_name($user));
 $smarty->assign('SUBSECTIONHEADING', TITLE);
+setpageicon($smarty, 'icon-user-cog');
 
 # Only allow deletion and suspension of a user if the viewed user is not
 # the current user; or if they are the current user, they're not the only

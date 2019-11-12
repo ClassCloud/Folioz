@@ -22,30 +22,48 @@
 </div>
 {/if}
 
-<div class="taggedpost-title text-midtone card-body flush">
-    {$blockheading|clean_html|safe}
+<div class="taggedpost-title card-body flush">
+{if $blockheading}
+    <p class="text-midtone">{$blockheading|clean_html|safe}</p>
+{/if}
+{if $configerror}
+    <p class="text-midtone">{str tag='configerror' section='blocktype.blog/taggedposts'}</p>
+{elseif $badnotag && $badtag}
+    <p class="text-midtone">{str tag='notagsboth' section='blocktype.blog/taggedposts' arg1=$badtag arg2=$badnotag}</p>
+{elseif $badnotag}
+    <p class="text-midtone">{str tag='notagsomit' section='blocktype.blog/taggedposts' arg1=$badnotag}</p>
+{elseif $badtag}
+    <p class="text-midtone">{str tag='notags' section='blocktype.blog/taggedposts' arg1=$badtag}</p>
+{elseif $full}
 </div>
 
-{if $configerror}
-    <span class="text-midtone">{str tag='configerror' section='blocktype.blog/taggedposts'}</span>
-{elseif $badnotag && $badtag}
-    <span class="text-midtone">{str tag='notagsboth' section='blocktype.blog/taggedposts' arg1=$badtag arg2=$badnotag}</span>
-{elseif $badnotag}
-    <span class="text-midtone">{str tag='notagsomit' section='blocktype.blog/taggedposts' arg1=$badnotag}</span>
-{elseif $badtag}
-    <span class="text-midtone">{str tag='notags' section='blocktype.blog/taggedposts' arg1=$badtag}</span>
-{elseif $full}
-<div id="blogdescription">
     <div id="postlist_{$blockid}" class="list-group">
         {foreach from=$results item=post}
-        <div class="post list-group-item">
-            <h4 class="list-group-heading">
-                <a href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&view={$view}">
-                    {$post->title}
-                </a>
+        {if !$editing}
+            {if !$post->allowcomments}
+                {assign var="justdetails" value=true}
+            {/if}
+            {include
+                file='header/block-comments-details-header.tpl'
+                artefactid=$post->id
+                blockid=$blockid
+                commentcount=$post->commentcount
+                allowcomments=$post->allowcomments
+                justdetails=$justdetails
+                displayiconsonly=true}
+        {/if}
+        <div class="post list-group-item flush">
+            <h4 class="title">
+                {if !($editing)}
+                     <a class="modal_link inner-link" data-toggle="modal-docked" data-target="#configureblock" href="#" data-blockid="{$blockid}" data-artefactid="{$post->id}">
+                         {$post->title}
+                     </a>
+                {else}
+                    <span class="list-group-item-heading no-link">{$post->title}</span>
+                {/if}
             </h4>
             <div class="postdetails metadata">
-                <span class="icon icon-calendar left" role="presentation" aria-hidden="true"></span>
+                <span class="icon icon-regular icon-calendar-alt left" role="presentation" aria-hidden="true"></span>
                 {$post->postedbyon}
             </div>
             <div class="tags metadata">
@@ -57,69 +75,43 @@
             <div class="detail list-group-item-detail">
                 {$post->description|clean_html|safe}
             </div>
-
             {if $post->attachments}
                 {$post->attachments|safe}
             {/if}
-
-            {if !$editing}
-                {if $post->commentcount != null}
-                <div class="comments clearfix">
-                    {if $post->commentcount > 0}
-                    <a id="block_0{$post->id}{$blockid}" class="commentlink link-blocktype" data-toggle="modal-docked" data-target="#feedbacktable_0{$post->id}{$blockid}" href="#">
-                        <span class="icon icon-comments" role="presentation" aria-hidden="true"></span>
-                        {str tag=Comments section=artefact.comment} ({$post->commentcount})
-                    </a>
-                    {/if}
-                    {if $post->allowcomments}
-                    <a class="addcomment link-blocktype" href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&view={$view}">
-                        <span class="icon icon-arrow-circle-right" role="presentation" aria-hidden="true"></span>
-                        {str tag=addcomment section=artefact.comment}
-                    </a>
-                    {/if}
-                </div>
-                {/if}
-            {/if}
         </div>
-        {if !$editing}
-        <div id="feedbacktable_0{$post->id}{$blockid}" class="feedbacktable modal modal-docked">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header clearfix">
-                        <button class="close" data-dismiss="modal-docked">
-                            <span class="times">&times;</span>
-                            <span class="sr-only">{str tag=Close}</span>
-                        </button>
-                        <h4 class="modal-title float-left">
-                            <span class="icon icon-lg icon-comments left" role="presentation" aria-hidden="true"></span>
-                            {str tag=Comments section=artefact.comment} |
-                            {$post->title}
-                        </h4>
-                        {if $post->allowcomments}
-                        <a class="addcomment float-right" href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&view={$view}">
-                            {str tag=addcomment section=artefact.comment}
-                            <span class="icon icon-arrow-right right" role="presentation" aria-hidden="true"></span>
-                        </a>
-                        {/if}
-                    </div>
-                    <div class="modal-body flush">
-                    {$post->comments->tablerows|safe}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {/if}
         {/foreach}
     </div>
-</div>
 {else}
 <div class="taggedposts list-group">
     {foreach from=$results item=post}
+    {if !$editing}
+        {if !$post->allowcomments}
+            {assign var="justdetails" value=true}
+        {/if}
+        {include
+            file='header/block-comments-details-header.tpl'
+            artefactid=$post->id
+            blockid=$blockid
+            commentcount=$post->commentcount
+            allowcomments=$post->allowcomments
+            justdetails=$justdetails
+            displayiconsonly=true}
+    {/if}
     <div class="list-group-item">
+        <a class="outer-link collapsed" data-toggle="collapse" href="#tagged_post_{$post->id}" aria-expanded="false">
+            <span class="sr-only">{$post->title}</span>
+        </a>
         <h4 class="list-group-item-heading">
-            <a href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&amp;view={$view}">
+            {if !($editing)}
+            <a class="modal_link inner-link list-group-item-heading" data-toggle="modal-docked" data-target="#configureblock" href="#" data-blockid="{$blockid}" data-artefactid="{$post->id}">
                 {$post->title}
             </a>
+            {else}
+            <span class="list-group-item-heading no-link">{$post->title}</span>
+            {/if}
+        </h4>
+        <span class="icon icon-chevron-up collapse-indicator float-right" role="presentation" aria-hidden="true"></span>
+        <div>
             <span class="metadata">
                 {str tag='postedon' section='blocktype.blog/taggedposts'}
                 {$post->displaydate}
@@ -129,7 +121,10 @@
                     {$post->updateddate}
                 {/if}
             </span>
-        </h4>
+        </div>
+        <div  id="tagged_post_{$post->id}" class="collapse content-text">
+            <span>{$post->description|safe}</span>
+        </div>
     </div>
     {/foreach}
 </div>

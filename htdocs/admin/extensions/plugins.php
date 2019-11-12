@@ -197,9 +197,9 @@ var installplugin = (function($) {
 }(jQuery));
 JAVASCRIPT;
 
-
+$plugins['blocktype']['configure'] = true;
 $smarty = smarty();
-setpageicon($smarty, 'icon-puzzle-piece');
+setpageicon($smarty, 'icon-plug');
 
 $smarty->assign('INLINEJAVASCRIPT', $javascript);
 $smarty->assign('plugins', $plugins);

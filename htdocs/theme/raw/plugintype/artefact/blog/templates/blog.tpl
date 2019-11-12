@@ -8,11 +8,8 @@
             {str tag='shortcutnewentry' section='artefact.blog'}
         </a>
     {/if}
-    {if !$options.hidetitle}
-    <h2>{$artefacttitle|safe}</h2>
-    {/if}
 
-    <div id="blogdescription" class="content-text">{$description|clean_html|safe}
+    <div id="blogdescription">{$description|clean_html|safe}
     {if $tags}
     <div class="tags">
         <strong>{str tag=tags}:</strong> {list_tags owner=$owner tags=$tags view=$view}

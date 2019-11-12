@@ -17,9 +17,9 @@ Scenario: Add Files to download block
     Given I log in as "UserA" with password "Kupuh1pa!"
     And I choose "Pages and collections" in "Create" from main menu
     And I click on "Edit" in "Page UserA_01" card menu
-    And I expand "Media" node
-    And I follow "File(s) to download"
+    When I follow "Drag to add a new block" in the "blocktype sidebar" property
     And I press "Add"
+    And I click on "File(s) to download" in the "Content types" property
     And I expand "Files" node in the "#instconf_artefactfieldset_container" "css_element"
 
     And I attach the file "mahara_about.pdf" to "File"
@@ -30,7 +30,7 @@ Scenario: Add Files to download block
     And I click on "mahara_about.pdf" in the "File download heading 1" property
     Then I should see "PDF document"
     And I should see "Download"
-    And I follow "Page UserA_01"
+    And I close the dialog
     And I click on "Image1.jpg" in the "File download heading 2" property
     Then I should see "JPEG Image"
     And I should see "Download"

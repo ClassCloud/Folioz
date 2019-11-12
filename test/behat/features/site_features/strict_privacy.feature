@@ -16,7 +16,7 @@ Scenario: Create user who logs in with strict privacy enabled
     And the field "Strict privacy" matches value "1"
     And I press "Update site options"
     # Background adding of user doesn't work for this test
-    And I choose "Add user" in "Users" from administration menu
+    And I choose "Add user" in "People" from administration menu
     And I set the following fields to these values:
     | First name | Bob |
     | Last name | One |
@@ -36,7 +36,7 @@ Scenario: Create user who logs in with strict privacy enabled
     Then I should see "Before entering your account, please read the information displayed below."
     And I press "Save changes"
     Then I should see "If you do not consent to the privacy statement(s) or terms and conditions, your account will be suspended."
-    Then I press "No"
+    Then I press "Cancel"
     # consent to privacy statement
     And I enable the switch "I consent to the privacy statement"
     And I enable the switch "I consent to the terms and conditions"

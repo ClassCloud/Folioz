@@ -1,15 +1,34 @@
 {foreach from=$posts item=post}
+{if !$options.editing}
+    {if !$post->allowcomments}
+        {assign var="justdetails" value=true}
+    {/if}
+    {include
+        file='header/block-comments-details-header.tpl'
+        artefactid=$post->id
+        blockid=$options.blockid
+        commentcount=$post->commentcount
+        allowcomments=$post->allowcomments
+        justdetails=$justdetails
+        displayiconsonly = true}
+{/if}
     <div class="post list-group-item clearfix flush">
         <div class="post-heading">
             <h4 class="title">
-                <a href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&view={$options.viewid}">{$post->title}</a>
+                {if !$options.editing}
+                    <a class="modal_link" data-toggle="modal-docked" data-target="#configureblock" href="#" data-blockid="{$options.blockid}" data-artefactid="{$post->id}">
+                        {$post->title}
+                    </a>
+                {else}
+                    {$post->title}
+                {/if}
             </h4>
             <div class="postdetails metadata">
-                <span class="icon icon-calendar left" role="presentation" aria-hidden="true"></span>
+                <span class="icon icon-regular icon-calendar-alt left" role="presentation" aria-hidden="true"></span>
                 {$post->postedby}
                 {if $post->lastupdated}
                     <br>
-                    <span class="icon icon-calendar left" role="presentation" aria-hidden="true"></span>
+                    <span class="icon icon-regular icon-calendar-alt left" role="presentation" aria-hidden="true"></span>
                     {str tag=updatedon section=artefact.blog} {$post->lastupdated}
                 {/if}
             </div>
@@ -28,16 +47,16 @@
 
         {if $post->files}
         <div class="has-attachment card collapsible" id="blockpostfiles-{$post->id}">
-            <h5 class="card-header">
+            <div class="card-header">
                 <a class="text-left collapsed" data-toggle="collapse" href="#post-attach-{$post->id}" aria-expanded="false">
-                    <span class="icon icon-paperclip left" role="presentation" aria-hidden="true"></span>
+                    <span class="icon icon-paperclip left icon-sm" role="presentation" aria-hidden="true"></span>
                     <span class="text-small"> {str tag=attachedfiles section=artefact.blog} </span>
                      <span class="metadata">
                         ({$post->files|count})
                     </span>
                     <span class="icon icon-chevron-down collapse-indicator float-right" role="presentation" aria-hidden="true"></span>
                 </a>
-            </h5>
+            </div>
             <div class="collapse" id="post-attach-{$post->id}">
                 <ul class="list-group list-unstyled">
                 {foreach from=$post->files item=file}
@@ -53,12 +72,10 @@
                         <span class="icon icon-{$file->artefacttype} icon-lg text-default left" role="presentation" aria-hidden="true"></span>
                         {/if}
                         <span class="title">
-                            <a href="{$WWWROOT}artefact/artefact.php?artefact={$file->attachment}&view={$options.viewid}" class="inner-link">
-                                {$file->title}
-                                <span class="metadata"> -
-                                    [{$file->size|display_size}]
-                                </span>
-                            </a>
+                            <span class="text-small">{$file->title}</span>
+                            <span class="metadata"> -
+                                [{$file->size|display_size}]
+                            </span>
                         </span>
                         <span class="icon icon-download icon-lg float-right text-watermark icon-action" role="presentation" aria-hidden="true"></span>
                     </li>
@@ -66,49 +83,6 @@
                 </ul>
             </div>
         </div>
-        {/if}
-
-        {if $options.viewid && $post->allowcomments}
-            <div class="comments">
-                {if $post->commentcount > 0}
-                <a id="blockpost_{$post->id}" class="commentlink link-blocktype" data-toggle="modal-docked" data-target="#feedbacktable_0{$post->id}{$options.blockid}" href="#">
-                    <span class="icon icon-comments" role="presentation" aria-hidden="true"></span>
-                    {str tag=Comments section=artefact.comment} ({$post->commentcount})
-                </a>
-                {/if}
-                {if $post->allowcomments}
-                <a class="addcomment link-blocktype" href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&view={$options.viewid}">
-                    <span class="icon icon-arrow-circle-right" role="presentation" aria-hidden="true"></span>
-                    {str tag=addcomment section=artefact.comment}
-                </a>
-                {/if}
-            </div>
-            <div class="feedback modal modal-docked" id="feedbacktable_0{$post->id}{$options.blockid}">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header clearfix">
-                            <button class="close" data-dismiss="modal-docked">
-                                <span class="times">&times;</span>
-                                <span class="sr-only">{str tag=Close}</span>
-                            </button>
-                            <h4 class="modal-title float-left">
-                                <span class="icon icon-lg icon-comments" role="presentation" aria-hidden="true"></span>
-                                {str tag=Comments section=artefact.comment} |
-                                {$post->title}
-                            </h4>
-                            {if $post->allowcomments}
-                            <a class="addcomment float-right" href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&view={$options.viewid}">
-                                {str tag=addcomment section=artefact.comment}
-                                <span class="icon icon-arrow-right right" role="presentation" aria-hidden="true"></span>
-                            </a>
-                            {/if}
-                        </div>
-                        <div class="modal-body flush">
-                        {$post->comments->tablerows|safe}
-                        </div>
-                    </div>
-                </div>
-            </div>
         {/if}
     </div>
 {/foreach}

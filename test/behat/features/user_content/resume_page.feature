@@ -126,9 +126,13 @@ Scenario: Editing Education and Employment info
     # When entire resume is displayed on Profile page, it should include employment address (Bug 1529750)
     Given I choose "Pages and collections" in "Create" from main menu
     And I click on "Edit" in "Profile page" card menu
-    And I expand "Personal info" node
-    And I follow "My entire résumé" in the "blocktype sidebar" property
+    When I follow "Drag to add a new block" in the "blocktype sidebar" property
     And I press "Add"
+    And I click on "Show more"
+    And I click on "Show more"
+    And I click on "Show more"
+    And I click on "My entire résumé" in the "Content types" property
+    And I set the field "Block title" to "My entire résumé"
     And I select "Automatically retract" from "Retractable"
     And I press "Save"
     And I display the page
@@ -138,6 +142,7 @@ Scenario: Editing Education and Employment info
     And I should not see "North American Cultural Studies"
     # Test whether Employment history shows address
     When I follow "Test Analyst at Catalyst IT"
+    And I wait "1" seconds
     Then I should see "Address: 150 Willis St"
     # Test whether Education history shows address
     When I follow "Machine Learning - Creation 2.1 (Masters of Philosophy) at University College"
@@ -307,9 +312,12 @@ Scenario: Adding interests
     And I should see "Saved successfully"
     And I choose "Pages and collections" in "Create" from main menu
     And I click on "Edit" in "Page UserA_01" card menu
-    And I expand "Personal info" node
-    And I follow "One résumé field"
+    When I follow "Drag to add a new block" in the "blocktype sidebar" property
     And I press "Add"
+    And I click on "Show more"
+    And I click on "Show more"
+    And I click on "Show more"
+    And I click on "One résumé field" in the "Content types" property
     And I select the radio "Interests"
     And I press "Save"
     And I display the page

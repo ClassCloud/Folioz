@@ -25,15 +25,21 @@ class PluginBlocktypeHtml extends MaharaCoreBlocktype {
         return array('fileimagevideo' => 9000);
     }
 
+    public static function single_artefact_per_block() {
+        return true;
+    }
+
     public static function render_instance(BlockInstance $instance, $editing=false, $versioning=false) {
         $configdata = $instance->get('configdata'); // this will make sure to unserialize it for us
         $configdata['viewid'] = $instance->get('view');
 
         $result = '';
+        $smarty = smarty_core();
         $artefactid = isset($configdata['artefactid']) ? $configdata['artefactid'] : null;
         if ($artefactid) {
             $artefact = $instance->get_artefact_instance($artefactid);
-
+            $smarty->assign('artefactid', $artefactid);
+            $smarty->assign('allowcomments', $artefact->get('allowcomments'));
             if (!file_exists($artefact->get_path())) {
                 return;
             }
@@ -44,14 +50,13 @@ class PluginBlocktypeHtml extends MaharaCoreBlocktype {
             require_once(get_config('docroot') . 'lib/view.php');
             $view = new View($configdata['viewid']);
             list($commentcount, $comments) = ArtefactTypeComment::get_artefact_comments_for_view($artefact, $view, $instance->get('id'), true, $editing, $versioning);
-         }
-
-        $smarty = smarty_core();
-        if ($artefactid) {
             $smarty->assign('commentcount', $commentcount);
             $smarty->assign('comments', $comments);
-        }
+         }
+
+        $smarty->assign('editing', $editing);
         $smarty->assign('html', $result);
+        $smarty->assign('blockid', $instance->get('id'));
         return $smarty->fetch('blocktype:html:html.tpl');
     }
 

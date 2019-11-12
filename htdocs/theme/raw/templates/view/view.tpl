@@ -1,8 +1,12 @@
 {include file="header.tpl" headertype="page"}
+{include file='modal-details.tpl'}
 
+<input type="hidden" id="viewid" name="id" value="{$viewid}">
+{if $viewdescription}
 <div id="view-description" class="view-description {if $toolbarhtml}with-toolbar{/if}">
     {$viewdescription|clean_html|safe}
 </div>
+{/if}
 
 {if $viewinstructions}
     <div id="viewinstructions" class="pageinstructions view-instructions last form-group collapsible-group small-group {if $toolbarhtml}with-toolbar{/if}">
@@ -25,14 +29,16 @@
 <div id="view" class="view-container">
     <div id="bottom-pane">
         <div id="column-container" class="user-page-content">
-            {if $viewcontent}
-                {$viewcontent|safe}
-            {else}
+            {if $peerhidden}
                 <div class="alert alert-info">
-                    <span class="icon icon-lg icon-info-circle left" role="presentation" aria-hidden="true"></span>
                     {str tag=nopeerassessmentrequired section=artefact.peerassessment}
                 </div>
             {/if}
+            <div class="grid-stack">
+            {if $viewcontent}
+                {$viewcontent|safe}
+            {/if}
+            </div>
         </div>
     </div>
     <div class="viewfooter view-container">
@@ -54,17 +60,14 @@
         </div>
         {/if}
 
-        {if $feedback->position eq 'base'}
+        {if $feedback->position eq 'base' && $feedback->baseplacement}
         <div class="comment-container">
             {if $feedback->count || $enablecomments}
             <h3 class="title">
                 {str tag="Comments" section="artefact.comment"}
             </h3>
-            {if $feedback->count == 0}
-            <hr />
-            {/if}
             {* Do not change the id because it is used by paginator.js *}
-            <div id="feedbacktable" class="feedbacktable js-feedbackbase fullwidth">
+            <div id="feedbacktable{if $blockid}_{$blockid}{/if}" class="feedbacktable js-feedbackbase fullwidth">
                 {$feedback->tablerows|safe}
             </div>
             {$feedback->pagination|safe}
@@ -90,6 +93,8 @@
                             {str tag=addcomment section=artefact.comment}
                         </h4>
                     </div>
+
+                    <div id="comment_modal_messages"></div>
                     <div class="modal-body">
                         {$addfeedbackform|safe}
                     </div>
@@ -148,7 +153,7 @@
                         <p>{str tag=confirmcopydesc section=view}</p>
                         <div class="btn-group">
                             <button id="copy-collection-button" type="button" class="btn btn-secondary"><span class="icon icon-folder-open" role="presentation" aria-hidden="true"></span> {str tag=Collection section=collection}</button>
-                            <button id="copy-view-button" type="button" class="btn btn-secondary"><span class="icon icon-file-text " role="presentation" aria-hidden="true"></span> {str tag=view}</button>
+                            <button id="copy-view-button" type="button" class="btn btn-secondary"><span class="icon icon-regular icon-file-alt" role="presentation" aria-hidden="true"></span> {str tag=view}</button>
                         </div>
                     </div>
                 </div>

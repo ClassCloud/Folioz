@@ -15,7 +15,7 @@ define('JSON', 1);
 define('NOSESSKEY', 1);
 
 require(dirname(dirname(__FILE__)) . '/init.php');
-require($CFG->docroot.'/blocktype/lib.php');
+require_once(get_config('docroot') . 'blocktype/lib.php');
 
 // Close the session to prevent session locking.
 session_write_close();
@@ -23,7 +23,7 @@ session_write_close();
 $blockid = param_integer('blockid');
 $block = new BlockInstance($blockid);
 if (!can_view_view($block->get('view'))) {
-    throw new AccessDeniedException(get_string('accessdenied', 'error'));
+    throw new AccessDeniedException();
 }
 
 safe_require_plugin('blocktype', $block->get('blocktype'));

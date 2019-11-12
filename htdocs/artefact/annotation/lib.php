@@ -894,9 +894,8 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
             );
         $data->jsonscript = 'artefact/annotation/annotations.json.php';
 
-        $data->baseurl = get_config('wwwroot') . 'artefact/artefact.php?' .
-            'artefact=' . $data->annotation .
-            '&view=' . $data->view .
+        $data->baseurl = get_config('wwwroot') . 'view/view.php?id=' . $data->view .
+            '&artefact=' . $data->annotation .
             (isset($data->block) ? '&block=' . $data->block : '');
 
         $smarty = smarty_core();
@@ -1139,6 +1138,7 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
             $block = new BlockInstance($blockid);
 
             $smarty->assign('blockid', $blockid);
+            $smarty->assign('artefactid', $annotationartefact->get('id'));
             $smarty->assign('annotationtitle', $block->get('title'));
             $smarty->assign('annotationfeedbackcount', $annotationfeedbackcount);
             $smarty->assign('annotationfeedback', $annotationfeedback);
@@ -1399,7 +1399,7 @@ class ArtefactTypeAnnotationfeedback extends ArtefactType {
                     'type'  => 'button',
                     'usebuttontag' => true,
                     'class' => 'btn-secondary btn-sm',
-                    'value' => '<span class="icon icon-trash text-danger" role="presentation" aria-hidden="true"></span><span class="sr-only">' . get_string('delete') . '</span>',
+                    'value' => '<span class="icon icon-trash-alt text-danger" role="presentation" aria-hidden="true"></span><span class="sr-only">' . get_string('delete') . '</span>',
                     'elementtitle' => get_string('delete'),
                     'confirm' => get_string('reallydeletethisannotationfeedback', 'artefact.annotation'),
                     'name'  => 'delete_annotation_feedback_submit',
@@ -1613,7 +1613,7 @@ function delete_annotation_feedback_submit(Pieform $form, $values) {
 
     $viewid = $view->get('id');
     if ($artefactid = $annotation->get('artefact')) {
-        $url = 'artefact/artefact.php?view=' . $viewid . '&artefact=' . $artefactid;
+        $url = 'view/view.php?id=' . $viewid . '&artefact=' . $artefactid;
     }
     else {
         $url = $view->get_url(false);
@@ -1959,7 +1959,7 @@ class ActivityTypeArtefactAnnotationAnnotationfeedback extends ActivityTypePlugi
                 $institutionid = $artefactinstance->get('institution');
             }
             if (empty($this->url)) {
-                $this->url = 'artefact/artefact.php?artefact=' . $onartefact . '&view=' . $this->viewid;
+                $this->url = 'view/view.php?id=' . $this->viewid . '&artefact=' . $onartefact;
             }
         }
         else if ($onview = $annotation->get('view')) {

@@ -52,7 +52,7 @@ function objection_form_submit(Pieform $form, $values) {
     global $USER, $view, $artefact;
 
     if (!$USER->is_logged_in()) {
-        throw new AccessDeniedException(get_string('accessdenied', 'error'));
+        throw new AccessDeniedException();
     }
 
     require_once('activity.php');
@@ -90,7 +90,7 @@ function objection_form_submit(Pieform $form, $values) {
     db_commit();
 
     if ($artefact) {
-        $goto = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $artefact->get('id') . '&view='.$view->get('id');
+        $goto = get_config('wwwroot') . 'view/view.php?id=' . $view->get('id') . '&modal=1&artefact=' . $artefact->get('id');
     }
     else {
         $goto = $view->get_url();
@@ -209,7 +209,7 @@ function notrude_form_submit(Pieform $form, $values) {
     $reportername = display_default_name($USER);
 
     if ($artefact) {
-        $goto = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $artefact->get('id') . '&view=' . $view->get('id');
+        $goto = get_config('wwwroot') . 'view/view.php?id=' . $view->get('id') . 'artefact=' . $artefact->get('id');
     }
     else {
         $goto = $view->get_url();
@@ -331,7 +331,7 @@ function stillrude_form_submit(Pieform $form, $values) {
 
     // Send notification to the owner.
     if ($artefact) {
-        $goto = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $artefact->get('id') . '&view=' . $view->get('id');
+        $goto = get_config('wwwroot') . 'view/view.php?id=' . $view->get('id') . 'artefact=' . $artefact->get('id');
     }
     else {
         $goto = $view->get_url();
@@ -442,7 +442,7 @@ function review_form_submit(Pieform $form, $values) {
 
     if (!$USER->is_logged_in() &&
         $USER->get('id') === $view->get_owner_object()->get('owner')) {
-        throw new AccessDeniedException(get_string('accessdenied', 'error'));
+        throw new AccessDeniedException();
     }
 
     require_once('activity.php');
@@ -479,7 +479,7 @@ function review_form_submit(Pieform $form, $values) {
     db_commit();
 
     if ($artefact) {
-        $goto = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $artefact . '&view='.$view->get('id');
+        $goto = get_config('wwwroot') . 'view/view.php?id=' . $view->get('id') . 'artefact=' . $artefact;
     }
     else {
         $goto = $view->get_url();

@@ -25,28 +25,57 @@
 {/if}
 <div class="recentblogpost list-group">
 {foreach from=$mostrecent item=post}
+    {if !($editing)}
+        {if !$post->allowcomments}
+            {assign var="justdetails" value=true}
+        {/if}
+        {include
+            file='header/block-comments-details-header.tpl'
+            artefactid=$post->id
+            blockid=$blockid
+            commentcount=$post->commentcount
+            allowcomments=$post->allowcomments
+            justdetails=$justdetails
+            displayiconsonly=true}
+    {/if}
     <div class="list-group-item">
-        <a href="{$WWWROOT}artefact/artefact.php?artefact={$post->id}&amp;view={$view}" class="outer-link">
+        <a class="outer-link collapsed" data-toggle="collapse" href="#recent_post_{$post->id}" aria-expanded="false">
             <span class="sr-only">{$post->title}</span>
         </a>
-        <h4 class="list-group-item-heading text-inline">
-            {$post->title}
-        </h4>
-        <span class="text-small">
-            {str tag='postedin' section='blocktype.blog/recentposts'}
-            <a href="{$WWWROOT}artefact/artefact.php?artefact={$post->parent}&amp;view={$view}" class="inner-link">
-                {$post->parenttitle}
-            </a>
-        </span>
-        <span class="metadata">
-            {str tag='postedon' section='blocktype.blog/recentposts'}
-            {$post->displaydate}
-            <br>
-            {if $post->updateddate}
-                {str tag='updatedon' section='blocktype.blog/recentposts'}
-                {$post->updateddate}
+        <h4 class="list-group-item-heading">
+            {if !($editing)}
+                 <a class="modal_link inner-link text-left" data-toggle="modal-docked" data-target="#configureblock" href="#" data-blockid="{$blockid}" data-artefactid="{$post->id}">
+                     {$post->title}
+                 </a>
+            {else}
+                <span class="list-group-item-heading no-link">{$post->title}</span>
             {/if}
-        </span>
+        </h4>
+        <span class="icon icon-chevron-up collapse-indicator float-right" role="presentation" aria-hidden="true"></span>
+        <div>
+            <span class="text-small">
+                {str tag='postedin' section='blocktype.blog/recentposts'}
+                {if $canviewblog}
+                    <a href="{$WWWROOT}artefact/blog/view/index.php?id={$post->parent}" class="inner-link">
+                        {$post->parenttitle}
+                    </a>
+                {else}
+                    {$post->parenttitle}
+                {/if}
+            </span>
+            <span class="metadata">
+                {str tag='postedon' section='blocktype.blog/recentposts'}
+                {$post->displaydate}
+                <br>
+                {if $post->updateddate}
+                    {str tag='updatedon' section='blocktype.blog/recentposts'}
+                    {$post->updateddate}
+                {/if}
+            </span>
+        </div>
+        <div  id="recent_post_{$post->id}" class="collapse content-text">
+            <span>{$post->description|safe}</span>
+        </div>
     </div>
 {/foreach}
 </div>

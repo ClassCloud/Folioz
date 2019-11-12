@@ -30,6 +30,10 @@ class PluginBlocktypeWall extends MaharaCoreBlocktype {
         return true;
     }
 
+    public static function single_artefact_per_block() {
+        return false;
+    }
+
     public static function get_categories() {
         return array('internal' => 28000);
     }
@@ -194,7 +198,8 @@ class PluginBlocktypeWall extends MaharaCoreBlocktype {
     public function wallpost_js() {
         $js = <<<EOF
 function wallpost_success(form, data) {
-    if (jQuery('#wall').length && data.posts && data.block) {
+    var wall = jQuery('#wall');
+    if (wall.length && data.posts && data.block) {
         var wall = jQuery('#blockinstance_' + data.block + ' div.wall').first();
         var temp = jQuery('<div>');
         var textareaid = 'wallpost_' + data.block + '_text';
@@ -209,8 +214,21 @@ function wallpost_success(form, data) {
             }
         }
         formSuccess(form, data);
+        $(window).trigger('colresize');
     }
 }
+jQuery( function() {
+    // needs to initialize the tinyMCE editor when the block is loaded
+    PieformManager.signal('onload');
+    if (typeof(tinyMCE) != 'undefined') {
+        tinyMCE.activeEditor.on('ResizeEditor', function(e) {
+            $(window).trigger('colresize');
+        });
+        tinyMCE.activeEditor.on('init', function(e) {
+            $(window).trigger('colresize');
+        });
+    }
+});
 EOF;
         return "<script>$js</script>";
     }

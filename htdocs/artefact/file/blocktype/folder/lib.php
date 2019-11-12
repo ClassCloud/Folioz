@@ -43,6 +43,8 @@ class PluginBlocktypeFolder extends MaharaCoreBlocktype {
         $configdata = $instance->get('configdata');
         $configdata['viewid'] = $instance->get('view');
         $configdata['simpledisplay'] = true;
+        $configdata['blockid'] = $instance->get('id');
+        $configdata['editing'] = $editing;
 
         // This can be either an image or profileicon. They both implement
         // render_self
@@ -59,10 +61,6 @@ class PluginBlocktypeFolder extends MaharaCoreBlocktype {
             list($commentcount, $comments) = ArtefactTypeComment::get_artefact_comments_for_view($artefact, $view, $instance->get('id'), true, $editing, $versioning);
         }
         $smarty = smarty_core();
-        if ($artefactid) {
-            $smarty->assign('commentcount', $commentcount);
-            $smarty->assign('comments', $comments);
-        }
         $smarty->assign('html', $result);
         return $smarty->fetch('blocktype:folder:folder.tpl');
     }

@@ -15,6 +15,7 @@
         font-family: $font-family-serif;
         border-bottom: 2px solid $card-secondary-border;
         font-size: $h4-font-size;
+        font-weight: 300;
         margin-top: 0;
     }
     &.blockinstance.card {
@@ -60,15 +61,13 @@
     .list-group .list-group-item {
         border-left: 0;
         border-right: 0;
-        &:first-child {
-            border-top:0;
-        }
     }
     > .card-body,
     > .block > .card-body {
         padding: 15px 0px;
         &.flush {
             padding: 15px 0 0 0;
+            clear: both;
         }
     }
     // If there is no heading we don't want padding on the card-body
@@ -78,13 +77,6 @@
         }
         .has-attachment {
             margin: 0;
-        }
-    }
-
-    // wallpost blocks don't need secdonary card border color
-    .wallpost {
-        .card-header {
-            border-color: $card-border-color;
         }
     }
 }

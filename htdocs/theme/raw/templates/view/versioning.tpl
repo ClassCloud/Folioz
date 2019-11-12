@@ -1,10 +1,12 @@
 {include file="header.tpl"}
 
-<div id="view-wizard-controls" class="with-heading">
-    <a href="{$viewurl}" id="display_page">
-        {str tag=displayview section=view}
-        <span class="icon icon-arrow-circle-right right" role="presentation" aria-hidden="true"></span>
-    </a>
+<div class="pageactions" id="toolbar-buttons">
+    <div class="btn-group-vertical in-editor">
+        <a class="btn btn-secondary editviews" href="{$viewurl}" title="{str tag=displayview section=view}">
+            <span class="icon icon-lg icon-tv" aria-hidden="true" role="presentation"></span>
+            <span class="btn-title sr-only">{str tag=displayview section=view}</span>
+        </a>
+    </div>
 </div>
 
 <div class="grouppageswrap view-container">
@@ -35,9 +37,27 @@
                 "pointCnt": "taskShortDate",
                 "bodyCnt": "taskDetails"
             },
-            formatTitle: function (title, obj) { return '<h3>' + title + '</h3>'; },
+            formatTitle: function (title, obj) { return '<h2>' + title + '</h2>'; },
             formatSubTitle: function (subTitle, obj) { return '<div class="metadata">' + subTitle + '</div>'; },
-            formatBodyContent: function (bodyCnt, obj) { return bodyCnt;}
+            formatBodyContent: function (bodyCnt, obj) {
+              if (obj.gridlayout) {
+                  var grid = $('<div id="grid_' + obj.assignID + '" class="grid-stack"></div>');
+                  var options = {
+                      verticalMargin: 10,
+                      float: true,
+                      ddPlugin: false,
+                  };
+                  grid.gridstack(options);
+                  grid = grid.data('gridstack');
+                  loadGrid(grid, bodyCnt);
+
+                  var container = $('<div class="container-fluid"></div>').append(grid.container);
+                  return container[0].outerHTML;
+              }
+              else {
+                  return bodyCnt;
+              }
+            }
         });
     });
     </script>

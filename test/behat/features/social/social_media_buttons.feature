@@ -40,9 +40,13 @@ Scenario: Creating and accessing social media buttons (Bug 1448948)
  And I press "Save"
  And I choose "Pages and collections" in "Create" from main menu
  And I click on "Edit" in "Page UserA_01" card menu
- And I expand "Personal info" node
- And I follow "Social media"
+ When I follow "Drag to add a new block" in the "blocktype sidebar" property
  And I press "Add"
+ And I click on "Show more"
+ And I click on "Show more"
+ And I click on "Show more"
+ And I click on "Social media" in the "Content types" property
+ And I set the field "Block title" to "Social Media"
  And I check "Facebook (Social media)"
  And I check "Twitter (Social media)"
  And I check "Instagram (Social media)"
@@ -59,7 +63,6 @@ Scenario: Creating and accessing social media buttons (Bug 1448948)
  And I log out
  # Logging in as UserB to try see the buttons
  Given I log in as "UserB" with password "Kupuh1pa!"
- And I scroll to the id 'bottom-pane'
  And I follow "Page UserA_01"
  And I should see "Social Media"
  And I should see "Facebook"

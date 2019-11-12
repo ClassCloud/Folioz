@@ -12,7 +12,7 @@
                     {/if}
 
                     {if $item.accessibletitle}
-                    <span aria-hidden="true" role="presentation" aria-hidden="true">
+                    <span role="presentation" aria-hidden="true">
                         {/if}
                         {$item.title}
                         {if $item.accessibletitle}
@@ -163,7 +163,7 @@
         {/foreach}
         <li class="btn-logout has-icon">
             <a id="logoutbutton" href="{$WWWROOT}?logout" accesskey="l">
-                <span class="icon icon-sign-out" role="presentation" aria-hidden="true"></span>
+                <span class="icon icon-sign-out-alt" role="presentation" aria-hidden="true"></span>
                 <span class="nav-title">{str tag="logout"}</span>
             </a>
             <script>

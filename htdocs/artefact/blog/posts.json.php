@@ -30,6 +30,7 @@ if ($blockid = param_integer('block', null)) {
     $configdata['countcomments'] = true;
     $configdata['versioning'] = false;
     $configdata['viewid'] = $bi->get('view');
+    $configdata['blockid'] = $blockid;
     $posts = ArtefactTypeBlogpost::get_posts($configdata['artefactid'], $limit, $offset, $configdata);
     $template = 'artefact:blog:viewposts.tpl';
     $baseurl = $bi->get_view()->get_url();
@@ -42,31 +43,5 @@ if ($blockid = param_integer('block', null)) {
     );
     ArtefactTypeBlogpost::render_posts($posts, $template, $configdata, $pagination);
 }
-else {
-    // No block, we're just rendering the blog by itself.
-    $limit  = param_integer('limit', ArtefactTypeBlog::pagination);
-    $blogid = param_integer('artefact');
-    $viewid = param_integer('view');
-    if (!can_view_view($viewid)) {
-        json_reply(true, get_string('accessdenied', 'error'));
-    }
-    $options = array(
-        'viewid' => $viewid,
-        'countcomments' => true,
-    );
-    $posts = ArtefactTypeBlogpost::get_posts($blogid, $limit, $offset, $options);
-
-    $template = 'artefact:blog:viewposts.tpl';
-    $baseurl = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $blogid . '&view=' . $viewid;
-    $pagination = array(
-        'baseurl' => $baseurl,
-        'id' => 'blogpost_pagination',
-        'datatable' => 'postlist',
-        'jsonscript' => 'artefact/blog/posts.json.php',
-    );
-
-    ArtefactTypeBlogpost::render_posts($posts, $template, $options, $pagination);
-}
-
 
 json_reply(false, array('data' => $posts));

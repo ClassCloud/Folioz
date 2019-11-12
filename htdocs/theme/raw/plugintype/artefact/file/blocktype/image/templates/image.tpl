@@ -1,8 +1,12 @@
 <div class="imageblock card-body" itemscope itemtype="http://schema.org/ImageObject">
     <div class="image">
-        <a href="{$url}">
-            <img src="{$src}" alt="{$description}" itemprop="contentURL">
+        {if !$editing}
+        <a class="modal_link" data-toggle="modal-docked" data-target="#configureblock" href="#" data-artefactid="{$artefactid}"  data-blockid="{$blockid}">
+            <img src="{$src}" alt="{$description}" itemprop="contentURL" data-target="#configureblock" data-artefactid="{$artefactid}" data-blockid="{$blockid}" title="{$description}">
         </a>
+        {else}
+        <img src="{$src}" alt="{$description}" itemprop="contentURL">
+        {/if}
     </div>
 
     {if $showdescription}
@@ -11,5 +15,3 @@
     </div>
     {/if}
 </div>
-
-{$comments|safe}

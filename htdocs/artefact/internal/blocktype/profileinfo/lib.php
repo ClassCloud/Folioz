@@ -25,6 +25,10 @@ class PluginBlocktypeProfileinfo extends MaharaCoreBlocktype {
         return array('internal' => 26000);
     }
 
+    public static function get_css_icon_type($blockname) {
+        return 'icon-regular';
+    }
+
     public static function get_instance_config_javascript(BlockInstance $instance) {
         return array('js/configform.js');
     }
@@ -443,5 +447,4 @@ class PluginBlocktypeProfileinfo extends MaharaCoreBlocktype {
     public static function import_create_blockinstance_leap(array $biconfig, array $viewconfig) {
         return PluginArtefactInternal::import_create_blockinstance_leap($biconfig, $viewconfig);
     }
-
 }

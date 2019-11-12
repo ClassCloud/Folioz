@@ -27,7 +27,7 @@ $string['matrixfilenotfound'] = 'No valid .matrix file selected.';
 $string['invalidjson'] = 'This is not a valid .matrix file: Unable to parse the JSON content.';
 $string['jsonmissingvars'] = 'This is not a valid .matrix file: Missing "framework" and / or "framework name".';
 $string['manuallyremovematrices'] = 'Unable to remove install directory "%s". Please remove it manually.';
-$string['changeframeworkproblems'] = 'You cannot change the framework. The following pages have evidence connected to this framework:';
+$string['changeframeworkproblems'] = 'You cannot change the framework. The following pages have evidence connected to the previous framework:';
 $string['accessdeniednoframework'] = 'This collection cannot show the SmartEvidence page. This can be due to any of the following reasons:
 <ul><li>The SmartEvidence plugin is not installed / active.</li>
 <li>The institution you belong to disallowed SmartEvidence.</li>
@@ -79,7 +79,9 @@ $string['showelementdetails'] = 'Click to show standard element details.';
 $string['statusdetail'] = 'Page "%s": %s';
 //json editor strings
 $string['copyframework'] = 'Select a framework to copy';
+$string['copyexistingframework'] = 'Copy existing framework';
 $string['editframework'] = 'Select a framework to edit';
+$string['editsavedframework'] = 'Edit saved framework';
 $string['editdescription1'] = 'To be editable, a framework needs to be inactive and not currently used in a collection.';
 $string['editdescription2'] = 'If you edit a framework, you will change the saved data for that framework.';
 $string['copyframeworkdescription'] = 'You can copy any framework that is installed and use it as basis for a new framework file.';

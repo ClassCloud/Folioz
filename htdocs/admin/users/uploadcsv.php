@@ -495,8 +495,10 @@ function uploadcsv_submit(Pieform $form, $values) {
             SELECT COUNT(*) FROM {usr} u INNER JOIN {usr_institution} i ON u.id = i.usr
             WHERE i.institution = ? AND u.deleted = 0', array($institution->name));
         if ($members + count($CSVDATA) > $maxusers) {
-            $SESSION->add_error_msg(get_string('uploadcsvfailedusersexceedmaxallowed', 'admin'));
-            redirect('/admin/users/uploadcsv.php');
+            $form->reply(PIEFORM_ERR, array(
+                'message'  => get_string('uploadcsvfailedusersexceedmaxallowed', 'admin'),
+                'goto'     => '/admin/users/uploadcsv.php',
+            ));
         }
     }
 
@@ -651,7 +653,7 @@ function uploadcsv_submit(Pieform $form, $values) {
 
     $form->reply(PIEFORM_OK, array(
         'message'  => get_string('csvfileprocessedsuccessfully', 'admin'),
-        'goto'     => '/admin/users/uploadcsv.php',
+        'goto'     => get_config('wwwroot').'admin/users/uploadcsv.php',
     ));
 }
 
@@ -678,7 +680,7 @@ $form = pieform($form);
 set_progress_done('uploaduserscsv');
 
 $smarty = smarty(array('adminuploadcsv'));
-setpageicon($smarty, 'icon-user');
+setpageicon($smarty, 'icon-user-plus');
 $smarty->assign('uploadcsvpagedescription', $uploadcsvpagedescription);
 $smarty->assign('uploadcsvform', $form);
 $smarty->display('admin/users/uploadcsv.tpl');

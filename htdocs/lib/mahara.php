@@ -1825,6 +1825,31 @@ function generate_class_name() {
     return 'Plugin' . implode('', array_map('ucfirst', $args));
 }
 
+function generate_class_name_from_table() {
+    $tableargs = func_get_args();
+    $args = generate_plugin_type_from_table($tableargs[0]);
+
+    return 'Plugin' . implode('', array_map('ucfirst', $args));
+}
+
+function generate_plugin_type_from_table() {
+    $tableargs = func_get_args();
+    $table = $tableargs[0];
+    if ($prefix = get_config('dbprefix')) {
+        $table = preg_replace('/' . $prefix . '/', '', $table);
+    }
+    $tableargs = explode('_', $table);
+
+    if (count($tableargs) > 2) {
+        $args = array_slice($tableargs, 0, 2);
+        // Fix for multirecipientnotifications where table name doesn't follow convention
+        if (isset($args[1]) && $args[1] == 'multirecipient') {
+            $args[1] = 'multirecipientnotification';
+        }
+    }
+    return array((isset($args[0]) ? $args[0] : null), (isset($args[1]) ? $args[1] : null));
+}
+
 function generate_artefact_class_name($type) {
     return 'ArtefactType' . ucfirst($type);
 }
@@ -2044,18 +2069,19 @@ function handle_event($event, $data, $ignorefields = array()) {
         insert_record('event_log', $logentry);
         // If we are adding a comment to a page that is shared to a group
         // we need to add a 'sharedcommenttogroup' event
-        if ($reftype == 'comment' && empty($logdata['group'])) {
+        if (is_event_comment_shared_with_group($reftype, $logdata)) {
+            $wheresql = '';
             if (!empty($logdata['onartefact'])) {
                 $commenttype = 'artefact';
                 $commenttypeid = $logdata['onartefact'];
                 $wheresql = " IN (SELECT view FROM {view_artefact} WHERE " . $commenttype . " = ?) ";
             }
-            else {
+            else if (!empty($logdata['onview'])) {
                 $commenttype = 'view';
                 $commenttypeid = $logdata['onview'];
                 $wheresql = " = ? ";
             }
-            if ($groupids = get_records_sql_array("SELECT \"group\" FROM {view_access}
+            if ($wheresql != '' && $groupids = get_records_sql_array("SELECT \"group\" FROM {view_access}
                                                 WHERE view " . $wheresql . "
                                                 AND \"group\" IS NOT NULL", array($commenttypeid))) {
                 foreach ($groupids as $groupid) {
@@ -2119,6 +2145,26 @@ function handle_event($event, $data, $ignorefields = array()) {
             }
         }
     }
+}
+
+/**
+ * Find out if the event relates to a comment
+ * and if the page the comment is on is shared
+ * with a group.
+ *
+ * @param string $reftype event reference type
+ * @param array $logdata the data that makes up the event
+ *
+ * @return boolean
+ */
+function is_event_comment_shared_with_group($reftype, $logdata) {
+    $result = false;
+    if ($reftype == 'comment' && empty($logdata['group'])) {
+        if (!empty($logdata['onartefact']) || !empty($logdata['onview'])) {
+            $result = true;
+        }
+    }
+    return $result;
 }
 
 /**
@@ -3463,7 +3509,7 @@ function artefact_in_view($artefact, $view) {
             SELECT s.id
             FROM {view} v INNER JOIN {skin} s
                 ON v.skin = s.id
-            WHERE v.id = ? AND ? in (s.bodybgimg, s.viewbgimg)
+            WHERE v.id = ? AND ? in (s.bodybgimg, s.headingbgimg)
     ";
     $params = array_merge($params, array($view, $artefact->get('id')));
 
@@ -3794,7 +3840,7 @@ function profile_sideblock() {
         if ($authobj->authname == 'xmlrpc') {
             $peer = get_peer($authobj->wwwroot);
             if ($SESSION->get('mnetuser')) {
-                $data['mnetloggedinfrom'] = '<span class="icon left icon-external-link moodle-login"></span>' . get_string('youhaveloggedinfrom1', 'auth.xmlrpc', $authobj->wwwroot, $peer->name);
+                $data['mnetloggedinfrom'] = '<span class="icon left icon-external-link-alt moodle-login"></span>' . get_string('youhaveloggedinfrom1', 'auth.xmlrpc', $authobj->wwwroot, $peer->name);
             }
             else {
                 $data['peer'] = array('name' => $peer->name, 'wwwroot' => $peer->wwwroot);
@@ -3982,7 +4028,7 @@ function get_my_tags($limit=null, $cloud=true, $sort='freq', $excludeinstitution
 
             foreach ($tagrecords as &$t) {
                 $weight = (tag_weight($t->count) - $minweight) / ($maxweight - $minweight);
-                $t->size = sprintf("%0.1f", $minsize + ($maxsize - $minsize) * $weight);
+                $t->size = sprintf("%0.1F", $minsize + ($maxsize - $minsize) * $weight);
             }
         }
         usort($tagrecords, function($a, $b) { return strnatcasecmp($a->tag, $b->tag); });
@@ -4405,38 +4451,45 @@ function cron_clean_internal_activity_notifications() {
  * Cronjob to check Launchpad for the latest Mahara version
  */
 function cron_check_for_updates() {
+
+    $url = 'https://mahara.org/local/versions.php';
     $request = array(
-        CURLOPT_URL => 'https://launchpad.net/mahara/+download',
+        CURLOPT_URL => $url,
     );
 
     $result = mahara_http_request($request);
 
-    if (!empty($result->errno)) {
-        log_debug('Could not retrieve launchpad download page');
+    if (!empty($result->errno) || $result->info['http_code'] != '200') {
+        log_debug('Could not access Mahara.org for versioning information.');
         return;
     }
+    $data = json_decode($result->data);
+    if ($data->returnCode == 1) {
+        log_debug('Could not retrieve Mahara versions information file from Mahara.org');
+        return;
+    }
+    $versions = $data->message->versions;
 
-    $page = new DOMDocument();
-    libxml_use_internal_errors(true);
-    $success = $page->loadHTML($result->data);
-    libxml_use_internal_errors(false);
-    if (!$success) {
-        log_debug('Error parsing launchpad download page');
-        return;
+    // Lets record the needed info locally as the cron only fetches the info once a day
+    $latestmajorversion = max(array_keys((array)$versions));
+    $latestversion = $latestmajorversion . '.' . $versions->$latestmajorversion->latest;
+    set_config('latest_version', $latestversion);
+    if (preg_match('/^(\d+)\.(\d+)\.(\d+).*?$/', get_config('release'), $match)) {
+        $currentmajorversion = $match[1] . '.' . $match[2];
+        $latestseriesversion = $currentmajorversion . '.' . $versions->$currentmajorversion->latest;
+        set_config('latest_branch_version', $latestseriesversion);
     }
-    $xpath = new DOMXPath($page);
-    $query = '//div[starts-with(@id,"release-information-")]';
-    $elements = $xpath->query($query);
-    $versions = array();
-    foreach ($elements as $e) {
-        if (preg_match('/^release-information-(\d+)-(\d+)-(\d+)$/', $e->getAttribute('id'), $match)) {
-            $versions[] = "$match[1].$match[2].$match[3]";
+    else {
+        set_config('latest_branch_version', '');
+    }
+    $supported = array();
+    foreach ($versions as $k => $v) {
+        $insupport = filter_var($v->supported, FILTER_VALIDATE_BOOLEAN);
+        if ($insupport) {
+            $supported[] = $k;
         }
     }
-    if (!empty($versions)) {
-        usort($versions, 'strnatcmp');
-        set_config('latest_version', end($versions));
-    }
+    set_config('supported_versions', implode(',', $supported));
 }
 
 /**
@@ -4683,7 +4736,7 @@ function cron_email_reset_rebounce() {
                   $sql = "UPDATE {artefact_internal_profile_email}
                           SET mailssent = 0, mailsbounced = 0";
                   execute_sql($sql);
-                  $pluginrecord = new StdClass;
+                  $pluginrecord = new stdClass();
                   $pluginrecord->plugin = 'email';
                   $pluginrecord->field  = 'lastbouncereset';
                   $pluginrecord->value  = time();
@@ -4695,7 +4748,7 @@ function cron_email_reset_rebounce() {
               }
           }
           else {
-              $pluginrecord = new StdClass;
+              $pluginrecord = new stdClass();
               $pluginrecord->plugin = 'email';
               $pluginrecord->field  = 'lastbouncereset';
               $pluginrecord->value  = time();

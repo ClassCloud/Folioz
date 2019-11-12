@@ -45,12 +45,14 @@
 
     .header-search-form {
         input[type=text] {
-            width: calc(100% - 43px);
+            width: calc(100% - 75px);
             float: left;
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
+            margin-left: 15px;
             @include media-breakpoint-up(md) {
                 width: auto;
+                margin-left: 0;
             }
         }
         .input-group-append {
@@ -111,7 +113,7 @@
       top: -3px;
       right: 5px;
       background-color: $navbar-messages-count-bg;
-      border-radius: 3px;
+      border-radius: $border-radius;
       padding: 0 3px;
       color: $navbar-messages-count-color;
       font-size: 12px;

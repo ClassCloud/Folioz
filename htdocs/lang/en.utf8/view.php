@@ -264,6 +264,13 @@ $string['updatedaccessfornumviews1'] = array(
     'Access rules were updated for %d pages.',
 );
 
+$string['cantversionviewinvalid'] = 'The supplied page identifier is invalid.';
+$string['cantversionvieweditpermissions'] = 'You do not have permission to edit this page.';
+$string['cantversionviewsubmitted'] = 'You cannot edit this page because it has been submitted for assessment. You will have to wait until it is released.';
+$string['cantversionviewgroupeditwindow'] = 'You cannot edit this page. It is outside of the group editability time frame.';
+$string['cantversionoldlayout'] = 'You cannot save a timeline version of a page with an old layout. You need to convert it to the new layout. To do this, edit the page and the layout will be converted.';
+$string['cantaddannotationinoldlayout'] = 'You cannot add an annotation to this page. Please convert the page layout by editing the page first.';
+
 $string['invalidcolumn'] = 'Column %s out of range';
 
 $string['confirmcancelcreatingview'] = 'This page has not been completed. Do you really want to cancel?';
@@ -272,10 +279,10 @@ $string['groupviewurltaken'] = 'A page with this URL already exists.';
 
 // view control stuff
 
-$string['editblockspagedescription'] = '<p>Drag and drop content blocks from the tabs below to create your page.</p>';
+$string['editblockspagedescription'] = '<p>Drag and drop content blocks from the buttons below to create your page.</p>';
 $string['displayview'] = 'Display page';
 $string['editthisview'] = 'Edit';
-$string['expandcontract'] = 'Expand /   Contract list of block types';
+$string['expandcontract'] = 'Expand / Contract the list of block types';
 $string['returntoviews'] = 'Return to pages and collections';
 $string['returntoinstitutionportfolios'] = 'Return to institution pages and collections';
 $string['returntositeportfolios'] = 'Return to site pages and collections';
@@ -298,33 +305,27 @@ $string['blockinstanceconfiguredsuccessfully'] = 'Block configured successfully'
 $string['blockconfigurationrenderingerror'] = 'Configuration failed because the block could not be rendered.';
 
 $string['blocksintructionnoajax'] = 'Select a block and choose where to add it to your page. You can position a block using the arrow buttons in its titlebar.';
-$string['blocksinstructionajaxlive'] = 'This area shows a preview of what your page looks like. Changes are saved automatically.<br>Drag blocks onto the page to add them. You can then also drag them around the page to change their position.';
+$string['blocksinstructionajaxlive1'] = 'This area shows a preview of what your page looks like. Changes are saved automatically.<br>Drag \'Add a new block\' onto the page to add one. You can then choose what type of block it will be. You can then also drag blocks around the page to change their position.';
+$string['blockchangedsuccess'] = "Changed the placeholder block to a '%s' block successfully.";
+$string['blockchangederror'] = "Changing the block to a '%s' block failed.";
+$string['blockchangedbacksuccess'] = "Changed the block back to a placeholder block.";
+$string['blockchangedbackerror'] = "Changing the block back to a placeholder block failed.";
 
 $string['addblock'] = 'Add block: %s';
 $string['blockcell'] = 'Cell';
-$string['cellposition'] = 'Row %s Column %s';
 $string['blockorder'] = 'Position';
-$string['blockordertopcell'] = 'Top of cell';
-$string['blockorderafter'] = 'After "%s"';
 $string['rownr'] = 'Row %s';
 $string['nrrows'] = array(
     '%s row',
     '%s rows',
 );
-
+$string['addnewblock'] = 'Drag to add a new block';
+$string['addnewblockaccessibility'] = 'Click to add a new block';
 $string['addnewblockhere'] = 'Add new block here';
 $string['add'] = 'Add';
 $string['addcolumn'] = 'Add column';
 $string['remove'] = 'Remove';
 $string['removecolumn'] = 'Remove this column';
-$string['moveblockleft'] = "Move %s block left";
-$string['movethisblockleft'] = "Move this block left";
-$string['moveblockdown'] = "Move %s block down";
-$string['movethisblockdown'] = "Move this block down";
-$string['moveblockup'] = "Move %s block up";
-$string['movethisblockup'] = "Move this block up";
-$string['moveblockright'] = "Move %s block right";
-$string['movethisblockright'] = "Move this block right";
 $string['moveblock2'] = 'Move block';
 $string['moveblock'] = 'Move %s block';
 $string['movethisblock'] = 'Move this block';
@@ -339,22 +340,10 @@ $string['removethisblock1'] = 'Remove this block (ID %s)';
 $string['blocktitle'] = 'Block title';
 $string['celltitle'] = 'Cell';
 
-$string['changemyviewlayout'] = 'Change my page layout';
-$string['createcustomlayout'] = 'Create custom layout';
-$string['createnewlayout'] = 'Create new layout';
 $string['basicoptions'] = 'Basic options';
 $string['advancedoptions'] = 'Advanced options';
-$string['viewcolumnspagedescription'] = 'First, select the number of columns in your page. In the next step, you will be able to change the widths of the columns.';
-$string['viewlayoutpagedescription'] = 'Select how you would like your page to be laid out.';
-$string['changeviewlayout'] = 'Change my page\'s column layout';
-$string['numberofcolumns'] = 'Number of columns';
-$string['changecolumnlayoutfailed'] = 'Could not change the column layout. Someone else may have been editing the layout at the same time. Please try again later.';
-$string['changerowlayoutfailed'] = 'Could not change the row layout. Someone else may have been editing the layout at the same time. Please try again later.';
 $string['Row'] = 'Row';
-$string['addarow'] = 'Add a row';
-$string['removethisrow'] = 'Remove this row';
-$string['columnlayout'] = 'Column layout';
-$string['layoutpreview'] = 'Layout preview';
+
 $string['layoutpreviewimage'] = 'Layout preview image';
 $string['Help'] = 'Help';
 $string['blockhelp'] = 'Block help';
@@ -370,21 +359,6 @@ $string['column'] = 'column';
 $string['row'] = 'row';
 $string['columns'] = 'columns';
 $string['rows'] = 'rows';
-$string['100'] = '100';
-$string['50,50'] = '50-50';
-$string['33,33,33'] = '33-33-33';
-$string['25,25,25,25'] = '25-25-25-25';
-$string['20,20,20,20,20'] = '20-20-20-20-20';
-$string['67,33'] = '67-33';
-$string['33,67'] = '33-67';
-$string['25,25,50'] = '25-25-50';
-$string['50,25,25'] = '50-25-25';
-$string['25,50,25'] = '25-50-25';
-$string['15,70,15'] = '15-70-15';
-$string['20,30,30,20'] = '20-30-30-20';
-$string['noviewlayouts'] = 'There are no layouts for a %s column page.';
-$string['cantaddcolumn'] = 'You cannot add any more columns to this page.';
-$string['cantremovecolumn'] = 'You cannot remove the last column from this page.';
 
 $string['blocktypecategory.external'] = 'External';
 $string['blocktypecategory.fileimagevideo'] = 'Media';
@@ -521,9 +495,10 @@ $string['textbox1'] = 'Note';
 $string['image'] = 'Image';
 $string['addcontent'] = 'Add Content';
 $string['theme'] = 'Theme';
+$string['choosethemedesc'] = 'Choose a theme for the page.';
 
 $string['lockblocks'] = "Lock blocks";
-$string['lockblocksdescription'] = "You can lock the blocks on the page and prevent that they are removed when people copy the page.";
+$string['lockblocksdescription'] = "You can lock the blocks on the page and prevent them from being removed when people copy the page.";
 $string['instructions'] = 'Instructions';
 $string['advanced']     = 'Advanced';
 
@@ -539,3 +514,24 @@ $string['versionnumber'] = 'Version %s';
 $string['gotonextversion'] = 'Go to the next version ';
 $string['gotopreviousversion'] = 'Go to the previous version';
 $string['loadingtimelinecontent'] = 'Loading timeline for "%s". If the page has many versions, this may take a while.';
+
+// layout strings
+$string['bottom'] = 'Bottom';
+$string['top'] = 'Top';
+$string['blockssizeupdated'] = 'Block sizes were updated successfully';
+$string['dimensionsnotset'] = 'Block dimensions not set';
+$string['dontaskagain'] = 'Accept and remember';
+$string['pleaseconfirmtranslate'] = 'Convert page layout';
+$string['confirmconversionmessage'] = 'As part of Mahara 19.10 we introduced a new way to create a page layout. To be able to edit this page, you will need to convert the old to the new layout.
+If you want to convert only this page, click \'Accept\'. To convert all pages and not see this message again, click \'Accept and remember\'. This option can be changed in your <a href="%s">Preferences</a>. To go back to the page without editing it, click \'Cancel\'.
+';
+$string['accessibleview'] = 'Accessible layout';
+$string['accessibleviewdescription'] = 'To create a one-column page layout and edit it with the keyboard instead of drag-and-drop.';
+$string['itemgrabbed'] = 'Item grabbed: %s';
+$string['itemdropped'] = 'Item dropped: %s';
+$string['itemreorder'] = 'List has been reordered. Item %s is now in position %s of %s';
+$string['reordercancelled'] = 'The reordering was cancelled';
+$string['accessibilitymodedescription'] = 'This page has the accessible layout enabled.
+ In this mode, the page blocks will have full page width and will be displayed one after the other.
+ To change a block position, navigate to it, grab it with the \'Enter\' key, and move it up and down the list of blocks with the arrow keys.';
+$string['blocktypeis'] = ' %s blocktype';

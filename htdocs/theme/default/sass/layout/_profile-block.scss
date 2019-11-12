@@ -1,6 +1,6 @@
 .sidebar {
     .profile-block.card-header {
-        min-height: 80px;
+        min-height: 92px;
 
         .username {
             &:hover {
@@ -16,9 +16,6 @@
             .card-header {
               background-color: $theme-secondary-color;
             }
-        }
-        .card .list-group {
-            border: 0;
         }
     }
 }

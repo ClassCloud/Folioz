@@ -25,8 +25,8 @@
             display:none;
         }
         &:before {
-            content: "\25BE";
-            font-family: "FontAwesome";
+            @include fonttype(solid);
+            content: fa-content($fa-var-caret-down);
             margin-top: 9px;
             position: absolute;
             right: 0%;
@@ -58,6 +58,11 @@
         }
         &.date {
             margin-left: 4px !important;
+        }
+
+        & + button.icon {
+            margin-left: 5px;
+            height: $input-height;
         }
     }
 
@@ -145,6 +150,9 @@
         > a {
             padding: 3px 20px;
             color: $theme-text-color;
+        }
+        &:active > a {
+            color: $dropdown-link-active-color;
         }
     }
     > .active {

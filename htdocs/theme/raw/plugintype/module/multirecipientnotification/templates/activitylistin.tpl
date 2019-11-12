@@ -23,7 +23,7 @@
                         {elseif $item->type == 'feedback'}
                             <span class="icon icon-comments type-icon" role="presentation" aria-hidden="true"></span>
                         {elseif $item->type == 'annotationfeedback'}
-                            <span class="icon icon-comments-o type-icon" role="presentation" aria-hidden="true"></span>
+                            <span class="icon icon-comments type-icon" role="presentation" aria-hidden="true"></span>
                         {elseif $item->type == 'wallpost'}
                             <span class="icon icon-wall type-icon" role="presentation" aria-hidden="true"></span>
                         {else}
@@ -41,7 +41,7 @@
                         </span>
                     {/if}
                     <span class="subject">
-                        {$item->subject|truncate:80}
+                        {$item->subject|str_shorten_html:50:true|safe}
                     </span>
 
                     <span class="metadata">

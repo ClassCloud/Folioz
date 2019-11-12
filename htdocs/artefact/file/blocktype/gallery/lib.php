@@ -19,6 +19,14 @@ class PluginBlocktypeGallery extends MaharaCoreBlocktype {
         return get_string('title', 'blocktype.file/gallery');
     }
 
+    /** When the Image Gallery is displayed from a folder it will have a single
+    ** artefact and warrant a details block header. No header will display if
+    ** individual images (with multiple artefacts) were selected instead.
+    **/
+    public static function single_artefact_per_block() {
+        return true;
+    }
+
     public static function get_description() {
         return get_string('description1', 'blocktype.file/gallery');
     }
@@ -62,6 +70,12 @@ class PluginBlocktypeGallery extends MaharaCoreBlocktype {
             array(
                 'file'   => get_config('wwwroot') . 'js/masonry/masonry.min.js',
                 'initjs' => " $('.js-masonry.thumbnails').masonry({ itemSelector: '.thumb' });"
+            ),
+            array(
+                'file' => '',
+                'initjs' => "$('#slideshow{$blockid}').on('slid.bs.carousel', function () {
+                    $(window).trigger('colresize');
+                });"
             )
         );
     }
@@ -361,7 +375,7 @@ class PluginBlocktypeGallery extends MaharaCoreBlocktype {
                     $link = $src . '&maxwidth=' . get_config_plugin('blocktype', 'gallery', 'previewwidth');
                 }
                 else {
-                    $link = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $artefactid . '&view=' . $instance->get('view');
+                    $link = get_config('wwwroot') . 'view/view.php?id=' . $instance->get('view') . '&modal=1&block=' . $instance->get('id') .' &artefact=' . $artefactid;
                 }
 
                 // If the Thumbnails are Square or not...
@@ -396,6 +410,7 @@ class PluginBlocktypeGallery extends MaharaCoreBlocktype {
                 }
 
                 $images[] = array(
+                    'id' => $image->get('id'),
                     'link' => $link,
                     'source' => $src,
                     'height' => $height,
@@ -409,11 +424,12 @@ class PluginBlocktypeGallery extends MaharaCoreBlocktype {
         }
 
         $smarty = smarty_core();
-        $smarty->assign('instanceid', $instance->get('id'));
         $smarty->assign('count', count($images));
+        $smarty->assign('instanceid', $instance->get('id'));
         $smarty->assign('images', $images);
         $smarty->assign('showdescription', (!empty($configdata['showdescription'])) ? $configdata['showdescription'] : false);
         $smarty->assign('width', $width);
+        $smarty->assign('editing', $editing);
         if (isset($height)) {
             $smarty->assign('height', $height);
         }
@@ -429,8 +445,6 @@ class PluginBlocktypeGallery extends MaharaCoreBlocktype {
             require_once(get_config('docroot') . 'lib/view.php');
             $view = new View($configdata['viewid']);
             list($commentcount, $comments) = ArtefactTypeComment::get_artefact_comments_for_view($artefact, $view, $instance->get('id'), true, $editing, $versioning);
-            $smarty->assign('commentcount', $commentcount);
-            $smarty->assign('comments', $comments);
         }
         return $smarty->fetch('blocktype:gallery:' . $template . '.tpl');
     }
@@ -610,7 +624,7 @@ class PluginBlocktypeGallery extends MaharaCoreBlocktype {
 
         if (!empty($values['images'])) {
             foreach ($values['images'] as $id) {
-                $image = new ArtefactTypeImage($id);
+                $image = artefact_instance_from_id($id);
                 if (!($image instanceof ArtefactTypeImage) || !$USER->can_view_artefact($image)) {
                     $result['message'] = get_string('unrecoverableerror', 'error');
                     $form->set_error(null, $result['message']);

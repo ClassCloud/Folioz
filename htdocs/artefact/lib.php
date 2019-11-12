@@ -1617,7 +1617,7 @@ function artefact_check_plugin_sanity($pluginname) {
     foreach ($types as $type) {
         $pluginclassname = generate_class_name('blocktype', $type);
         if (get_config('installed')) {
-            if (table_exists(new XMLDBTable('blocktype_installed')) && $taken = get_record_select('blocktype_installed',
+            if (db_table_exists('blocktype_installed') && $taken = get_record_select('blocktype_installed',
                 'name = ? AND artefactplugin != ? ',
                 array($type, $pluginname))) {
                 throw new InstallationException(get_string('blocktypenametaken', 'error', $type,
@@ -2030,24 +2030,26 @@ function artefact_get_owner_info($ids) {
         $ids
     );
     $wwwroot = get_config('wwwroot');
-    foreach ($data as &$d) {
-        if ($d->institution == 'mahara') {
-            $name = get_config('sitename');
-            $url  = $wwwroot;
+    if ($data) {
+        foreach ($data as &$d) {
+            if ($d->institution == 'mahara') {
+                $name = get_config('sitename');
+                $url = $wwwroot;
+            }
+            else if ($d->institution) {
+                $name = $d->displayname;;
+                $url = $wwwroot . 'institution/index.php?institution=' . $d->institution;
+            }
+            else if ($d->group) {
+                $name = $d->groupname;;
+                $url = group_homepage_url((object)array('id' => $d->group, 'urlid' => $d->groupurlid));
+            }
+            else {
+                $name = display_name($d);
+                $url = profile_url($d);
+            }
+            $d = (object)array('name' => $name, 'url' => $url);
         }
-        else if ($d->institution) {
-            $name = $d->displayname;;
-            $url  = $wwwroot . 'institution/index.php?institution=' . $d->institution;
-        }
-        else if ($d->group) {
-            $name = $d->groupname;;
-            $url  = group_homepage_url((object) array('id' => $d->group, 'urlid' => $d->groupurlid));
-        }
-        else {
-            $name = display_name($d);
-            $url  = profile_url($d);
-        }
-        $d = (object) array('name' => $name, 'url' => $url);
     }
     return $data;
 }

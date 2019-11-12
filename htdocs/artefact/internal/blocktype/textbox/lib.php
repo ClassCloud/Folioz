@@ -29,6 +29,10 @@ class PluginBlocktypeTextbox extends MaharaCoreBlocktype {
         return true;
     }
 
+    public static function single_artefact_per_block() {
+        return true;
+    }
+
     public static function render_instance(BlockInstance $instance, $editing=false, $versioning=false) {
         $configdata = $instance->get('configdata');
         if (!empty($configdata['artefactid'])) {
@@ -53,7 +57,6 @@ class PluginBlocktypeTextbox extends MaharaCoreBlocktype {
                     $f = artefact_instance_from_id($attachment->id);
                     $attachment->size = $f->describe_size();
                     $attachment->iconpath = $f->get_icon(array('id' => $attachment->id, 'viewid' => isset($options['viewid']) ? $options['viewid'] : 0));
-                    $attachment->viewpath = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $attachment->id . '&view=' . (isset($viewid) ? $viewid : 0);
                     $attachment->downloadpath = get_config('wwwroot') . 'artefact/file/download.php?file=' . $attachment->id;
                     if (isset($viewid)) {
                         $attachment->downloadpath .= '&view=' . $viewid;
@@ -67,7 +70,10 @@ class PluginBlocktypeTextbox extends MaharaCoreBlocktype {
             list($commentcount, $comments) = ArtefactTypeComment::get_artefact_comments_for_view($artefact, $view, $instance->get('id'), true, $editing, $versioning);
             $smarty->assign('commentcount', $commentcount);
             $smarty->assign('comments', $comments);
+            $smarty->assign('license', (int)get_config('licensemetadata'));
             $smarty->assign('blockid', $instance->get('id'));
+            $smarty->assign('artefactid', $artefact->get('id'));
+            $smarty->assign('editing', $editing);
             return $smarty->fetch('blocktype:textbox:content.tpl');
         }
 
@@ -218,6 +224,14 @@ function updateTextContent(a) {
         jQuery('#instconf_licensereadonly_container').removeClass('d-none');
         jQuery('#instconf_tagsreadonly_container').removeClass('d-none');
     }
+    jQuery('#instconf_edit_container').removeClass('d-none');
+    jQuery('#instconf_edit').trigger('change');
+    jQuery('#instconf_otherblocksmsg_container').removeClass('d-none');
+    jQuery('#artefactid_data input.radio').each(function() {
+        if (jQuery(this).prop('checked')) {
+            jQuery('#textbox_blockcount').html(jQuery(this).attr('data-count'));
+        }
+    });
 }
 jQuery('#chooseartefactlink').on('click', function(e) {
     e.preventDefault();
@@ -230,6 +244,17 @@ jQuery('#chooseartefactlink').on('click', function(e) {
     jQuery('#instconf_artefactid_container').toggleClass('d-none');
     jQuery('#instconf_managenotes_container').toggleClass('d-none');
 });
+jQuery('#instconf #instconf_edit').on('change',function(){
+    if (jQuery(this).prop('checked')) {
+        jQuery('#instconf_textreadonly_container').addClass('d-none');
+        jQuery('#instconf_text_container').removeClass('d-none');
+    }
+    else {
+        jQuery('#instconf_textreadonly_container').removeClass('d-none');
+        jQuery('#instconf_text_container').addClass('d-none');
+        tinyMCE.activeEditor.getBody().innerHTML = jQuery('#instconf_textreadonly_display').html();
+    }
+});
 jQuery('#instconf a.copytextboxnote').each(function() {
     jQuery(this).on('click', function(e) {
         e.preventDefault();
@@ -238,6 +263,7 @@ jQuery('#instconf a.copytextboxnote').each(function() {
                 jQuery(this).prop('checked', false);
             }
         });
+        jQuery('#instconf_edit_container').addClass('d-none');
         jQuery('#instconf_makecopy').prop('checked', true);
         jQuery('#instconf_textreadonly_container').addClass('d-none');
         jQuery('#instconf_readonlymsg_container').addClass('d-none');
@@ -374,9 +400,15 @@ EOF;
                     . ' <a class="copytextboxnote nojs-hidden-inline" href="">' . get_string('makeacopy', 'blocktype.internal/textbox') . '</a></p>',
                 'help' => true,
             ),
+            'edit' => array(
+                'type' => 'switchbox',
+                'class' => $otherblockcount > 0 ? '' : 'd-none',
+                'title' => get_string('editcontent', 'blocktype.internal/textbox'),
+                'defaultvalue' => 0,
+            ),
             'text' => array(
                 'type' => 'wysiwyg',
-                'class' => $readonly ? 'd-none' : '',
+                'class' => $readonly || $otherblockcount > 0 ? 'd-none' : '',
                 'title' => get_string('blockcontent', 'blocktype.internal/textbox'),
                 'width' => '100%',
                 'height' => $height . 'px',
@@ -385,7 +417,7 @@ EOF;
             ),
             'textreadonly' => array(
                 'type' => 'html',
-                'class' => $readonly ? '' : 'd-none',
+                'class' => $readonly || $otherblockcount > 0 ? '' : 'd-none',
                 'title' => get_string('blockcontent', 'blocktype.internal/textbox'),
                 'value' => '<div id="instconf_textreadonly_display" class="well text-midtone">' . $text . '</div>',
             ),

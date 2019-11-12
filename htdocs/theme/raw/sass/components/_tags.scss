@@ -37,8 +37,14 @@
 }
 .tag-results .btn-top-right {
     margin-right: -1px;
-    margin-top: -41px;
+    margin-top: -42px;
     height: 40px;
+    margin-left: 70%;
+
+    @include media-breakpoint-down(xs) {
+        margin: 0;
+        height: auto;
+    }
 }
 .tag-filters {
     @extend .clearfix;

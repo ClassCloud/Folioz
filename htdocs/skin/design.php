@@ -52,9 +52,9 @@ if ($id > 0) {
                 $viewskin['body_background_image'] = false;
             }
         }
-        if (!empty($viewskin['view_background_image'])) {  // TODO remove this
-            if (!record_exists('artefact', 'id', $viewskin['view_background_image'])) {
-                $viewskin['view_background_image'] = false;
+        if (!empty($viewskin['header_background_image'])) {
+            if (!record_exists('artefact', 'id', $viewskin['header_background_image'])) {
+                $viewskin['header_background_image'] = false;
             }
         }
     }
@@ -134,29 +134,71 @@ $elements['viewskin'] = array(
                 ),
         ),
 );
+
+// Use the theme default or default to theme 'Raw'
+$themeheaderbgcolor = isset($THEME->themeheaderbgcolor) ? $THEME->themeheaderbgcolor : '#F7F7F7'; // $pageheader-bg
+
+// Page
 $elements['skinbg'] = array(
     'type'   => 'fieldset',
-    'legend' => get_string('skinbackgroundoptions1', 'skin'),
+    'legend' => get_string('view', 'mahara'),
     'class'  => $fieldset != 'skinbg' ? 'collapsed' : '',
     'elements'     => array(
-            'body_background_color' => array(
-                    'type' => 'color',
-                    'title' => get_string('bodybgcolor1', 'skin'),
-                    'defaultvalue' => (!empty($viewskin['body_background_color']) ? $viewskin['body_background_color'] : '#FFFFFF'),
-                    'size' => 7,
-                    'options' => array(
-                        'transparent' => true,
-                    ),
-            )
+        'header_background_color' => array(
+            'type' => 'color',
+            'title' => get_string('headerbackgroundcolor', 'skin'),
+            'description' => get_string('headerbackgroundcolordescription', 'skin'),
+            'defaultvalue' => (!empty($viewskin['header_background_color']) ? $viewskin['header_background_color'] : $themeheaderbgcolor),
+            'size' => 7,
+            'options' => array(
+                'themedefault' => $themeheaderbgcolor,
+            ),
+        ),
+        'header_background_image' => array(
+            'type'         => 'filebrowser',
+            'title'        => get_string('headerbackgroundimage', 'skin'),
+            'folder'       => $folder,
+            'highlight'    => $highlight,
+            'description'  => get_string('headerbackgroundimagedescription', 'skin'),
+            'browse'       => $browse,
+            'filters'      => array(
+                'artefacttype' => array('image'),
+            ),
+            'page'         => get_config('wwwroot') . 'skin/design.php?id=' . $id . '&fs=skinbg',
+            'config'       => array(
+                'upload'          => false,
+                'uploadagreement' => get_config_plugin('artefact', 'file', 'uploadagreement'),
+                'resizeonuploaduseroption' => get_config_plugin('artefact', 'file', 'resizeonuploaduseroption'),
+                'resizeonuploaduserdefault' => $USER->get_account_preference('resizeonuploaduserdefault'),
+                'createfolder'    => false,
+                'edit'            => false,
+                'select'          => true,
+                'selectone'       => true,
+            ),
+            'defaultvalue'       => (!empty($viewskin['header_background_image']) ? array(intval($viewskin['header_background_image'])) : array()),
+            'selectlistcallback' => 'artefact_get_records_by_id',
+            // TODO: Make this work so skins can include site files
+            // 'tabs' => true,
+        ),
+        'body_background_color' => array(
+            'type' => 'color',
+            'title' => get_string('bodybackgroundcolour', 'skin'),
+            'defaultvalue' => (!empty($viewskin['body_background_color']) ? $viewskin['body_background_color'] : '#FFFFFF'),
+            'size' => 7,
+            'options' => array(
+                'themedefault' => '#FFFFFF',
+            ),
+        )
     )
 );
+
 // Currently site files don't work properly with site skins. And since site files are the only files that would make
 // sense with site skins, we're going to just hide background images entirely for site skins for the time being.
 if (!$designsiteskin) {
     $elements['skinbg']['elements'] = array_merge($elements['skinbg']['elements'], array(
         'body_background_image' => array(
                 'type'         => 'filebrowser',
-                'title'        => get_string('bodybgimage1', 'skin'),
+                'title'        => get_string('bodybackgroundimage', 'skin'),
                 'folder'       => $folder,
                 'highlight'    => $highlight,
                 'browse'       => $browse,
@@ -209,98 +251,147 @@ if (!$designsiteskin) {
         )
     ));
 }
+
+// Add option for theme font
+$themefontoption = array ('' => get_string('themedefault', 'skin'));
+$headerfontoptions = Skin::get_all_font_options();
+$fontoptions = Skin::get_textonly_font_options();
+
+// Add theme font element to list of fonts
+$headerfontoptions = $themefontoption + $headerfontoptions;
+$fontoptions = $themefontoption + $fontoptions;
+
+// Set the 'Custom' theme default variables
+if ($THEME->basename == 'custom') {
+    $themeheadingcolor = get_custom_theme_field('headings');
+    $themelinkcolor = get_custom_theme_field('link');
+}
+// Set the theme default variables, default to theme 'Raw'
+if (!isset($themeheadingcolor)) {
+    $themeheadingcolor = isset($THEME->themeheadingcolor) ? $THEME->themeheadingcolor : '#333333'; // $view_text_heading_color
+}
+if (!isset($themelinkcolor)) {
+    $themelinkcolor = isset($THEME->themelinkcolor) ? $THEME->themelinkcolor : '#556d32'; // $view_link_normal_color
+}
+$themetextcolor = isset($THEME->themetextcolor) ? $THEME->themetextcolor : '#333333'; // $view_text_font_color
+$themefocusedlinkcolor = isset($THEME->themefocusedlinkcolor) ? $THEME->themefocusedlinkcolor :  '#475c2a'; // $view_link_hover_color
+$themeblockheadingfontcolor = isset($THEME->themeblockheadingfontcolor) ? $THEME->themeblockheadingfontcolor :  '#333333'; // $theme-block-header-color
+
+// Text
 $elements['viewcontent'] = array(
         'type'   => 'fieldset',
-        'legend' => get_string('viewcontentoptions1', 'skin'),
+        'legend' => get_string('sampletext', 'skin'),
         'class'  => $fieldset != 'viewcontent' ? 'collapsed' : '',
         'elements'     => array(
-                'view_heading_font_family' => array(
-                        'type' => 'select',
-                        'title' => get_string('headingfontfamily', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_heading_font_family']) ? $viewskin['view_heading_font_family'] : 'Arial'),
-                        'width' => 144,
-                        'options' => Skin::get_all_font_options(),
+            'header_title' => array(
+                'type' => 'html',
+                'value' => '<h4>' . get_string('header', 'skin') .'</h4>',
+                'class' => 'title card-header',
+            ),
+            'view_heading_font_family' => array(
+                'type' => 'select',
+                'title' => get_string('headingfontfamily', 'skin'),
+                'defaultvalue' => (!empty($viewskin['view_heading_font_family']) ? $viewskin['view_heading_font_family'] : '' ),
+                'width' => 144,
+                'options' => $headerfontoptions
+            ),
+            'view_text_heading_color' => array(
+                    'type' => 'color',
+                    'title' => get_string('headingcolor1', 'skin'),
+                    'description' => get_string('headingcolordescription2', 'skin'),
+                    'defaultvalue' => (!empty($viewskin['view_text_heading_color']) ? $viewskin['view_text_heading_color'] :  $themeheadingcolor),
+                    'size' => 7,
+                    'options' => array(
+                        'themedefault' => $themeheadingcolor,
+                    ),
+            ),
+            'block_header_title' => array(
+                'type' => 'html',
+                'value' => '<h4>' . get_string('blockheading', 'skin') .'</h4>',
+                'class' => 'title card-header',
+            ),
+            'view_block_header_font' => array(
+                'type' => 'select',
+                'title' => get_string('blockheaderfontfamily', 'skin'),
+                'defaultvalue' => (!empty($viewskin['view_block_header_font']) ? $viewskin['view_block_header_font'] : ''),
+                'width' => 144,
+                'options' => $fontoptions
+            ),
+            'view_block_header_font_color' => array(
+                'type' => 'color',
+                'title' => get_string('blockheaderfontcolor', 'skin'),
+                'defaultvalue' => (!empty($viewskin['view_block_header_font_color']) ? $viewskin['view_block_header_font_color'] : $themeblockheadingfontcolor),
+                'size' => 7,
+                'options' => array(
+                    'themedefault' => $themeblockheadingfontcolor,
                 ),
-                'view_text_font_family' => array(
-                        'type' => 'select',
-                        'title' => get_string('textfontfamily', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_text_font_family']) ? $viewskin['view_text_font_family'] : 'Arial'),
-                        'width' => 144,
-                        'options' => Skin::get_textonly_font_options(),
-                ),
-                'view_text_font_size' => array(
-                        'type' => 'select',
-                        'title' => get_string('fontsize', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_text_font_size']) ? $viewskin['view_text_font_size'] : 'small'),
-                        'width' => 144,
-                        'options' => array(
-                                'xx-small' => array('value' => get_string('fontsizesmallest', 'skin'), 'style' => 'font-size: xx-small;'),
-                                'x-small' => array('value' => get_string('fontsizesmaller', 'skin'), 'style' => 'font-size: x-small;'),
-                                'small' => array('value' => get_string('fontsizesmall', 'skin'), 'style' => 'font-size: small;'),
-                                'medium' => array('value' => get_string('fontsizemedium', 'skin'), 'style' => 'font-size: medium;'),
-                                'large' => array('value' => get_string('fontsizelarge', 'skin'), 'style' => 'font-size: large;'),
-                                'x-large' => array('value' => get_string('fontsizelarger', 'skin'), 'style' => 'font-size: x-large;'),
-                                'xx-large' => array('value' => get_string('fontsizelargest', 'skin'), 'style' => 'font-size: xx-large;'),
-                        ),
-                ),
-                'view_text_font_color' => array(
-                        'type' => 'color',
-                        'title' => get_string('textcolor', 'skin'),
-                        'description' => get_string('textcolordescription', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_text_font_color']) ? $viewskin['view_text_font_color'] : '#000000'),
-                        'size' => 7,
-                        'options' => array(
-                            'transparent' => true,
-                        ),
-                ),
-                'view_text_heading_color' => array(
-                        'type' => 'color',
-                        'title' => get_string('headingcolor', 'skin'),
-                        'description' => get_string('headingcolordescription', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_text_heading_color']) ? $viewskin['view_text_heading_color'] : '#000000'),
-                        'size' => 7,
-                        'options' => array(
-                            'transparent' => true,
-                        ),
-                ),
-                'view_text_emphasized_color' => array(
-                        'type' => 'color',
-                        'title' => get_string('emphasizedcolor', 'skin'),
-                        'description' => get_string('emphasizedcolordescription', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_text_emphasized_color']) ? $viewskin['view_text_emphasized_color'] : '#000000'),
-                        'size' => 7,
-                        'options' => array(
-                            'transparent' => true,
-                        ),
-                ),
-                'view_link_normal_color' => array(
-                        'type' => 'color',
-                        'title' => get_string('normallinkcolor', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_link_normal_color']) ? $viewskin['view_link_normal_color'] : '#0000EE'),
-                        'size' => 7,
-                        'options' => array(
-                            'transparent' => true,
-                        ),
-                ),
-                'view_link_normal_underline' => array(
-                        'type' => 'switchbox',
-                        'title' => get_string('linkunderlined', 'skin'),
-                        'defaultvalue' => (isset($viewskin['view_link_normal_underline']) and intval($viewskin['view_link_normal_underline']) == 1 ? 'checked' : ''),
-                ),
-                'view_link_hover_color' => array(
-                        'type' => 'color',
-                        'title' => get_string('hoverlinkcolor', 'skin'),
-                        'defaultvalue' => (!empty($viewskin['view_link_hover_color']) ? $viewskin['view_link_hover_color'] : '#EE0000'),
-                        'size' => 7,
-                        'options' => array(
-                            'transparent' => true,
-                        ),
-                ),
-                'view_link_hover_underline' => array(
-                        'type' => 'switchbox',
-                        'title' => get_string('linkunderlined', 'skin'),
-                        'defaultvalue' => (isset($viewskin['view_link_hover_underline']) and intval($viewskin['view_link_hover_underline']) == 1 ? 'checked' : ''),
-                ),
+
+            ),
+            'content_title' => array(
+                'type' => 'html',
+                'value' => '<h4>' . get_string('content', 'mahara') .'</h4>',
+                'class' => 'title card-header',
+            ),
+            'view_text_font_family' => array(
+                    'type' => 'select',
+                    'title' => get_string('textfontfamily', 'skin'),
+                    'defaultvalue' => (!empty($viewskin['view_text_font_family']) ? $viewskin['view_text_font_family'] : ''),
+                    'width' => 144,
+                    'options' => $fontoptions
+            ),
+            'view_text_font_size' => array(
+                    'type' => 'select',
+                    'title' => get_string('fontsize', 'skin'),
+                    'defaultvalue' => (!empty($viewskin['view_text_font_size']) ? $viewskin['view_text_font_size'] : 'small'),
+                    'width' => 144,
+                    'options' => array(
+                            'xx-small' => array('value' => get_string('fontsizesmallest', 'skin'), 'style' => 'font-size: xx-small;'),
+                            'x-small' => array('value' => get_string('fontsizesmaller', 'skin'), 'style' => 'font-size: x-small;'),
+                            'small' => array('value' => get_string('fontsizesmall', 'skin'), 'style' => 'font-size: small;'),
+                            'medium' => array('value' => get_string('fontsizemedium', 'skin'), 'style' => 'font-size: medium;'),
+                            'large' => array('value' => get_string('fontsizelarge', 'skin'), 'style' => 'font-size: large;'),
+                            'x-large' => array('value' => get_string('fontsizelarger', 'skin'), 'style' => 'font-size: x-large;'),
+                            'xx-large' => array('value' => get_string('fontsizelargest', 'skin'), 'style' => 'font-size: xx-large;'),
+                    ),
+            ),
+            'view_text_font_color' => array(
+                    'type' => 'color',
+                    'title' => get_string('textcolor', 'skin'),
+                    'description' => get_string('textcolordescription', 'skin'),
+                    'defaultvalue' => (!empty($viewskin['view_text_font_color']) ? $viewskin['view_text_font_color'] : $themetextcolor),
+                    'size' => 7,
+                    'options' => array(
+                        'themedefault' => $themetextcolor,
+                    ),
+            ),
+            'view_link_normal_color' => array(
+                    'type' => 'color',
+                    'title' => get_string('normallinkcolor', 'skin'),
+                    'defaultvalue' => (!empty($viewskin['view_link_normal_color']) ? $viewskin['view_link_normal_color'] : $themelinkcolor),
+                    'size' => 7,
+                    'options' => array(
+                        'themedefault' => $themelinkcolor,
+                    ),
+            ),
+            'view_link_normal_underline' => array(
+                    'type' => 'switchbox',
+                    'title' => get_string('normallinkunderlined', 'skin'),
+                    'defaultvalue' => (isset($viewskin['view_link_normal_underline']) and intval($viewskin['view_link_normal_underline']) == 1 ? 'checked' : ''),
+            ),
+            'view_link_hover_color' => array(
+                    'type' => 'color',
+                    'title' => get_string('hoverlinkcolor1', 'skin'),
+                    'defaultvalue' => (!empty($viewskin['view_link_hover_color']) ? $viewskin['view_link_hover_color'] : $themefocusedlinkcolor),
+                    'size' => 7,
+                    'options' => array(
+                        'themedefault' => $themefocusedlinkcolor,
+                    ),
+            ),
+            'view_link_hover_underline' => array(
+                    'type' => 'switchbox',
+                    'title' => get_string('hoverlinkunderlined', 'skin'),
+                    'defaultvalue' => (isset($viewskin['view_link_hover_underline']) and intval($viewskin['view_link_hover_underline']) == 1 ? 'checked' : ''),
+            ),
         ),
 );
 $elements['viewadvanced'] = array(
@@ -315,7 +406,7 @@ $elements['viewadvanced'] = array(
                         'style' => 'font-family:monospace',
                         'resizable' => true,
                         'fullwidth' => true,
-                        'title' => get_string('skincustomcss','skin'),
+                        'title' => get_string('skincustomcss', 'skin'),
                         'description' => get_string('skincustomcssdescription', 'skin'),
                         'defaultvalue' => ((!empty($viewskin['view_custom_css'])) ? $viewskin['view_custom_css'] : null),
                 ),
@@ -355,8 +446,17 @@ $designskinform = pieform($designskinelements);
 
 $javascript = <<<EOF
   function designskinform_callback(form, data) {
-      if (typeof designskinform_body_background_image != "undefined") {
-          designskinform_body_background_image.callback(form, data);
+      // with multiple filebrowsers on form we need to update the right one
+      // when changing to subdirectories
+      if (data.formelement && typeof window[data.formelement] != "undefined") {
+          window[data.formelement].callback(form, data);
+      }
+      else {
+          // We are submitting the form so need to allow one of the
+          // filebrowsers to callback to complete the save
+          if (typeof designskinform_body_background_image != "undefined") {
+              designskinform_body_background_image.callback(form, data);
+          }
       }
   };
 EOF;
@@ -374,6 +474,19 @@ $smarty->assign('INLINEJAVASCRIPT', $javascript);
 $smarty->assign('designskinform', $designskinform);
 $smarty->assign('PAGEHEADING', hsc(TITLE));
 $smarty->display('skin/design.tpl');
+
+function get_custom_theme_field($field) {
+    global $USER;
+    $institutions = $USER->get('institutions');
+    $theme_var = get_field_sql(
+        "SELECT sp.value FROM {style_property} sp
+         JOIN {institution} i ON i.style = sp.style AND sp.field = ?
+         WHERE i.name IN ('" . join("','", array_keys($institutions)) . "')
+         ORDER BY i.name
+         LIMIT 1", array($field)
+    );
+    return $theme_var;
+}
 
 function designskinform_validate(Pieform $form, $values) {
     global $USER;
@@ -415,12 +528,15 @@ function designskinform_submit(Pieform $form, $values) {
         $skin['body_background_attachment'] = $values['body_background_attachment'];
         $skin['body_background_position'] = $values['body_background_position'];
     }
+    $skin['view_block_header_font'] = $values['view_block_header_font'];
+    $skin['view_block_header_font_color'] = $values['view_block_header_font_color'];
     $skin['view_text_font_family'] = $values['view_text_font_family'];
     $skin['view_heading_font_family'] = $values['view_heading_font_family'];
     $skin['view_text_font_size'] = $values['view_text_font_size'];
     $skin['view_text_font_color'] = $values['view_text_font_color'];
     $skin['view_text_heading_color'] = $values['view_text_heading_color'];
-    $skin['view_text_emphasized_color'] = $values['view_text_emphasized_color'];
+    $skin['header_background_color'] = $values['header_background_color'];
+    $skin['header_background_image'] = $values['header_background_image'];
     $skin['view_link_normal_color'] = $values['view_link_normal_color'];
     $skin['view_link_normal_underline'] = $values['view_link_normal_underline'];
     $skin['view_link_hover_color'] = $values['view_link_hover_color'];

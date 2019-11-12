@@ -24,6 +24,7 @@ require_once('institution.php');
 require_once('group.php');
 safe_require('artefact', 'comment');
 safe_require('artefact', 'file');
+require_once(get_config('docroot') . 'blocktype/lib.php');
 
 // Used by the Mahara assignment submission plugin for Moodle, to indicate that a user
 // coming over from mnet should be able to view a certain page (i.e. a teacher viewing
@@ -50,14 +51,14 @@ $viewtoken = null;
 if ($mnettoken) {
     $viewtoken = get_view_from_token($mnettoken, false);
     if (!$viewtoken->viewid) {
-        throw new AccessDeniedException(get_string('accessdenied', 'error'));
+        throw new AccessDeniedException();
     }
     $viewid = $viewtoken->viewid;
 }
 else if ($usertoken) {
     $viewtoken = get_view_from_token($usertoken, true);
     if (!$viewtoken->viewid) {
-        throw new AccessDeniedException(get_string('accessdenied', 'error'));
+        throw new AccessDeniedException();
     }
     $viewid = $viewtoken->viewid;
 }
@@ -100,7 +101,7 @@ if (is_view_suspended($view) && !$is_admin && !$is_owner && !($groupid && $is_gr
 }
 
 if (!can_view_view($view)) {
-    $errorstr = (param_integer('objection', null)) ? get_string('accessdeniedobjection', 'error') : get_string('accessdenied', 'error');
+    $errorstr = (param_integer('objection', null)) ? get_string('accessdeniedobjection', 'error') : '';
     throw new AccessDeniedException($errorstr);
 }
 $institution = $view->get('institution');
@@ -115,7 +116,7 @@ if (param_exists('make_public_submit')) {
     pieform(ArtefactTypeComment::make_public_form(param_integer('comment')));
 }
 else if (param_exists('delete_comment_submit')) {
-    pieform(ArtefactTypeComment::delete_comment_form(param_integer('comment')));
+    pieform(ArtefactTypeComment::delete_comment_form(param_integer('comment'), param_integer('blockid', null), param_integer('artefactid', null), param_integer('threaded', null)));
 }
 
 $owner    = $view->get('owner');
@@ -123,6 +124,17 @@ $viewtype = $view->get('type');
 
 if ($viewtype == 'profile' || $viewtype == 'dashboard' || $viewtype == 'grouphomepage') {
     redirect($view->get_url());
+}
+
+//pass down the artefact id of the artefact that was just commented on via the modal pieform
+$commented_on_artefactid = param_integer('commented_on_artefactid', null);
+if ($commented_on_artefactid) {
+    $artefact = artefact_instance_from_id($commented_on_artefactid);
+}
+//pass down the blockid of the artefact that was just commented on via the modal pieform
+$commented_on_blockid = param_integer('commented_on_blockid', null);
+if ($commented_on_blockid) {
+    $block = new BlockInstance($commented_on_blockid);
 }
 
 define('TITLE', $view->get('title'));
@@ -250,7 +262,14 @@ function releaseview_submit() {
     redirect($view->get_url());
 }
 
-$javascript = array('paginator', 'viewmenu', 'js/collection-navigation.js', 'js/jquery/jquery-mobile/jquery.mobile.custom.min.js');
+$javascript = array('paginator', 'viewmenu', 'js/collection-navigation.js',
+        'js/jquery/jquery-mobile/jquery.mobile.custom.min.js',
+        'js/jquery/jquery-ui/js/jquery-ui.min.js',
+        'js/lodash/lodash.js',
+        'js/gridstack/gridstack.js',
+        'js/gridstack/gridstack.jQueryUI.js',
+        'js/gridlayout.js',
+    );
 $blocktype_js = $view->get_all_blocktype_javascript();
 $javascript = array_merge($javascript, $blocktype_js['jsfiles']);
 if (is_plugin_active('externalvideo', 'blocktype')) {
@@ -330,14 +349,62 @@ if ($owner && $owner == $USER->get('id')) {
     }
 }
 
-
 // Don't show page content to a user with peer role
 // if the view doesn't have a peer assessment block
 if (!$USER->has_peer_role_only($view) || $view->has_peer_assessement_block()
     || ($USER->is_admin_for_user($view->get('owner')) && $view->is_objectionable())) {
-    $viewcontent = $view->build_rows(); // Build content before initialising smarty in case pieform elements define headers.
+    $peerhidden = false;
+    if ($newlayout = $view->uses_new_layout()) {
+
+        $blockresizeonload = "false";
+        if ($view->uses_new_layout() && $view->needs_block_resize_on_load()) {
+            // we're copying from an old layout view and need to resize blocks
+            $blockresizeonload = "true";
+        }
+
+        $mincolumns = 'null';
+        if ( $view->get('accessibleview')) {
+            $mincolumns = '12';
+        }
+
+        $blocks = $view->get_blocks();
+        $blocks = json_encode($blocks);
+        $blocksjs =  <<<EOF
+$(function () {
+    var options = {
+        verticalMargin: 10,
+        disableDrag : true,
+        disableResize: true,
+        minCellColumns: {$mincolumns},
+    };
+    var grid = $('.grid-stack');
+    grid.gridstack(options);
+    grid = $('.grid-stack').data('gridstack');
+
+    var blocks = {$blocks};
+    if ({$blockresizeonload}) {
+        // the page was copied from an old layout page
+        // and the blocks still need to be resized
+        loadGridTranslate(grid, blocks);
+    }
+    else {
+        loadGrid(grid, blocks);
+    }
+});
+EOF;
+    }
+    else {
+        $viewcontent = $view->build_rows(); // Build content before initialising smarty in case pieform elements define headers.
+        $blocksjs = "$(function () {jQuery(document).trigger('blocksloaded');});";
+    }
+}
+else {
+    $blocksjs = '';
+    $newlayout = $view->uses_new_layout();
+    $peerhidden = true;
 }
 
+$blocktype_toolbar = $view->get_all_blocktype_toolbar();
 $smarty = smarty(
     $javascript,
     $headers,
@@ -354,37 +421,40 @@ $smarty = smarty(
 $javascript = <<<EOF
 var viewid = {$viewid};
 var showmore = {$showmore};
+
 jQuery(function () {
     paginator = {$feedback->pagination_js}
 });
 
-jQuery(function($) {
-    $('#column-container .blockinstance-content .commentlink').each(function() {
-        var blockid = $(this).attr('id').match(/\d+/);
-        // only use comments expander if there are comments on the artefact
-        $(this).on('click', function(e) {
-            var commentlink = $(this);
-            var chtml = commentlink.parent().parent().find('#feedbacktable_' + blockid).parent();
-            // add a 'close' link at the bottom of the list for convenience
-            if ($('#closer_' + blockid).length == 0) {
-                var closer = $('<a id="closer_' + blockid + '" href="#" class="close-link">Close</a>').on("click", function(e) {
-                    $(this).parent().toggle(400, function() {
-                        commentlink.trigger("focus");
-                    });
-                    e.preventDefault();
-                });
-                chtml.append(closer);
-            }
-            chtml.toggle(400, function() {
-                if (chtml.is(':visible')) {
-                    chtml.find('a').first().trigger("focus");
-                }
-                else {
-                    commentlink.trigger("focus");
-                }
-            });
-            e.preventDefault();
+jQuery(window).on('blocksloaded', {}, function() {
+
+    var deletebutton = $('#configureblock').find('.deletebutton');
+    deletebutton.on('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var modal_textarea_id = null;
+        $('#configureblock').find('textarea.wysiwyg').each(function() {
+            modal_textarea_id = $(this).attr('id');
+            //Remove any existing tinymce
+            tinymce.EditorManager.execCommand('mceRemoveEditor', true, modal_textarea_id);
         });
+        clear();
+    });
+
+    function clear() {
+        var block = $('#configureblock');
+        $('.blockinstance-content').html('');
+        block.find('h4').html('');
+        dock.hide();
+    }
+
+    activateModalLinks();
+
+    $('#feedback-form .submitcancel[name="cancel_submit"]').on('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        tinymce.EditorManager.execCommand('mceRemoveEditor', true, $('#configureblock').find('textarea.wysiwyg').attr('id'));
+        dock.hide();
     });
 
     $('.moretags').on('click', function(e) {
@@ -398,12 +468,77 @@ jQuery(function($) {
             }
         });
     });
+    // Wire up the annotation feedback forms
+    $('.feedbacktable.modal-docked form').each(function() {
+        initTinyMCE($(this).prop('id'));
+    });
 });
+
+function activateModalLinks() {
+    $('.commentlink').off('click');
+    $('.commentlink').on('click', function(e) {
+        open_modal(e);
+        $(this).closest('div[class*=block-header]').addClass('active-block');
+    });
+
+    $('.modal_link').off('click');
+    $('.modal_link').on('click', function (e) {
+        if ($(this).hasClass('no-modal')) {
+            e.stopPropagation();
+        }
+        else {
+            open_modal(e);
+            $(this).closest('div[class*=block-header]').addClass('active-block');
+        }
+    });
+}
 
 jQuery(window).on('pageupdated', {}, function() {
     dock.init(jQuery(document));
+    activateModalLinks();
 });
 EOF;
+
+if ($modal = param_integer('modal', null)) {
+    $artefact = param_integer('artefact', null);
+
+    if ($block = param_integer('block', null)) {
+        $javascript .= <<<EOF
+        jQuery(window).on('blocksloaded', {}, function() {
+            $('#main-column-container').append('<a id="tmp_modal_link" class="modal_link" href="#" data-toggle="modal-docked" data-target="#configureblock" data-blockid="' + $block + '" data-artefactid="' + $artefact + '" ></a>');
+            $('a#tmp_modal_link').off('click');
+            $('a#tmp_modal_link').on('click', function(e) {
+                open_modal(e);
+                $('#configureblock').addClass('active').removeClass('closed');
+            });
+            $('a#tmp_modal_link').click();
+        });
+EOF;
+    }
+    else {
+        $javascript .= <<<EOF
+        jQuery(window).on('blocksloaded', {}, function() {
+            $('#main-column-container').append('<a id="tmp_modal_link" class="modal_link" href="#" data-toggle="modal-docked" data-target="#configureblock" data-artefactid="' + $artefact + '" ></a>');
+            $('a#tmp_modal_link').off('click');
+            $('a#tmp_modal_link').on('click', function(e) {
+                open_modal(e);
+                $('#configureblock').addClass('active').removeClass('closed');
+            });
+            $('a#tmp_modal_link').click();
+        });
+EOF;
+    }
+}
+// Load the page with details content (block headers) displaying according to user preferences.
+if ($showdetails = get_account_preference($USER->get('id'), 'view_details_active')) {
+    $javascript .= <<<EOF
+    jQuery(window).on('blocksloaded', {}, function() {
+        var headers = $('#main-column-container').find('.block-header');
+        $('#details-btn').addClass('active');
+        headers.removeClass('d-none');
+    });
+EOF;
+}
 
 // collection top navigation
 if ($collection) {
@@ -419,16 +554,17 @@ if ($collection) {
     }
 }
 
-$blocktype_toolbar = $view->get_all_blocktype_toolbar();
 if (!empty($blocktype_toolbar['toolbarhtml'])) {
     $smarty->assign('toolbarhtml', join("\n", $blocktype_toolbar['toolbarhtml']));
 }
 $smarty->assign('canremove', $can_edit);
-$smarty->assign('INLINEJAVASCRIPT', $javascript . $inlinejs);
+$smarty->assign('INLINEJAVASCRIPT', $blocksjs . $javascript . $inlinejs);
 $smarty->assign('viewid', $viewid);
 $smarty->assign('viewtype', $viewtype);
 $smarty->assign('feedback', $feedback);
 $smarty->assign('owner', $owner);
+$smarty->assign('peerhidden', $peerhidden);
+$smarty->assign('peerroleonly', $USER->has_peer_role_only($view));
 list($tagcount, $alltags) = $view->get_all_tags_for_view(10);
 $smarty->assign('alltags', $alltags);
 $smarty->assign('moretags', ($tagcount > sizeof($alltags) ? true : false));
@@ -502,7 +638,13 @@ if ($showmnetlink) {
 
 $smarty->assign('viewdescription', ArtefactTypeFolder::append_view_url($view->get('description'), $view->get('id')));
 $smarty->assign('viewinstructions', ArtefactTypeFolder::append_view_url($view->get('instructions'), $view->get('id')));
-$smarty->assign('viewcontent', (isset($viewcontent) ? $viewcontent : null));
+$smarty->assign('newlayout', $newlayout);
+if ($newlayout) {
+    $smarty->assign('blocks', (isset($blocks) ? $blocks : null));
+}
+else {
+    $smarty->assign('viewcontent', (isset($viewcontent) ? $viewcontent : null));
+}
 $smarty->assign('releaseform', $releaseform);
 if (isset($ltisubmissionform)) {
     $smarty->assign('ltisubmissionform', $ltisubmissionform);
@@ -537,6 +679,7 @@ if ($titletext !== $title) {
 
 $smarty->assign('userisowner', ($owner && $owner == $USER->get('id')));
 
+$smarty->assign('viewid', $view->get('id'));
 $smarty->display('view/view.tpl');
 
 mahara_touch_record('view', $viewid); // Update record 'atime'

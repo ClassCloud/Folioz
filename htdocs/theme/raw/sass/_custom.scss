@@ -3,6 +3,19 @@
 #exportgeneration {
     text-align: center;
 }
+#export .radio {
+    padding-bottom: 5px;
+    label {
+        padding-top: 3px;
+    }
+    .description {
+        padding-top: 0;
+    }
+}
+
+#preview_submit {
+    width: auto;
+}
 
 #progress-iframe { // old style progress bars, e.g. portfolio export
     border: 1px solid $gray-500;
@@ -12,16 +25,36 @@
     margin: 20px 0;
 }
 
-.task-item .complete-task .icon,
-.task-item .overdue-task .icon {
-    margin-left: -8px; // correct alignment
+// Plan
+.card.card-secondary .list-group .task-item {
+    a[data-toggle="collapse"] .collapse-indicator,
+    a[data-toggle="collapse"].collapsed .collapse-indicator {
+        margin-right: 10px;
+        margin-top: 17px;
+    }
+    .plan-task-icon {
+        vertical-align: top;
+        padding-top: 4px;
+        z-index: 3;
+        position: relative;
+        cursor: pointer;
+    }
+    .plan-task-heading {
+        max-width: 60%;
+        display: inline-block;
+    }
+    .plan-task-detail {
+        margin-left: 22px;
+        margin-top: 10px;
+        .tags {
+            margin-bottom: 0;
+        }
+    }
 }
-
-.task-item .btn-group {
-    margin-right: -8px; // correct alignment
-    a {
-        font-size: 10px;
-        padding: 2px 8px;
+.bt-plans-editor.card.card-secondary .list-group .task-item {
+    a[data-toggle="collapse"] .collapse-indicator,
+    a[data-toggle="collapse"].collapsed .collapse-indicator {
+        margin-right: 90px;
     }
 }
 
@@ -60,47 +93,6 @@
     position: fixed;
     top: 30px;
     z-index: 1;
-}
-
-.layoutthumb {
-    rect.layout1 {
-        fill: scale-color($card-bg, $lightness: -10%);
-        stroke: $card-border-color;
-    }
-
-    rect.layout0 {
-        fill: scale-color($card-bg, $lightness: -5.25%);
-
-        stroke: $card-border-color;
-    }
-
-    svg {
-        @include media-breakpoint-down(md) {
-           zoom: 0.8;
-       }
-    }
-}
-
-// Show that layout thumbnails can be clicked (Bug 1543358)
-.layoutoption > .thumbnail {
-    cursor: pointer;
-    // Add border around layout thumbnails
-    display: block;
-    padding: 4px;
-    margin-bottom: 21px;
-    line-height: $line-height-base;
-    background-color: transparent;
-    border: 1px solid $card-border-color;
-    border-radius: 2px;
-    transition: border .2s ease-in-out;
-}
-#createcustomlayoutpane .layoutthumb {
-    border: 1px solid $card-border-color;
-    border-radius: 2px;
-    padding: 4px;
-    display: table;
-    overflow: hidden;
-    position: relative;
 }
 
 .blocktype-radio {
@@ -150,12 +142,12 @@
     }
     &.select2-dropdown-open {
         .select2-choices {
-            border-radius: 4px 4px 0 0;
+            border-radius: $border-radius $border-radius 0 0;
         }
     }
     .select2-choices {
         @include box-shadow(0 1px 1px rgba(0, 0, 0, 0.075) inset);
-        border-radius: 4px;
+        border-radius: $border-radius;
         background-color: $body-bg;
         border: 1px solid $input-border-color;
         background-image: none;
@@ -179,7 +171,9 @@
     .select {
         margin-bottom: 15px;
     }
+    span.pseudolabel,
     label {
+        display: table-cell;
         font-weight: bold;
     }
     @include media-breakpoint-up(md) {
@@ -336,11 +330,6 @@
 }
 
 // Choose skin
-.layoutoptions-container {
-    @extend .clearfix;
-    margin-top: 15px;
-}
-.layoutoption,
 .skin {
     float: left;
     margin-bottom: 10px;
@@ -397,18 +386,18 @@
 
 .table thead {
     a::after {
-        font-family: 'FontAwesome';
+        @include fonttype(solid);
         position: relative;
         top: -3px;
         margin-left: 3px;
         color: $gray-300;
     }
     .asc > a::after {
-        content: '\f0dd';
+        content: fa-content($fa-var-caret-down);
     }
     .desc > a::after,
     .sorted > a::after {
-        content: '\f0de';
+        content: fa-content($fa-var-caret-up);
         top: 2px;
     }
 }
@@ -505,8 +494,27 @@
   margin-bottom: 20px;
 }
 
-#auth_config_institutionidp {
-    width: 90%;
+#configureauthinstance-modal {
+    .modal-body textarea.under-label,
+    .modal-body .under-label-help.wysiwyg .mce-tinymce {
+        width: calc(100% - 30px) !important;
+    }
+    .modal-body .form-group.text {
+        label {
+            max-width: calc(50% - 30px);
+        }
+        input[type="text"] {
+            max-width: 50%;
+        }
+    }
+    .modal-body .form-group.password {
+        label {
+            max-width: calc(50% - 30px);
+        }
+        input[type="password"] {
+            max-width: 50%;
+        }
+    }
 }
 
 .defaultskin {
@@ -636,15 +644,14 @@
 }
 
 #searchviews_matchalltags_container {
-    width: 300px;
-    margin-left: 5px;
-    margin-top: 21px;
+    width: 100%;
+    margin-top: 5px;
     label {
         margin-left: 28px;
     }
     input {
         margin-left: 3px;
-        margin-top: -20px;
+        margin-top: -18px;
         float: left;
         width: auto;
         height: auto;
@@ -820,13 +827,9 @@ div.form-group .form-control-label {
     vertical-align: top;
 }
 
-.btn-group {
-    font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
-}
-
-.json_editor_btn_add .btn-group > .btn-group:not(:last-child) > .btn, .btn-group > .btn:not(:last-child):not(.dropdown-toggle) {
-    border-top-right-radius: 0.25rem;
-    border-bottom-right-radius: 0.25rem;
+.json-editor-btn-add {
+    border-top-right-radius: $border-radius !important;
+    border-bottom-right-radius: $border-radius !important;
 }
 
 .errormsg {
@@ -847,4 +850,83 @@ div.form-group .form-control-label {
     float: left;
     top: 0;
     margin-right: 5px;
+}
+
+a.online-users {
+    text-align: left;
+}
+
+#forums-list .button {
+    white-space: nowrap;
+}
+
+.extensions h2 .btn-group-top {
+    margin-top: -11px;
+    margin-bottom: 0;
+}
+
+// Used to stop dropdown being covered by the button
+.controls .btn-group {
+    z-index: 1;
+}
+
+.consentbutton div,
+.consentbutton span.description {
+    padding: 0px !important;
+}
+
+// giving top margin to blog description only when it exists
+.bt-blog #blogdescription > * {
+    margin-top: 10px;
+}
+
+// tagged post title needs padding bottom
+.bt-taggedposts .taggedpost-title {
+    padding: 10px 0;
+}
+
+// fixes ie11 flex issues making panels go to bottom of page
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .col-lg-3 {
+      flex: 1 0 0%;
+      max-width: 25%;
+
+      @include media-breakpoint-down(md) {
+          flex: 1 0 0%;
+          max-width: 100%;
+      }
+  }
+}
+
+.modal-segment-heading {
+    flex: 1;
+}
+
+// reduce size of uploaded logos appearing instituion settings page
+#institution_logohtml_container img {
+    max-height: $navbar-height;
+}
+#institution_logoxshtml_container img {
+    height: 48px;
+}
+#institution_logohtml_container,
+#institution_deletelogo_container,
+#institution_logoxshtml_container,
+#institution_deletelogoxs_container {
+    padding-left: 275px;
+    @include media-breakpoint-down(sm) {
+        padding-left: 0;
+    }
+}
+
+// view last updated
+.last-updated {
+  margin-top: $grid-gutter-width;
+}
+
+// shared view filter in smaller screens too close to top element
+@include media-breakpoint-down(lg) {
+  #search_inputgroupsort_container {
+    margin-top: 10px;
+  }
 }

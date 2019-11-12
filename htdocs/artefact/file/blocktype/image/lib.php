@@ -32,6 +32,10 @@ class PluginBlocktypeImage extends MaharaCoreBlocktype {
         return array('shortcut' => 2000);
     }
 
+    public static function single_artefact_per_block() {
+        return true;
+    }
+
     public static function render_instance(BlockInstance $instance, $editing=false, $versioning=false) {
         $configdata = $instance->get('configdata'); // this will make sure to unserialize it for us
 
@@ -63,12 +67,14 @@ class PluginBlocktypeImage extends MaharaCoreBlocktype {
         $view = new View($viewid);
         list($commentcount, $comments) = ArtefactTypeComment::get_artefact_comments_for_view($image, $view, $instance->get('id'), true, $editing, $versioning);
         $smarty = smarty_core();
+        $smarty->assign('editing', $editing);
         $smarty->assign('commentcount', $commentcount);
         $smarty->assign('comments', $comments);
-        $smarty->assign('url', $wwwroot . 'artefact/artefact.php?artefact=' . $id . '&view=' . $viewid);
         $smarty->assign('src', $src);
         $smarty->assign('description', $description);
         $smarty->assign('showdescription', !empty($configdata['showdescription']) && !empty($description));
+        $smarty->assign('blockid', $instance->get('id'));
+        $smarty->assign('artefactid', $id);
         return $smarty->fetch('blocktype:image:image.tpl');
     }
 

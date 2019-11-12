@@ -158,6 +158,8 @@ class Collection {
         }
         delete_records('collection','id',$this->id);
         delete_records('existingcopy', 'collection', $this->id);
+        // Delete any submission history
+        delete_records('module_assessmentreport_history', 'event', 'collection', 'itemid', $this->id);
 
         // Secret url records belong to the collection, so remove them from the view.
         // @todo: add user message to whatever calls this.
@@ -330,6 +332,9 @@ class Collection {
         $numcopied = array('pages' => 0, 'blocks' => 0, 'artefacts' => 0);
 
         $views = $colltemplate->get('views');
+        if (empty($views)) {
+            $views['views'] = array();
+        }
         $copyviews = array();
         $evidenceviews = array();
         $artefactcopies = array();
@@ -1187,7 +1192,8 @@ class Collection {
 
         handle_event('releasesubmission', array('releaseuser' => $releaseuser,
                                                 'id' => $this->get('id'),
-                                                'groupname' => $this->submittedgroup,
+                                                'hostname' => $this->submittedhost,
+                                                'groupname' => ($this->submittedgroup ? get_field('group', 'name', 'id', $this->submittedgroup) : ''),
                                                 'eventfor' => 'collection'));
 
         // We don't send out notifications about the release of remote-submitted Views & Collections
@@ -1196,29 +1202,32 @@ class Collection {
         if (!defined('INSTALLER') && $this->submittedgroup) {
             $releaseuser = optional_userobj($releaseuser);
             $releaseuserdisplay = display_name($releaseuser, $this->owner);
+            $releaseuserid = ($releaseuser instanceof User) ? $releaseuser->get('id') : $releaseuser->id;
             $submitinfo = $this->submitted_to();
 
-            require_once('activity.php');
-            activity_occurred(
-                'maharamessage',
-                array(
-                    'users' => array($this->get('owner')),
-                    'strings' => (object) array(
-                        'subject' => (object) array(
-                            'key'     => 'collectionreleasedsubject1',
-                            'section' => 'group',
-                            'args'    => array($this->name, $submitinfo->name, $releaseuserdisplay),
+            if ((int)$releaseuserid !== (int)$this->get('owner')) {
+                require_once('activity.php');
+                activity_occurred(
+                    'maharamessage',
+                    array(
+                        'users' => array($this->get('owner')),
+                        'strings' => (object) array(
+                            'subject' => (object) array(
+                                'key'     => 'collectionreleasedsubject1',
+                                'section' => 'group',
+                                'args'    => array($this->name, $submitinfo->name, $releaseuserdisplay),
+                            ),
+                            'message' => (object) array(
+                                'key'     => 'collectionreleasedmessage1',
+                                'section' => 'group',
+                                'args'    => array($this->name, $submitinfo->name, $releaseuserdisplay),
+                            ),
                         ),
-                        'message' => (object) array(
-                            'key'     => 'collectionreleasedmessage1',
-                            'section' => 'group',
-                            'args'    => array($this->name, $submitinfo->name, $releaseuserdisplay),
-                        ),
-                    ),
-                    'url' => $this->get_url(false),
-                    'urltext' => $this->name,
-                )
-            );
+                        'url' => $this->get_url(false),
+                        'urltext' => $this->name,
+                    )
+                );
+            }
         }
     }
 
@@ -1425,6 +1434,27 @@ class Collection {
         }
         reset($viewids);
         return View::get_invisible_token(current($viewids));
+    }
+
+    /**
+     * Retrieves the groupid, if this collection is associated as outcome to a task
+     * corresponding to a group selection plan, otherwise false
+     *
+     * @return bool
+     * @throws SQLException
+     */
+    public function get_group_id_of_corresponding_group_task() {
+        $sql = 'SELECT * FROM {artefact} AS a '.
+            'INNER JOIN {artefact_plans_task} AS gt ON gt.artefact = a.id '.
+            'INNER JOIN {artefact_plans_task} AS ut ON ut.rootgrouptask = gt.artefact '.
+            'WHERE ut.outcometype = ? AND ut.outcome = ?';
+
+        $result = get_record_sql($sql, ['collection', $this->get('id')]);
+
+        if ($result && $result->group) {
+            return $result->group;
+        }
+        return false;
     }
 }
 

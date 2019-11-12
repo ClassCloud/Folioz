@@ -212,7 +212,7 @@ function formGlobalError(form, data) {
 
 // Message related functions
 
-function makeMessage(message, type) {
+function makeMessage(message, type, temp=false) {
     if (message === undefined) {
         return;
     }
@@ -220,6 +220,9 @@ function makeMessage(message, type) {
     var messageContainer = jQuery('<div class="alert"></div>').append(message);
     switch (type) {
         case 'ok':
+            if (temp) {
+                messageContainer.addClass('alert-temp').get(0);
+            }
             return messageContainer.addClass('alert-success').get(0);
         case 'error':
             return messageContainer.addClass('alert-danger').get(0);
@@ -556,7 +559,7 @@ function buildContextualHelpBox(content) {
     contextualHelpContainer.html(
         '<div class="float-right pts">' +
             '<a href="" class="help-dismiss" onclick="return false;">' +
-                '<span class="icon icon-remove"></span>' +
+                '<span class="icon icon-times"></span>' +
                 '<span class="sr-only">' + get_string('closehelp') + '</span>' +
             '</a>' +
         '</div>' +
@@ -1008,7 +1011,7 @@ function getUrlParameter(param, url) {
     }
     var vars = url.split("?");
 
-    if (!vars[1]) return null; // no search parameters
+    if (!vars[1]) return null; // no search parameters - are you using clean URLs?
 
     varparams = vars[1].split("&");
 
@@ -1215,5 +1218,34 @@ function showmatchall() {
 $(function() {
     $('#searchviews_type').on('change', function() {
         showmatchall();
+    });
+});
+
+/**
+ * Offset html anchors for fixed header
+ */
+jQuery(function($) {
+    $(document).on('click', 'a', function(event) {
+        // needs to have a target hash
+        // target the same page
+        // the target has to be in the same block and needs to be inside a tag <a>
+        // or the target needs to be the header
+        if ($(this.hash).length &&
+            location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') &&
+            $(this).closest('body').find('a' + this.hash).length) {
+            event.preventDefault();
+            var target = $(this.hash);
+            var headerheight = 0;
+            if ($('#header-content').length) {
+                headerheight = $('#header-content').offset().top;
+            }
+            else if ($('.container.main-content').length) {
+                headerheight = $('.container.main-content').offset().top;
+            }
+            $('html, body').animate({
+                scrollTop: target.offset().top - headerheight
+            }, 500);
+            $('a' + this.hash).attr('tabindex', 0).focus();
+        }
     });
 });

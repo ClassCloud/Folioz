@@ -107,6 +107,7 @@ foreach ( $element_list as $element => $type ) {
         $countries = getoptions_country();
         $items[$element]['options'] = array('' => get_string('nocountryselected')) + $countries;
         $items[$element]['defaultvalue'] = get_config('country');
+        $items[$element]['description'] = get_string('countryisodisclaimer', 'mahara');
     }
     $classname = 'ArtefactType' . ucfirst($element);
     if (is_callable(array($classname, 'getoptions'))) {
@@ -224,7 +225,7 @@ function get_desired_fields(&$allfields, $section) {
 
     if ($section == 'about') {
         $r = get_record_select('view', 'type = ? AND owner = ?', array('profile', $USER->id), 'id');
-        $label = '<div id="profileicon" class="profile-icon pseudolabel float-left"><a href="' . get_config('wwwroot') . 'artefact/file/profileicons.php" class="user-icon"><img src="'
+        $label = '<div id="profileicon" class="profile-icon pseudolabel float-left"><a href="' . get_config('wwwroot') . 'artefact/file/profileicons.php" class="user-icon user-icon-100"><img src="'
             . profile_icon_url($USER, 100, 100) . '" alt="' . get_string("editprofileicon", "artefact.file") . '"></a></div>';
         $descr = '' . get_string('aboutprofilelinkdescription', 'artefact.internal', get_config('wwwroot') . 'view/blocks.php?id=' . $r->id);
         $descr .= '<p>' . get_string('aboutdescription', 'artefact.internal') . '</p>';
@@ -266,7 +267,7 @@ function profileform_validate(Pieform $form, $values) {
                 $form->set_error('email', get_string('invalidemailaddress', 'artefact.internal') . ': ' . hsc($email));
                 break;
             }
-            else if (record_exists('artefact_internal_profile_email', 'email', $email)) {
+            else if (check_email_exists($email)) {
                 $form->set_error('email', get_string('unvalidatedemailalreadytaken', 'artefact.internal'));
                 break;
             }
@@ -510,7 +511,7 @@ $smarty = smarty(array(), array(), array(
         'loseyourchanges',
     ),
 ));
-setpageicon($smarty, 'icon-id-card-o');
+setpageicon($smarty, 'icon-regular icon-address-card');
 $smarty->assign('profileform', $profileform);
 $smarty->display('artefact:internal:index.tpl');
 

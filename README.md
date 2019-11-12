@@ -6,13 +6,13 @@ web application that allows users to record and share evidence of lifelong learn
 For more information about Mahara and ePortfolios, see the Mahara user manual's
 introduction chapter:
 
- * http://manual.mahara.org/en/19.10/intro/introduction.html#what-is-mahara
+ * https://manual.mahara.org/en/20.04/intro/introduction.html#what-is-mahara
 
 # SUPPORT
 
 The best ways of obtaining support are:
 
- * http://manual.mahara.org - the Mahara online user manual
+ * https://manual.mahara.org - the Mahara online user manual
  * https://mahara.org/forums - the Mahara project community forums
  * https://wiki.mahara.org - the Mahara wiki
  * #mahara on freenode (IRC) - live chat with other users and developers
@@ -33,7 +33,7 @@ The following is a check list of the steps you need to take. Please refer to the
 
 # UPGRADING
 
-Mahara 19.10 supports direct upgrades from previous Mahara versions 15.04.0 and later.
+Mahara 20.04 supports direct upgrades from previous Mahara versions 17.04.0 and later.
 
 If you are upgrading from an earlier version you will need to upgrade
 in either two or three steps:
@@ -50,6 +50,10 @@ then
 
  * Upgrade version 17.04.X -> 'Y'
 
+Note: Older versions of Mahara are not compatible with latest versions
+of PHP so you will need to do intermediate upgrade steps before
+updating your server's PHP
+
 To upgrade an existing Mahara installation, follow the instructions here:
 
  * https://wiki.mahara.org/wiki/System_Administrator%27s_Guide/Upgrading_Mahara
@@ -62,7 +66,7 @@ scripts. See:
 
 # SYSTEM REQUIREMENTS
 
-Here are the system requirements needed to run Mahara 19.10.
+Here are the system requirements needed to run Mahara 20.04.
 
 ### OS
 
@@ -127,7 +131,7 @@ three most recent versions that are officially supported by Microsoft.
 You can still use Mahara on older browsers, but may not have all functionality
 available.
 
-For Mahara 19.10, the supported browser versions are:
+For Mahara 20.04, the supported browser versions are:
 // TODO: Review list of browsers closer to the release date.
  * Firefox - 56.0
  * Chrome - 61.0
@@ -166,7 +170,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Additional permission under GNU GPL version 3 section 7:
 

@@ -6,15 +6,17 @@
             {if $restrictedview}
             <strong>{str tag=profilenotshared section=view}</strong>
             {else}
-
-            {$viewcontent|safe}
-
+            <div class="grid-stack">
+                {if !$newlayout}
+                    {$viewcontent|safe}
+                {/if}
+            </div>
             {/if}
         </div>
     </div>
 </div>
 
-<div class="metadata text-right">
+<div class="metadata text-right last-updated">
     {$lastupdatedstr}{if $visitstring}; {$visitstring}{/if}
 </div>
 {include file="footer.tpl"}

@@ -17,6 +17,11 @@ class PluginBlocktypeBlogpost extends MaharaCoreBlocktype {
         return get_string('title', 'blocktype.blog/blogpost');
     }
 
+    //The block only allows one artefact
+    public static function single_artefact_per_block() {
+        return true;
+    }
+
     /**
      * Optional method. If exists, allows this class to decide the title for
      * all blockinstances of this type
@@ -43,6 +48,7 @@ class PluginBlocktypeBlogpost extends MaharaCoreBlocktype {
 
         $result = '';
         $artefactid = isset($configdata['artefactid']) ? $configdata['artefactid'] : null;
+        $smarty = smarty_core();
         if ($artefactid) {
             require_once(get_config('docroot') . 'artefact/lib.php');
             $artefact = $instance->get_artefact_instance($artefactid);
@@ -50,18 +56,11 @@ class PluginBlocktypeBlogpost extends MaharaCoreBlocktype {
             $configdata['countcomments'] = true;
             $configdata['viewid'] = $instance->get('view');
             $configdata['blockid'] = $instance->get('id');
+            $configdata['editing'] = $editing;
             $result = $artefact->render_self($configdata);
             $result = $result['html'];
             require_once(get_config('docroot') . 'artefact/comment/lib.php');
             require_once(get_config('docroot') . 'lib/view.php');
-            $view = new View($configdata['viewid']);
-            list($commentcount, $comments) = ArtefactTypeComment::get_artefact_comments_for_view($artefact, $view, $instance->get('id'), true, $editing, $versioning);
-        }
-
-        $smarty = smarty_core();
-        if ($artefactid) {
-            $smarty->assign('commentcount', $commentcount);
-            $smarty->assign('comments', $comments);
         }
         $smarty->assign('html', $result);
         return $smarty->fetch('blocktype:blogpost:blogpost.tpl');

@@ -407,35 +407,19 @@ class ArtefactTypePeerassessment extends ArtefactType {
         else {
             $where = 'pa.view = ? ';
 
-            // If the signoff block is also present on the page then we restrict things differently
-            $withsignoff = record_exists('block_instance', 'view', $viewid, 'blocktype', 'signoff');
-            if ($withsignoff) {
-                // If the view is signed off, select public assessments
-                // or if viewing as page owner, select public assessments
-                // or if viewing as assessment author, select assessments owned by author
-                $where.= 'AND ((vsv.signoff = 1 AND pa.private = 0) ';
-                $where.= '    OR (a.author = ?)';
-                $where.= '    OR (pa.private = 0 AND a.owner = ?))';
+            // select assessments that are published
+            // or select assessments where the user is the author, published or not
+            $where.= 'AND ( (pa.private = 0) ';
+            $where.= '    OR (a.author = ?))';
 
-                $values = array($viewid, $userid, $userid, $block);
-                $joinsignoff = ' JOIN {view_signoff_verify} vsv ON vsv.view = pa.view ';
-            }
-            else {
-                // select assessments that are published
-                // or select assessments where the user is the author, published or not
-                $where.= 'AND ( (pa.private = 0) ';
-                $where.= '    OR (a.author = ?))';
-
-                $values = array($viewid, $userid, $block);
-                $joinsignoff = '';
-            }
+            $values = array($viewid, $userid, $block);
 
             $result->count = count_records_sql('
                 SELECT COUNT(*)
                 FROM
                     {artefact} a
                     JOIN {artefact_peer_assessment} pa
-                        ON a.id = pa.assessment' . $joinsignoff . '
+                        ON a.id = pa.assessment
                     LEFT JOIN {artefact} p
                         ON a.parent = p.id
                 WHERE ' . $where . '
@@ -460,7 +444,6 @@ class ArtefactTypePeerassessment extends ArtefactType {
                         $ids = get_column_sql('
                                 SELECT a.id
                                 FROM {artefact} a JOIN {artefact_peer_assessment} pa ON a.id = pa.assessment
-                                ' . $joinsignoff . '
                                 LEFT JOIN {artefact} p ON a.parent = p.id
                                 WHERE ' . $where . '
                                 AND pa.block = ?
@@ -491,7 +474,6 @@ class ArtefactTypePeerassessment extends ArtefactType {
                         u.deleted, u.profileicon, u.urlid, p.id AS parent, p.author AS parentauthor
                     FROM {artefact} a
                         INNER JOIN {artefact_peer_assessment} pa ON a.id = pa.assessment
-                        ' . $joinsignoff . '
                         LEFT JOIN {artefact} p
                             ON a.parent = p.id
                         LEFT JOIN {usr} u ON a.author = u.id
@@ -570,7 +552,7 @@ class ArtefactTypePeerassessment extends ArtefactType {
             return false;
         }
         $verifiable = get_field_sql("SELECT va.usr FROM {view_access} va
-                                     JOIN {usr_roles} ur ON ur.role = va.role
+                                     JOIN {usr_access_roles} ur ON ur.role = va.role
                                      WHERE ur.see_block_content = ?
                                      AND va.view = ? AND va.usr = ?
                                      LIMIT 1", array(1, $view->get('id'), $USER->get('id')));
@@ -804,7 +786,7 @@ class ArtefactTypePeerassessment extends ArtefactType {
                     'type'  => 'button',
                     'usebuttontag' => true,
                     'class' => 'btn-secondary btn-sm',
-                    'value' => '<span class="icon icon-trash icon-lg text-danger" role="presentation" aria-hidden="true"></span> <span class="sr-only">' . get_string('delete') . '</span>',
+                    'value' => '<span class="icon icon-trash-alt icon-lg text-danger" role="presentation" aria-hidden="true"></span> <span class="sr-only">' . get_string('delete') . '</span>',
                     'confirm' => get_string('reallydeletethisassessment', 'artefact.peerassessment'),
                     'name'  => 'delete_assessment_submit',
                 ),

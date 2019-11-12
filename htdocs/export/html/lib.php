@@ -48,6 +48,12 @@ class PluginExportHtml extends PluginExport {
     protected $exportingoneview = false;
 
     /**
+     * These javascript files will be included in index.html via the
+     * export/html/templates/header.tpl
+     */
+    private $scripts = array('jquery', 'bootstrap.min', 'dock', 'modal', 'lodash', 'gridstack', 'gridlayout');
+
+    /**
     * constructor.  overrides the parent class
     * to set up smarty and the attachment directory
     */
@@ -57,7 +63,7 @@ class PluginExportHtml extends PluginExport {
         $this->rootdir = 'portfolio-for-' . self::text_to_filename($user->get('username'));
 
         // Create basic required directories
-        foreach (array('files', 'views', 'static', 'static/smilies', 'static/profileicons') as $directory) {
+        foreach (array('files', 'views', 'static', 'static/profileicons') as $directory) {
             $directory = "{$this->exportdir}/{$this->rootdir}/{$directory}/";
             if (!check_dir_exists($directory)) {
                 throw new SystemException("Couldn't create the temporary export directory $directory");
@@ -200,6 +206,8 @@ class PluginExportHtml extends PluginExport {
         $this->notify_progress_callback(55, get_string('exportingviews', 'export'));
         $this->dump_view_export_data();
 
+        $this->export_artefact_metadata_modals();
+
         if (!$this->exportingoneview) {
             $viewcollectionsumary = $this->get_view_collection_summary();
             $summaries['view'] = array(100, $viewcollectionsumary['view']);
@@ -259,12 +267,15 @@ class PluginExportHtml extends PluginExport {
         else {
             $stylesheets = $this->stylesheets[''];
         }
+
         $smarty = smarty_core();
         $smarty->assign('user', $this->get('user'));
         $smarty->assign('rootpath', $rootpath);
         $smarty->assign('export_time', $this->exporttime);
         $smarty->assign('sitename', get_config('sitename'));
         $smarty->assign('stylesheets', $stylesheets);
+        $smarty->assign('scripts', $this->scripts);
+        $smarty->assign('scriptspath', $rootpath . $this->theme_path('js/'));
         $smarty->assign('maharalogo', $rootpath . $this->theme_path('images/site-logo.png'));
 
         return $smarty;
@@ -407,8 +418,13 @@ class PluginExportHtml extends PluginExport {
                 }
                 $smarty->assign('feedback', $feedback);
             }
-
-            $smarty->assign('view', $outputfilter->filter($view->build_rows(false, true)));
+            if (!$view->uses_new_layout()) {
+                $smarty->assign('view', $outputfilter->filter($view->build_rows(false, true)));
+            }
+            else {
+                $smarty->assign('newlayout', true);
+                $smarty->assign('blocks', $view->get_blocks(false, true));
+            }
             $content = $smarty->fetch('export:html:view.tpl');
             if (!file_put_contents("$directory/index.html", $content)) {
                 throw new SystemException("Could not write view page for view $viewid");
@@ -502,6 +518,255 @@ class PluginExportHtml extends PluginExport {
         return $summary;
     }
 
+
+/** Retrieves the comments for a particular artefact
+ * @param artefact $artefact    The artefact containing the comments
+ * @param View $view            The view where the artefact appears
+ * @return html via comment.tpl Containing comments or '' if comments aren't allowed
+ */
+    private function get_comments_for_modal($artefact, $view) {
+         safe_require('artefact', 'comment');
+         if (!$artefact->get('allowcomments')) {
+             return '';
+         }
+         $commentoptions = ArtefactTypeComment::get_comment_options();
+         $commentoptions->view = $view;
+         $commentoptions->artefact = $artefact;
+
+         $owner = $artefact->get('owner');
+         $threaded = $owner ? $threaded = get_user_institution_comment_threads($owner) : false;
+         $commentoptions->threaded = $threaded;
+         $feedback = ArtefactTypeComment::get_comments($commentoptions);
+         $smarty = smarty_core();
+         $smarty->assign('feedback', $feedback);
+         return $smarty->fetch('blocktype:comment:comment.tpl');
+    }
+
+/**
+*  Creates the hard-coded modals for blogs posts (Journal block)
+*  @param BlockInstance $bi  The journal block containing the posts
+*  @param array &$idarray     Existing array that stores ids of modals to be created
+*/
+    private function get_blog_posts_modals(&$idarray, BlockInstance $bi) {
+        require_once(get_config('docroot') . 'artefact/blog/blocktype/blog/lib.php');
+        $artefacts = PluginBlocktypeBlog::get_artefacts($bi);
+        if (!empty($artefacts)) {
+            $idarray = array_merge($idarray, $artefacts);
+        }
+    }
+
+/**
+*   Creates the hard-coded modals for tagged posts (Tagged journal entries)
+*  @param BlockInstance $bi  The tagged journal entries block containing the posts
+*  @param array &$idarray     Existing array that stores ids of modals to be created
+*/
+    private function get_tagged_posts_modals(&$idarray, BlockInstance $bi) {
+        require_once(get_config('docroot') . 'artefact/blog/blocktype/taggedposts/lib.php');
+        $taggedposts = PluginBlocktypeTaggedposts::get_blog_posts_in_block($bi);
+        $postids = array();
+        foreach ($taggedposts as $posts) {
+            array_push($postids, $posts->{'id'});
+        }
+        if (!empty($postids)) {
+            $idarray = array_merge($idarray, $postids);
+        }
+    }
+
+/**
+*  Creates the hard-coded modals for recent posts (Recent journal entries)
+* @param BlockInstance $bi     The recent journal entries block containing the posts
+* @param array &$idarray       Exisiting array that stores ids of modals to be created
+*/
+    private function get_recent_posts_modals(&$idarray, BlockInstance $bi) {
+        require_once(get_config('docroot') . 'artefact/blog/blocktype/recentposts/lib.php');
+        $recentposts = PluginBlocktypeRecentposts::get_blog_posts_in_block($bi);
+        $recentpostsids = array();
+        foreach ($recentposts as $rpids) {
+            array_push($recentpostsids, $rpids->{'id'});
+        }
+        if (!empty($recentpostsids)) {
+            $idarray = array_merge($idarray, $recentpostsids);
+        }
+    }
+
+/**
+*  Creates the hard-coded modals for all attachments in the entire resume block
+* @param BlockInstance $bi     The entire resume block containing the attachments
+* @param array &$idarray       The exisiting array that stores modal ids to be created
+*/
+    private function get_entire_resume_modals(&$idarray, BlockInstance $bi) {
+        require_once(get_config('docroot') . 'artefact/resume/blocktype/entireresume/lib.php');
+        $resume = PluginBlocktypeEntireresume::get_artefacts($bi);
+        $attachmentids = array();
+        foreach ($resume as $field) {
+            $res = $bi->get_artefact_instance($field);
+            if ($attachment = $res->get_attachments()) {
+                foreach ($attachment as $a) {
+                    array_push($attachmentids, $a->{'id'});
+                }
+            }
+        }
+        if (!empty($attachmentids)) {
+            $idarray = array_merge($idarray, $attachmentids);
+        }
+    }
+
+/**
+*  Creates the hard-coded modals for all attachments in the one resume field block
+* @param BlockInstance $bi      The resume field block containing the attachments
+* @param array &$idarray        The exisiting array that stores modal ids to be created
+*/
+    private function get_resume_field_modals(&$idarray, BlockInstance $bi) {
+        $configdata = $bi->get('configdata');
+        $field = $bi->get_artefact_instance($configdata['artefactid']);
+        $attachmentids = array();
+        if ($attachment = $field->get_attachments()) {
+            foreach ($attachment as $a) {
+                array_push($attachmentids, $a->{'id'});
+            }
+        }
+        if (!empty($attachmentids)) {
+            $idarray = array_merge($idarray, $attachmentids);
+        }
+    }
+
+/**
+*  Creates the hard-coded modals for File(s) to download block
+* @param BlockInstance $bi      The File(s) to download block
+* @param array  &$idarray       The exisiting array that stores modal ids to be created
+*/
+private function get_folder_modals(&$idarray, BlockInstance $bi) {
+    $artefacts = PluginBlocktypeFolder::get_current_artefacts($bi);
+    $i = 0;
+    $allartefacts = array();
+    while (count($artefacts) > 0) {
+        if ($artefact = artefact_instance_from_id($artefacts[$i])) {
+            if ($artefact->get('artefacttype') == 'folder') {
+                $children = $artefact->get_children_instances();
+                foreach ($children as $childid) {
+                   array_push($artefacts, $childid->get('id'));
+                }
+            }
+        }
+        $allartefacts[] = $artefacts[$i];
+        unset($artefacts[$i]);
+        $i++;
+    }
+    if (!empty($allartefacts)) {
+        $idarray = array_unique(array_merge($idarray, $allartefacts));
+    }
+}
+
+/**
+* Exports the hard-coded modals for the blocks into relevant pages.
+* This will append to the index.html or any other relevant page created
+* previously that needs to contain a modal (including the profile page).
+*/
+    private function export_artefact_metadata_modals() {
+        foreach ($this->views as $view) {
+            $content = '';
+            $blocks = get_records_array('block_instance', 'view', $view->get('id'));
+            if ($blocks) {
+                $options = array(
+                    'viewid' =>  $view->get('id'),
+                    'details' => true,
+                    'metadata' => 1,
+                    'modal' => true,
+                );
+                $uniqueids = array();
+                $smarty = $this->get_smarty();
+                foreach ($blocks as $b) {
+                    $bi = new BlockInstance($b->id);
+                    $type = $bi->get('artefactplugin');
+                    $configdata = unserialize($b->configdata);
+                    $artefactidarray = array();
+                    if ($b->blocktype == 'blog') {
+                        $this->get_blog_posts_modals($artefactidarray, $bi);
+                    }
+                    else if ($b->blocktype == 'recentposts') {
+                        $this->get_recent_posts_modals($artefactidarray, $bi);
+                    }
+                    else if ($b->blocktype == 'taggedposts') {
+                        $this->get_tagged_posts_modals($artefactidarray, $bi);
+                    }
+                    else if ($b->blocktype == 'entireresume') {
+                        $this->get_entire_resume_modals($artefactidarray, $bi);
+                    }
+                    else if ($b->blocktype == 'resumefield') {
+                        $this->get_resume_field_modals($artefactidarray, $bi);
+                    }
+                    else if ($b->blocktype == 'folder') {
+                        $this->get_folder_modals($artefactidarray, $bi);
+                    }
+                    else if (
+                        //block contains any of these types or matches blocktype
+                         $type == 'image' ||
+                         $type == 'blog' ||
+                         $type == 'audio' ||
+                         $type == 'video' ||
+                         $type == 'html' ||
+                         $type == 'plans' ||
+                         $type == 'file' ||
+                         $type == 'internal' && $b->blocktype != 'profileinfo'||
+                         $b->blocktype == 'image' ||
+                         $b->blocktype == 'internalmedia' ||
+                         $b->blocktype == 'filedownload'
+                     ) {
+                        if (isset($configdata['artefactids']) && !empty($configdata['artefactids'])) {
+                            $artefactidarray = $configdata['artefactids'];
+                        }
+                        else if (isset($configdata['artefactid']) && !empty($configdata['artefactid'])) {
+                            $artefactidarray = array($configdata['artefactid']);
+                        }
+                    }
+
+                    //Create the modal content for each unique id found
+                    if (!empty($artefactidarray)) {
+                        foreach ($artefactidarray as $artefactid) {
+                            //prevent duplicate modals in same page
+                            if (!in_array($artefactid, $uniqueids)) {
+                                array_push($uniqueids, $artefactid);
+                                $artefact = $bi->get_artefact_instance($artefactid);
+                                $options['blockid'] = $b->id;
+                                $rendered = $artefact->render_self($options);
+                                $html = '';
+                                if (!empty($rendered['javascript'])) {
+                                    $html = '<script>' . $rendered['javascript'] . '</script>';
+                                }
+                                $html .= $rendered['html'];
+                                $html .= $this->get_comments_for_modal($artefact, $view);
+                                $smarty->assign('artefactid', $artefactid);
+                                $smarty->assign('content', $html);
+                                $smarty->assign('title', $artefact->get('title'));
+                                $content .= $smarty->fetch('export:html:modal.tpl');
+                            }
+                        }
+                    } #end of if
+                } #end of foreach block
+            } #end of if
+            if (!empty($content)) {
+                $rootpath = ($this->exportingoneview) ? './' : '../../';
+                $outputfilter = new HtmlExportOutputFilter($rootpath, $this);
+                $content = $outputfilter->filter($content);
+
+                if ($this->exportingoneview) {
+                    if (!file_put_contents($this->exportdir . '/' . $this->rootdir . '/index.html', $content, FILE_APPEND)) {
+                        throw new SystemException("Could not create artefact metadata for the export");
+                    }
+                }
+                else {
+                    $folder = '';
+                    if ($view->get('type') != 'profile') {
+                        $folder = self::text_to_filename($view->get('title'));
+                        if (!file_put_contents($this->exportdir . '/' . $this->rootdir . '/views/' . $folder . '/index.html', $content, FILE_APPEND)) {
+                            throw new SystemException("Could not create artefact metadata for the export");
+                        }
+                    }
+                }
+            }#end of if
+        } #end of foreach view
+    }
+
     /**
      * Copies the static files (stylesheets etc.) into the export
      */
@@ -538,8 +803,13 @@ class PluginExportHtml extends PluginExport {
             }
         }
 
-        // Smilies
-        $directoriestocopy[get_config('docroot') . 'js/tinymce/plugins/emoticons/img'] = $staticdir . 'smilies/';
+        // Copy over bootstrap and jquery files
+        $jsdir =  $staticdir . 'theme/' . $theme . '/static/js/';
+        $directoriestocopy[get_config('docroot') . 'lib/bootstrap/assets/javascripts/bootstrap.min.js'] = $jsdir . 'bootstrap.min.js';
+        $directoriestocopy[get_config('docroot') . 'js/jquery/jquery.js'] = $jsdir . 'jquery.js';
+        $directoriestocopy[get_config('docroot') . 'js/lodash/lodash.js'] = $jsdir . 'lodash.js';
+        $directoriestocopy[get_config('docroot') . 'js/gridstack/gridstack.js'] = $jsdir . 'gridstack.js';
+        $directoriestocopy[get_config('docroot') . 'js/gridlayout.js'] = $jsdir . 'gridlayout.js';
 
         foreach ($this->pluginstaticdirs as $dir) {
             $destinationdir = str_replace('export/html/', '', $dir);
@@ -560,7 +830,6 @@ class PluginExportHtml extends PluginExport {
         }
 
     }
-
 }
 
 abstract class HtmlExportArtefactPlugin {
@@ -607,9 +876,50 @@ abstract class HtmlExportArtefactPlugin {
             array('text' => $artefact->get('title'), 'path' => 'index.html'),
         ));
         $rendered = $artefact->render_self(array('hidetitle' => true));
+
         $outputfilter = new HtmlExportOutputFilter('../../../', $this->exporter);
         $smarty->assign('rendered', $outputfilter->filter($rendered['html']));
         $content = $smarty->fetch('export:html:page.tpl');
+
+        if ($artefact instanceof ArtefactTypeBlog && get_config('licensemetadata')) {
+            $blogid = $artefact->get('id');
+            $idarray = array();
+            $exportedmodals = '';
+            $renderoptions = array(
+                'details' => true,
+                'metadata' => 1,
+                'modal' => true,
+            );
+             require_once(get_config('docroot') . 'artefact/blog/lib.php');
+             $from = "
+                 FROM {artefact} a LEFT JOIN {artefact_blog_blogpost} bp ON a.id = bp.blogpost
+                 WHERE a.artefacttype = 'blogpost' AND a.parent = ?";
+             $from .= ' AND bp.published = 1';
+             $count = count_records_sql('SELECT COUNT(*) ' . $from, array($blogid));
+             $posts = ArtefactTypeBlogPost::get_posts($blogid, $count ? $count : 10, 0);
+             if ($posts['data']) {
+                 foreach ($posts['data'] as $pid) {
+                     array_push($idarray, $pid->{'id'});
+                 }
+             }
+             if (!empty($idarray)) {
+                 foreach ($idarray as $id) {
+                     $html = '';
+                     $a = artefact_instance_from_id($id);
+                     $modalcontent = $a->render_self($renderoptions);
+                     if (!empty($modalcontent['javascript'])) {
+                         $html = '<script>' . $modalcontent['javascript'] . '</script>';
+                     }
+                     $html .= $modalcontent['html'];
+                     $smarty->assign('artefactid', $id);
+                     $smarty->assign('content', $html);
+                     $smarty->assign('title', $a->get('title'));
+                     $exportedmodals .= $smarty->fetch('export:html:modal.tpl');
+                 }
+                 $exportedmodals = $outputfilter->filter($exportedmodals);
+                 $content .= $exportedmodals;
+             }
+        }
 
         if (false === file_put_contents($this->fileroot . $dirname . '/index.html', $content)) {
             throw new SystemException("Unable to create index.html for artefact " . $artefact->get('id'));
@@ -621,6 +931,20 @@ abstract class HtmlExportArtefactPlugin {
                 $rendered = $artefact->render_self(array('limit' => $options['perpage'], 'offset' => $i));
                 $smarty->assign('rendered', $outputfilter->filter($rendered['html']));
                 $content = $smarty->fetch('export:html:page.tpl');
+                if ($artefact instanceof ArtefactTypeBlog && get_config('licensemetadata')) {
+                    $modalcontent = $artefact->render_self(array('limit' => $options['perpage'], 'offset' => $i, 'details' => true, 'metadata' => 1, 'modal' => true));
+                    $html ='';
+                    if (!empty($modalcontent['javascript'])) {
+                        $html = '<script>' . $modalcontent['javascript'] . '</script>';
+                    }
+                    $html .= $modalcontent['html'];
+                    $smarty->assign('artefactid', $artefact->get('id'));
+                    $smarty->assign('content', $html);
+                    $smarty->assign('title', $artefact->get('title'));
+                    $exportedmodals .= $smarty->fetch('export:html:modal.tpl');
+                    $exportedmodals = $outputfilter->filter($exportedmodals);
+                    $content .= $exportedmodals;
+                }
 
                 if (false === file_put_contents($this->fileroot . $dirname . "/{$i}.html", $content)) {
                     throw new SystemException("Unable to create {$i}.html for artefact {$artefact->get('id')}");
@@ -688,8 +1012,6 @@ class HtmlExportOutputFilter {
             array(
                 // We don't care about javascript
                 '#<script[^>]*>.*?</script>#si',
-                // Fix simlies from tinymce
-                '#<img ([^>]*)src="(' . $wwwroot . ')?/?js/tinymce/plugins/emoticons/img/([^"]+)"([^>]+)>#',
                 // No forms
                 '#<form[^>]*>.*?</form>#si',
                 // Gratuitous hack for the RSS blocktype
@@ -697,7 +1019,6 @@ class HtmlExportOutputFilter {
             ),
             array(
                 '',
-                '<img $1src="' . $this->basepath . '/static/smilies/$3"$4>',
                 '',
                 '',
             ),
@@ -732,6 +1053,20 @@ class HtmlExportOutputFilter {
             $html
         );
 
+        // Replace inner links
+        $html = preg_replace_callback(
+            '#(?<=[\'"])(' . $wwwroot . ')?/?artefact/artefact\.php\?artefact=(\d+)(?:(?:&amp;|&|%26)([a-z]+=[x0-9]+)+)*#',
+            array($this, 'replace_inner_link'),
+            $html
+        );
+
+        // Links to pdf block files
+        $html = preg_replace_callback(
+            '#(?<=[\'"])(' . $wwwroot . ')?/?artefact/file/blocktype/pdf/viewer\.php\?.*?file=(\d+)(?:&amp;|&|%26).*?(?=[\'"])#',
+            array($this, 'replace_pdf_link'),
+            $html
+        );
+
         // Thumbnails
         require_once('file.php');
         $html = preg_replace_callback(
@@ -744,6 +1079,20 @@ class HtmlExportOutputFilter {
         $html = preg_replace_callback(
             '#(?<=[\'"])(' . $wwwroot . '|/)?((?:[a-z]+/)*)theme/([a-zA-Z0-9_.-]+)/static/images/([a-z0-9_.-]+)#',
             array($this, 'replace_theme_image_link'),
+            $html
+        );
+
+        // Tags
+        $html = preg_replace_callback(
+            '#<a[^>]+href="' . $wwwroot . 'tags.php\?tag=.*?">(.*?)<\/a>#',
+            array($this, 'replace_tag_link'),
+            $html
+        );
+
+        // Links to journals
+        $html = preg_replace_callback(
+            '#<a[^>]+href="(' . $wwwroot . ')?/?artefact/blog/view/index\.php\?=(\d+)?"[^>]*>([^<]*)</a>#',
+            array($this, 'replace_journal_link'),
             $html
         );
 
@@ -828,6 +1177,56 @@ class HtmlExportOutputFilter {
         return $this->get_export_path_for_file($artefact, $options);
     }
 
+    private function replace_inner_link($matches) {
+        $artefactid = $matches[2];
+        try {
+            $artefact = artefact_instance_from_id($artefactid);
+        }
+        catch (ArtefactNotFoundException $e) {
+            return '';
+        }
+
+        // If artefact type not something that would be served by download.php,
+        // replace link with nothing
+        if ($artefact->get_plugin_name() != 'file') {
+            return '';
+        }
+
+        $options = array();
+        for ($i = 3; $i < count($matches); $i++) {
+            list($key, $value) = explode('=', $matches[$i]);
+            $options[$key] = $value;
+        }
+
+        if ($artefact instanceof ArtefactTypeFolder) {
+            return $this->get_folder_path_for_file($artefact, $options);
+        }
+
+        return $this->get_export_path_for_file($artefact, $options);
+    }
+
+    /**
+     * Callback to replace links to artefact/file/blocktype/pdf/viewer.php to point to the
+     * correct file in the HTML export
+     */
+    private function replace_pdf_link($matches) {
+        $artefactid = $matches[2];
+        try {
+            $artefact = artefact_instance_from_id($artefactid);
+        }
+        catch (ArtefactNotFoundException $e) {
+            return '';
+        }
+
+        // If artefact type not something that would be served by download.php,
+        // replace link with nothing
+        if ($artefact->get_plugin_name() != 'file') {
+            return '';
+        }
+
+        return $this->get_export_path_for_file($artefact, array());
+    }
+
     /**
      * Callback to replace links to thumb.php to point to the correct file in
      * the HTML export
@@ -888,6 +1287,22 @@ class HtmlExportOutputFilter {
             '/static/' . $file
         );
         return $this->basepath . '/static/' . $file;
+    }
+
+    /**
+     * Callback to replace links to tags static text in
+     * the HTML export
+     */
+    function replace_tag_link($matches) {
+        return $matches[1];
+    }
+
+    /**
+     * Callback to replace links to journals static text in
+     * the HTML export
+     */
+    function replace_journal_link($matches) {
+        return $matches[3];
     }
 
     /**

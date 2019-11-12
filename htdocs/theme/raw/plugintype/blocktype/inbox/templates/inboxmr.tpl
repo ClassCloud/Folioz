@@ -5,7 +5,7 @@
 {else}
     <div id="inboxblock" class="inboxblock list-group">
         {foreach from=$items item=i}
-        <div class="has-attachment card collapsible list-group-item{if !$i->read} js-card-unread{/if}" data-requesturl="{$WWWROOT}module/multirecipientnotification/indexin.json.php">
+        <div class="collapsible list-group-item{if !$i->read} js-card-unread{/if}" data-requesturl="{$WWWROOT}module/multirecipientnotification/indexin.json.php">
             {if $i->message}
                 <a class="collapsed link-block{if !$i->read} unread{/if}" data-toggle="collapse" href="#message_content_{$i->type}_{$i->id}" data-id="{$i->id}" data-list="{$i->table}" aria-expanded="false">
                     {if $i->type == 'usermessage'}
@@ -22,7 +22,7 @@
                         <span class="icon icon-wrench text-default left" role="presentation" aria-hidden="true"></span>
                     {/if}
                     <span class="sr-only">{$i->strtype}</span>
-                    {$i->subject|truncate:50}
+                    {$i->subject|str_shorten_html:45:true|safe}
                     <span class="icon icon-chevron-down collapse-indicator float-right text-small" role="presentation" aria-hidden="true"></span>
                 </a>
             {/if}

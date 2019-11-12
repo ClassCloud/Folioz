@@ -65,6 +65,11 @@ td.tiny {
         background: scale-color($warning, $lightness: 70%) !important;
     }
 
+    tr.submitted {
+        color: $state-submitted-text;
+        background: $state-submitted-bg !important;
+    }
+
     td input[type=radio],
     td input[type=checkbox] {
         margin: 0 auto;
@@ -248,8 +253,8 @@ table.table tr {
 .th-shared-heading {
     position: absolute;
     top: -8px;
-    left: 13px;
-    width: 200%;
+    left: 0;
+    width: 100px;
     text-align: center;
 }
 
@@ -268,7 +273,7 @@ table.table tr {
     vertical-align: bottom;
     margin: 5px;
     font-size: 16px;
-    font-weight: 100;
+    font-weight: 300;
 }
 
 // Unset border top on the first row of the table
@@ -287,7 +292,7 @@ table.table tr {
 .table>thead>tr>th.groupname,
 .table>thead>tr>th.groupshortname,
 .table>thead>tr>th.groupmanagebuttons {
-    width: 15%;
+    width: 8em;
 }
 
 .table.profile-info {
@@ -298,5 +303,22 @@ table.table tr {
     }
     >tbody>tr:first-child>td {
         border-top-width: 1px;
+    }
+}
+// unless being displayed in a block
+.bt-entireresume,
+.bt-entireresume-editor,
+.bt-resumefield,
+.bt-resumefield-editor
+ {
+    .table.profile-info {
+        >tbody>tr:first-child>th,
+        >tbody>tr:first-child>td {
+            border-top-width: 0;
+        }
+        td, th {
+            padding-left: 0;
+            padding-right: 0;
+        }
     }
 }

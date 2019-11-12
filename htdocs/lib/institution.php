@@ -58,8 +58,8 @@ class Institution {
         'licensedefault' => null,
         'licensemandatory' => 0,
         'dropdownmenu' => 0,
-        'skins' => true,
-        'tags' => false
+        'skins' => 1,
+        'tags' => 0
     );
 
     // This institution's config settings
@@ -291,7 +291,7 @@ class Institution {
         $this->verifyReady();
     }
 
-    public function addUserAsMember($user) {
+    public function addUserAsMember($user, $staff=null, $admin=null) {
         global $USER;
         if ($this->isFull()) {
             $this->send_admin_institution_is_full_message();
@@ -326,6 +326,12 @@ class Institution {
         $userinst->usr = $user->id;
         $now = time();
         $userinst->ctime = db_format_timestamp($now);
+        if ($staff) {
+            $userinst->staff = true;
+        }
+        if ($admin) {
+            $userinst->admin = true;
+        }
         $defaultexpiry = $this->defaultmembershipperiod;
         if (!empty($defaultexpiry)) {
             $userinst->expiry = db_format_timestamp($now + $defaultexpiry);
@@ -363,6 +369,16 @@ class Institution {
         }
 
         db_commit();
+    }
+
+    public function addUserAsStaff($user) {
+        // Only to be used to add a member to an institution and bump ther permissions to staff
+        $this->addUserAsMember($user, true);
+    }
+
+    public function addUserAsAdmin($user) {
+        // Only to be used to add a member to an institution and bump ther permissions to admin
+        $this->addUserAsMember($user, null, true);
     }
 
     public function add_members($userids) {
@@ -783,6 +799,9 @@ class Institution {
             WHERE i.institution = ? AND u.deleted = 0 AND i.admin = 1', array($this->name))) {
             return array_map('extract_institution_user_id', $results);
         }
+        if ($this->name == 'mahara') {
+            return $this->institution_and_site_admins();
+        }
         return array();
     }
 
@@ -813,6 +832,12 @@ class Institution {
             SELECT u.id FROM {usr} u INNER JOIN {usr_institution} i ON u.id = i.usr
             WHERE i.institution = ? AND u.deleted = 0 AND i.staff = 1', array($this->name))) {
             return array_map('extract_institution_user_id', $results);
+        }
+        if ($this->name == 'mahara') {
+            // get all the site staff who are not also site admins
+            if ($results = get_records_sql_array("SELECT u.id FROM {usr} u WHERE u.deleted = 0 AND u.staff = 1 AND u.admin = 0")) {
+                return array_map('extract_institution_user_id', $results);
+            }
         }
         return array();
     }

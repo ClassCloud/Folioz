@@ -70,7 +70,8 @@ if (!isset($user)) {
 $is_friend = is_friend($userid, $loggedinid);
 
 if ($loggedinid == $userid) {
-    $view = $USER->get_profile_view();
+    $userobj = clone $USER;
+    $view = $userobj->get_profile_view();
 }
 else {
     $userobj = new User();
@@ -90,19 +91,67 @@ $viewid = $view->get('id');
 $restrictedview = !can_view_view($viewid);
 // Logged-out users can't see any details, though
 if ($restrictedview && !$USER->is_logged_in()) {
-    throw new AccessDeniedException(get_string('accessdenied', 'error'));
+    throw new AccessDeniedException();
 }
-if (!$restrictedview) {
-    $viewcontent = $view->build_rows(); // Build content before initialising smarty in case pieform elements define headers.
+else if ($restrictedview) {
+    // Check if isolated institutions are on and user being viewed is a site admin
+    // or both users are in no institution
+    $userinsts = $userobj->get('institutions');
+    $loggedininsts = $USER->get('institutions');
+    if ($userobj->get('admin') ||
+        (empty($userinsts) && empty($loggedininsts))) {
+        $restrictedview = false;
+    }
 }
 
-$javascript = array('paginator', 'lib/pieforms/static/core/pieforms.js');
+if (!$restrictedview) {
+    if ($newlayout = $view->uses_new_layout()) {
+        $layoutjs = array('js/lodash/lodash.js', 'js/gridstack/gridstack.js', 'js/gridlayout.js');
+        $blocks = $view->get_blocks();
+        $blocks = json_encode($blocks);
+        $blocksjs = <<<EOF
+            $(function () {
+                var options = {
+                    verticalMargin: 10,
+                    disableDrag : true,
+                    disableResize: true,
+                };
+                var grid = $('.grid-stack');
+                grid.gridstack(options);
+                grid = $('.grid-stack').data('gridstack');
+
+                // should add the blocks one by one
+                var blocks = {$blocks};
+                loadGrid(grid, blocks);
+            });
+EOF;
+    }
+    else {
+        $layoutjs= array();
+        $viewcontent = $view->build_rows(); // Build content before initialising smarty in case pieform elements define headers.
+        $blocksjs = "$(function () {jQuery(document).trigger('blocksloaded');});";
+    }
+}
+
+$javascript = array('paginator',
+                    'lib/pieforms/static/core/pieforms.js',
+                  );
+$javascript = array_merge($javascript, $layoutjs);
 $blocktype_js = $view->get_all_blocktype_javascript();
 $javascript = array_merge($javascript, $blocktype_js['jsfiles']);
 if (is_plugin_active('externalvideo', 'blocktype')) {
     $javascript = array_merge($javascript, array((is_https() ? 'https:' : 'http:') . '//cdn.embedly.com/widgets/platform.js'));
 }
-$inlinejs = "jQuery( function() {\n" . join("\n", $blocktype_js['initjs']) . "\n});";
+$inlinejs = <<<JS
+jQuery(function($) {
+JS;
+$inlinejs .= join("\n", $blocktype_js['initjs']) . "\n";
+$inlinejs .= <<<JS
+    // Disable the modal_links for images etc... when page loads
+    $('a[class*=modal_link], a[class*=inner-link]').addClass('no-modal');
+    $('a[class*=modal_link], a[class*=inner-link]').css('cursor', 'default');
+});
+JS;
 
 // Set up theme
 $viewtheme = $view->get('theme');
@@ -341,8 +390,14 @@ if ($remoteuserrelationship) {
 
 $smarty->assign('loginas', $loginas);
 
-$smarty->assign('INLINEJAVASCRIPT', $inlinejs);
-
+$smarty->assign('INLINEJAVASCRIPT', $blocksjs . $inlinejs);
+if ($userobj->get('admin') || $userobj->get('staff')) {
+    $url = get_config('wwwroot') . 'institution/index.php?institution=mahara';
+    $link = get_string('institutionlink', 'mahara', $url, 'mahara');
+    // If user is both Admin and Staff, only say Site administrator and not both
+    $role = $userobj->get('admin') ? get_string('siteadmin', 'admin') : get_string('sitestaff', 'admin');
+    $smarty->assign('siterole', $role . ' ' . $link);
+}
 $smarty->assign('institutions', get_institution_string_for_user($userid));
 $smarty->assign('canmessage', $loggedinid != $userid && can_send_message($loggedinid, $userid));
 $smarty->assign('USERID', $userid);
@@ -356,9 +411,11 @@ if ($loggedinid && $loggedinid == $userid) {
     $smarty->assign('ownprofile', true);
 }
 $smarty->assign('pageheadinghtml', $view->display_title(false));
-
 if (!$restrictedview) {
-    $smarty->assign('viewcontent', $viewcontent);
+    $smarty->assign('newlayout', $newlayout);
+    if (!$newlayout) {
+        $smarty->assign('viewcontent', $viewcontent);
+    }
 }
 safe_require('module', 'multirecipientnotification');
 $smarty->assign('mrmoduleactive', PluginModuleMultirecipientnotification::is_active());

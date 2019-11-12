@@ -43,7 +43,7 @@ else {
     define('CREATEGROUP', true);
 
     if (!group_can_create_groups()) {
-        throw new AccessDeniedException(get_string('accessdenied', 'error'));
+        throw new AccessDeniedException();
     }
 
     $group_data = (object) array(
@@ -148,7 +148,7 @@ $elements['open'] = array(
     'title'        => get_string('Open', 'group'),
     'description'  => get_string('opendescription', 'group'),
     'defaultvalue' => $group_data->open,
-    'disabled'     => $group_data->controlled || $group_data->public,
+    'disabled'     => !$cancreatecontrolled && $group_data->controlled,
 );
 if ($cancreatecontrolled || $group_data->controlled) {
     $elements['controlled'] = array(
@@ -207,22 +207,20 @@ else {
     );
 }
 
-if (!get_config('friendsnotallowed')) {
-    $elements['invitefriends'] = array(
-        'type'         => 'switchbox',
-        'title'        => get_string('friendinvitations', 'group'),
-        'description'  => get_string('invitefriendsdescription1', 'group'),
-        'defaultvalue' => $group_data->invitefriends,
-    );
+$elements['invitefriends'] = array(
+    'type'         => 'switchbox',
+    'title'        => get_string('friendinvitations', 'group'),
+    'description'  => get_string('invitefriendsdescription1', 'group'),
+    'defaultvalue' => $group_data->invitefriends,
+);
 
-    $elements['suggestfriends'] = array(
-        'type'         => 'switchbox',
-        'title'        => get_string('Recommendations', 'group'),
-        'description'  => get_string('suggestfriendsdescription1', 'group'),
-        'defaultvalue' => $group_data->suggestfriends && ($group_data->open || $group_data->request),
-        'disabled'     => !$group_data->open && !$group_data->request,
-    );
-}
+$elements['suggestfriends'] = array(
+    'type'         => 'switchbox',
+    'title'        => get_string('Recommendations', 'group'),
+    'description'  => get_string('suggestfriendsdescription1', 'group'),
+    'defaultvalue' => $group_data->suggestfriends && ($group_data->open || $group_data->request),
+    'disabled'     => !$group_data->open && !$group_data->request,
+);
 
 $elements['pages'] = array(
     'type'         => 'html',
@@ -233,7 +231,7 @@ $elements['editroles'] = array(
     'type'         => 'select',
     'options'      => group_get_editroles_options(),
     'title'        => get_string('editroles1', 'group'),
-    'description'  => get_string('editrolesdescription1', 'group'),
+    'description'  => get_string('editrolesdescription2', 'group'),
     'defaultvalue' => $group_data->editroles,
     'help'         => true,
 );
@@ -349,7 +347,7 @@ $elements['editwindowstart'] = array (
     'class'        => '',
     'title'        => get_string('windowstart', 'group'),
     'defaultvalue' => $group_data->editwindowstart,
-    'description'  => get_string('windowstartdesc', 'group'),
+    'description'  => get_string('windowstartdescription', 'group'),
     'minyear'      => $currentdate['year'],
     'maxyear'      => $currentdate['year'] + 20,
     'time'         => true,
@@ -360,7 +358,7 @@ $elements['editwindowend'] = array (
     'class'        => '',
     'title'        => get_string('windowend', 'group'),
     'defaultvalue' => $group_data->editwindowend,
-    'description'  => get_string('windowenddesc', 'group'),
+    'description'  => get_string('windowenddescription', 'group'),
     'minyear'      => $currentdate['year'],
     'maxyear'      => $currentdate['year'] + 20,
     'time'         => true
@@ -607,22 +605,6 @@ jQuery(function($) {
                 $("#editgroup_suggestfriends").prop("checked", false);
                 $("#editgroup_suggestfriends").prop("disabled", true);
             }
-        }
-    });
-    $("#editgroup_public").on("click", function() {
-        if (this.checked) {
-            $("#editgroup_controlled").prop("checked", true);
-            $("#editgroup_request").prop("checked", true);
-            $("#editgroup_request").prop("disabled", false);
-            $("#editgroup_open").prop("checked", false);
-            $("#editgroup_open").prop("disabled", true);
-        }
-        else {
-            $("#editgroup_controlled").prop("checked", false);
-            $("#editgroup_request").prop("checked", false);
-            $("#editgroup_request").prop("disabled", true);
-            $("#editgroup_open").prop("checked", true);
-            $("#editgroup_open").prop("disabled", false);
         }
     });
     $("#editgroup_request").on("click", function() {

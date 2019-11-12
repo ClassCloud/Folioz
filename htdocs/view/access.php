@@ -53,6 +53,9 @@ if (!$USER->can_edit_view($view)) {
 if ($group && !group_within_edit_window($group)) {
     throw new AccessDeniedException();
 }
+if ($view->get('template') == View::SITE_TEMPLATE) {
+    throw new AccessDeniedException();
+}
 
 
 $form = array(
@@ -206,11 +209,19 @@ if ($group && in_array( $USER->get('id'), $admintutorids, true )) {
             'defaultvalue' => 0,
     )));
 }
-
+$viewaccess = $view->get_access('%s');
+if (is_isolated() && !empty($viewaccess)) {
+    foreach ($viewaccess as $k => $access) {
+        if ($access['accesstype'] == 'loggedin') {
+            unset($viewaccess[$k]);
+        }
+    }
+    $viewaccess = array_values($viewaccess);
+}
 $form['elements']['accesslist'] = array(
     'type'          => 'viewacl',
     'allowcomments' => $allowcomments,
-    'defaultvalue'  => $view->get_access('%s'),
+    'defaultvalue'  => $viewaccess,
     'viewtype'      => $view->get('type'),
     'isformgroup' => false
 );

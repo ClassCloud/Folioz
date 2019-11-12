@@ -1,0 +1,149 @@
+.block-header {
+  a {
+     display: block;
+     color: $theme-block-header-color;
+     text-align: right;
+     text-decoration: none;
+     background-color: $theme-block-header-bg-color;
+     padding: 7px 10px;
+     border: 0;
+
+     &:hover,
+     &:focus {
+       background-color: $theme-block-header-hover-bg-color;
+       color: $theme-block-header-hover-color;
+     }
+
+     &.active-block {
+        background-color: $theme-block-header-active-bg-color;
+        color: $theme-block-header-active-color;
+     }
+   }
+}
+
+.list-group {
+  .block-header {
+    &.btn-group-top {
+      margin-top: 0;
+      margin-bottom: 0;
+      height: 0;
+
+      .btn-secondary {
+        display: inline-block;
+        padding: 7px 10px;
+        border: 0;
+        background-color: $theme-block-header-bg-color;
+        color: $theme-block-header-color;
+
+        &:hover,
+        &:focus {
+          background-color: $theme-block-header-hover-bg-color;
+          color: $theme-block-header-hover-color;
+          border: 0;
+        }
+
+        &.active-block {
+          background-color: $theme-block-header-active-bg-color;
+          color: $theme-block-header-active-color;
+        }
+      }
+    }
+
+    ~ .list-group-item h4.list-group-item-heading,
+    ~ .list-group-item h4.title {
+        margin-right: 100px;
+    }
+
+    &.d-none {
+      ~ .list-group-item h4.list-group-item-heading,
+      ~ .list-group-item h4.title {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+.bh-margin-left {
+   margin-left: 10px;
+}
+
+.file-download-list,
+.has-attachment {
+  .list-group {
+    .block-header {
+      ~ .list-group-item {
+        .icon-on-hover ~ .icon-action {
+          left: -65px;
+        }
+        .title {
+          display: inline-block;
+          max-width: 55%;
+        }
+        img.file-icon {
+          vertical-align: top;
+        }
+
+        // reverts folder and file downloads margin-right
+        h4.list-group-item-heading,
+        h4.title {
+            margin-right: 0;
+        }
+      }
+
+      &.d-none {
+        ~ .list-group-item {
+          .icon-on-hover ~ .icon-action {
+            left: 0;
+          }
+          .title {
+            max-width: 80%;
+          }
+        }
+      }
+    }
+  }
+}
+
+.card.card-secondary .card-body {
+  .block-header {
+      margin-top: -15px;
+  }
+  // exception of attachments lists in resume
+  .has-attachment .list-group {
+    .block-header {
+      margin-top: 0;
+    }
+  }
+}
+// exception of pdf block
+.card.card-secondary {
+  &.bt-pdf {
+    .block-header {
+        margin-top: 0;
+    }
+  }
+}
+
+.block-header {
+  &.btn-group-top {
+    .btn-secondary {
+      background-color: $theme-block-header-bg-color;
+      color: $theme-block-header-color;
+      border: 0;
+      padding: 7px 10px;
+
+      &:hover,
+      &:focus {
+        background-color: $theme-block-header-hover-bg-color;
+        color: $theme-block-header-hover-color;
+        border: 0;
+      }
+
+      &:not(:disabled):not(.disabled):active,
+      &.active-block {
+        background-color: $theme-block-header-active-bg-color;
+        color: $theme-block-header-active-color;
+      }
+    }
+  }
+}

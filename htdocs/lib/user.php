@@ -229,7 +229,6 @@ function expected_account_preferences() {
                  'licensedefault' => '',
                  'messages'       => 'allow',
                  'lang'           => 'default',
-                 'addremovecolumns' => 0,
                  'maildisabled'   => 0,
                  'tagssideblockmaxtags' => get_config('tagssideblockmaxtags'),
                  'groupsideblockmaxgroups' => '',
@@ -245,7 +244,10 @@ function expected_account_preferences() {
                  'viewsperpage' => 20,
                  'itemsperpage' => 10,
                  'orderpagesby' => 'latestmodified',
-                 'searchinfields' => 'titleanddescriptionandtags'
+                 'searchinfields' => 'titleanddescriptionandtags',
+                 'view_details_active' => 0,
+                 'showlayouttranslatewarning' => 1,
+                 'accessibilityprofile' => false,
                  );
 }
 
@@ -373,12 +375,6 @@ function general_account_prefs_form_elements($prefs) {
         'help' => true,
     );
 
-    $elements['addremovecolumns'] = array(
-        'type' => 'switchbox',
-        'defaultvalue' => $prefs->addremovecolumns,
-        'title' => get_string('showviewcolumns', 'account'),
-        'help' => 'true'
-    );
     // TODO: add a way for plugins (like blog!) to have account preferences
     $elements['multipleblogs'] = array(
         'type' => 'switchbox',
@@ -456,6 +452,20 @@ function general_account_prefs_form_elements($prefs) {
             'defaultvalue' => $prefs->devicedetection,
         );
     }
+
+    $elements['showlayouttranslatewarning'] = array(
+        'type' => 'switchbox',
+        'defaultvalue' => $prefs->showlayouttranslatewarning,
+        'title' => get_string('showlayouttranslatewarning', 'account'),
+        'description' => get_string('showlayouttranslatewarningdescription', 'account', hsc(get_config('sitename'))),
+    );
+
+    $elements['accessibilityprofile'] = array(
+        'type' => 'switchbox',
+        'defaultvalue' => $prefs->accessibilityprofile,
+        'title' => get_string('accessiblepagecreation', 'account'),
+        'description' => get_string('accessiblepagecreationdescription', 'account'),
+    );
 
     return $elements;
 }
@@ -900,6 +910,25 @@ function generate_email_processing_address($userid, $userto, $type='B') {
     // Replace it with another valid email character that isn't in base64, like '-'
     $args = $type . preg_replace('/\//', '-', base64_encode(pack('V', $userid))) . substr(md5($userto->email), 0, 16);
     return $mailprefix . $args . substr(md5($mailprefix . $userto->email . $installation_key), 0, 16) . '@' . $maildomain;
+}
+
+/**
+* Case insensitive checking for emails to existing db
+* @return bool if the emails exists or not
+*/
+function check_email_exists($email, $ownerid = 0) {
+    // get existing users 'usr','email'
+    $resultarray = get_column_sql("SELECT email FROM {usr} WHERE id != ?", array($ownerid));
+    $resultarray = array_merge($resultarray, get_column_sql("SELECT email FROM {artefact_internal_profile_email} WHERE owner != ?", array($ownerid)));
+    $resultarray = array_merge($resultarray, get_column_sql("SELECT title FROM {artefact} WHERE artefacttype = ? AND owner != ?", array('email', $ownerid)));
+    // get pending(approval required)/registered(no approval but need completion setup for new institution users ('user_registration', 'email')
+    $resultarray = array_merge($resultarray, get_column('usr_registration','email'));
+    foreach ($resultarray as $ind => $e) {
+        if (strtolower($e) == strtolower($email)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -1599,6 +1628,10 @@ function delete_user($userid) {
     delete_records('usr_pendingdeletion', 'usr', $userid); // just in case
     delete_records('usr_agreement', 'usr', $userid);
     delete_records('existingcopy', 'usr', $userid);
+    delete_records('artefact_internal_profile_email', 'owner', $userid);
+    // Delete any submission history
+    delete_records('module_assessmentreport_history', 'userid', $userid);
+    delete_records('module_assessmentreport_history', 'markerid', $userid);
 
     if (is_plugin_active('framework', 'module')) {
         delete_records('framework_assessment_feedback', 'usr', $userid);
@@ -1821,6 +1854,13 @@ function can_send_message($from, $to) {
     if (is_object($to)) {
         $to = $to->id;
     }
+
+    // Site admins can send to any user in the system
+    // regardless of the user's notification settings.
+    if ($from->admin) {
+        return true;
+    }
+
     $messagepref = get_account_preference($to, 'messages');
 
     $cansend = false;
@@ -1834,12 +1874,14 @@ function can_send_message($from, $to) {
         $cansend = true;
     }
     // Can send message if the 'isolatedinstitutions' is set and both users are from the same institution
-    try {
-        isolatedinstitution_access($to, $from->id);
-        $cansend = true;
-    }
-    catch (AccessDeniedException $e) {
-        $cansend = false;
+    if ($messagepref != 'nobody' && is_isolated()) {
+        try {
+            isolatedinstitution_access($to, $from->id);
+            $cansend = true;
+        }
+        catch (AccessDeniedException $e) {
+            $cansend = false;
+        }
     }
 
     return $cansend;
@@ -1851,12 +1893,8 @@ function load_user_institutions($userid) {
     }
     $userid = (int) $userid;
 
-    require_once('ddl.php');
-    $table = new XMLDBTable('institution');
-    $field = new XMLDBField('logoxs');
-    $logoxs = field_exists($table, $field) ? ',i.logoxs' : '';
-    $field = new XMLDBField('tags');
-    $tags = field_exists($table, $field) ? ',i.tags' : '';
+    $logoxs = db_column_exists('institution', 'logoxs') ? ',i.logoxs' : '';
+    $tags = db_column_exists('institution', 'tags') ? ',i.tags' : '';
     if ($userid !== 0 && $institutions = get_records_sql_assoc('
         SELECT u.institution, ' . db_format_tsfield('ctime') . ',' . db_format_tsfield('u.expiry', 'membership_expiry') . ',
                u.studentid, u.staff, u.admin, i.displayname, i.theme, i.registerallowed, i.showonlineusers,
@@ -2020,7 +2058,7 @@ function get_users_data($userids, $getviews=true) {
                           WHERE ap.usr = u.id AND ap.field = \'friendscontrol\'), \'auth\') AS friendscontrol,
                 (SELECT 1 FROM {usr_friend} WHERE ((usr1 = ? AND usr2 = u.id) OR (usr2 = ? AND usr1 = u.id))) AS friend,
                 (SELECT 1 FROM {usr_friend_request} fr WHERE fr.requester = ? AND fr.owner = u.id) AS requestedfriendship,
-                (SELECT title FROM {artefact} WHERE artefacttype = \'introduction\' AND owner = u.id) AS introduction,
+                (SELECT description FROM {artefact} WHERE artefacttype = \'introduction\' AND owner = u.id) AS introduction,
                 fp.message
                 FROM {usr} u
                 LEFT JOIN {usr_account_preference} ap ON (u.id = ap.usr AND ap.field = \'hiderealname\')
@@ -2506,15 +2544,17 @@ function addfriend_submit(Pieform $form, $values) {
 /**
  * Create user
  *
- * @param object $user stdclass or User object for the usr table
- * @param array  $profile profile field/values to set
- * @param string|object $institution Institution the user should joined to (name or Institution object)
- * @param bool $remoteauth authinstance record for a remote authinstance
- * @param string $remotename username on the remote site
- * @param array $accountprefs user account preferences to set
+ * @param object         $user             stdclass or User object for the usr table
+ * @param array          $profile          profile field/values to set
+ * @param string|object  $institution      Institution the user should joined to (name or Institution object)
+ * @param bool           $remoteauth       authinstance record for a remote authinstance
+ * @param string         $remotename       username on the remote site
+ * @param array          $accountprefs     user account preferences to set
+ * @param boolean        $quickhash        use quickhash when resetting password
+ * @param string         $institutionrole  creating user in institution with higher than member role (used with $institution);
  * @return integer id of the new user
  */
-function create_user($user, $profile=array(), $institution=null, $remoteauth=null, $remotename=null, $accountprefs=array(), $quickhash=false) {
+function create_user($user, $profile=array(), $institution=null, $remoteauth=null, $remotename=null, $accountprefs=array(), $quickhash=false, $institutionrole='member') {
     db_begin();
 
     if (!empty($institution)) {
@@ -2538,8 +2578,8 @@ function create_user($user, $profile=array(), $institution=null, $remoteauth=nul
         }
         if (empty($user->quota)) {
             $quota = get_config_plugin('artefact', 'file', 'defaultquota');
-            if (!empty($institution) && !empty($institution->quota)) {
-                $quota = min($quota, $institution->quota);
+            if (!empty($institution) && $institution->defaultquota > 0) {
+                $quota = min($quota, $institution->defaultquota);
             }
             $user->quota = $quota;
         }
@@ -2572,7 +2612,14 @@ function create_user($user, $profile=array(), $institution=null, $remoteauth=nul
 
     if (!empty($institution)) {
         if ($institution->name != 'mahara') {
-            $institution->addUserAsMember($user); // uses $user->newuser
+            $institutionstaff = $institutionadmin = null;
+            if ($institutionrole == 'admin') {
+                $institutionadmin = true;
+            }
+            if ($institutionrole == 'staff') {
+                $institutionstaff = true;
+            }
+            $institution->addUserAsMember($user, $institutionstaff, $institutionadmin); // uses $user->newuser
             if (empty($accountprefs['licensedefault'])) {
                 $accountprefs['licensedefault'] = LICENSE_INSTITUTION_DEFAULT;
             }
@@ -2782,20 +2829,25 @@ function install_system_profile_view() {
     $view->set_access(array(array(
         'type' => 'loggedin'
     )));
-    $blocktypes = array('profileinfo' => 1, 'myviews' => 1, 'mygroups' => 1, 'myfriends' => 2, 'wall' => 2);  // column ids
+    $blocktypes = array(
+        'profileinfo' => array(0,0),
+        'myviews'     => array(0,1),
+        'mygroups'    => array(0,2),
+        'myfriends'   => array(1,0),
+        'wall'        => array(1,1)
+    );  // block coordinates (x,y) in grid
     $installed = get_column_sql('SELECT name FROM {blocktype_installed} WHERE name IN (' . join(',', array_map('db_quote', array_keys($blocktypes))) . ')');
-    $weights = array(1 => 0, 2 => 0);
     foreach (array_keys($blocktypes) as $blocktype) {
         if (in_array($blocktype, $installed)) {
-            $weights[$blocktypes[$blocktype]]++;
             $title = ($blocktype == 'profileinfo') ? get_string('aboutme', 'blocktype.internal/profileinfo') : '';
             $newblock = new BlockInstance(0, array(
                 'blocktype'  => $blocktype,
                 'title'      => $title,
                 'view'       => $view->get('id'),
-                'row'        => 1,
-                'column'     => $blocktypes[$blocktype],
-                'order'      => $weights[$blocktypes[$blocktype]],
+                'positionx'  => $blocktypes[$blocktype][0] * 6,
+                'positiony'  => $blocktypes[$blocktype][1] * 3,
+                'height'     => 3,
+                'width'      => 6,
             ));
             $newblock->commit();
         }
@@ -2831,8 +2883,8 @@ function install_system_dashboard_view() {
         array(
             'blocktype' => 'newviews',
             'title' => '',
-            'row'   => 1,
-            'column' => 1,
+            'positionx' => 0,
+            'positiony' => 0,
             'config' => array(
                 'limit' => 5,
             ),
@@ -2840,15 +2892,15 @@ function install_system_dashboard_view() {
         array(
             'blocktype' => 'myviews',
             'title' => '',
-            'row'   => 1,
-            'column' => 1,
+            'positionx' => 0,
+            'positiony' => 3,
             'config' => null,
         ),
         array(
             'blocktype' => 'inbox',
             'title' => '',
-            'row'   => 1,
-            'column' => 2,
+            'positionx' => 6,
+            'positiony' => 0,
             'config' => array(
                 'feedback' => true,
                 'groupmessage' => true,
@@ -2864,8 +2916,8 @@ function install_system_dashboard_view() {
         array(
             'blocktype' => 'inbox',
             'title' => '',
-            'row'   => 1,
-            'column' => 2,
+            'positionx' => 6,
+            'positiony' => 3,
             'config' => array(
                 'newpost' => true,
                 'maxitems' => '5',
@@ -2874,25 +2926,24 @@ function install_system_dashboard_view() {
         array(
             'blocktype' => 'watchlist',
             'title' => '',
-            'row'   => 1,
-            'column' => 2,
+            'positionx' => 6,
+            'positiony' => 6,
             'config' => array(
                 'count' => '10',
             ),
         ),
     );
     $installed = get_column_sql('SELECT name FROM {blocktype_installed}');
-    $weights = array(1 => 0, 2 => 0);
     foreach ($blocktypes as $blocktype) {
         if (in_array($blocktype['blocktype'], $installed)) {
-            $weights[$blocktype['column']]++;
             $newblock = new BlockInstance(0, array(
                 'blocktype'  => $blocktype['blocktype'],
                 'title'      => $blocktype['title'],
                 'view'       => $view->get('id'),
-                'row'        => $blocktype['row'],
-                'column'     => $blocktype['column'],
-                'order'      => $weights[$blocktype['column']],
+                'positionx'  => $blocktype['positionx'],
+                'positiony'  => $blocktype['positiony'],
+                'width'      => 6,
+                'height'     => 3,
                 'configdata' => $blocktype['config'],
             ));
             $newblock->commit();
@@ -2941,7 +2992,7 @@ function profile_icon_url($user, $maxwidth=40, $maxheight=40) {
     }
 
     // Available sizes of the 'no_userphoto' image:
-    $allowedsizes = array(16, 20, 25, 40, 50, 60, 100);
+    $allowedsizes = array(16, 20, 25, 30, 40, 50, 60, 100);
     if ($maxwidth != $maxheight || !in_array($maxwidth, $allowedsizes)) {
         log_warn('profile_icon_url: maxwidth, maxheight should be equal and in (' . join(', ', $allowedsizes) . ')');
     }
@@ -2999,7 +3050,9 @@ function remote_avatar_url($email, $size) {
         log_warn('remote_avatar_url: size should be in (' . join(', ', $allowedsizes) . ')');
         $s = 40;
     }
-    $notfound = $THEME->get_image_url('no_userphoto' . $s);
+    // The no_userphoto at 100px doesn't have a size suffix
+    $notfoundimg = ($s == 100) ? 'no_userphoto' : 'no_userphoto' . $s;
+    $notfound = $THEME->get_image_url($notfoundimg);
     if (!empty($email) && get_config('remoteavatars')) {
         return remote_avatar($email, $s, $notfound);
     }

@@ -30,7 +30,6 @@
         position: static;
         clear: both;
         max-height: none;
-        border: 1px solid $navbar-default-link-border;
 
         @include media-breakpoint-up(md) {
             position: absolute;
@@ -38,6 +37,9 @@
             top: $navbar-height - 2px;
             max-width: 300px;
 
+            .header.no-site-messages & {
+                max-height: calc(100vh - (#{$navbar-height} + 20px));
+            }
             z-index: 5;
             @for $i from 1 through 5 {
                 .header.message-count-#{$i} & {
@@ -107,7 +109,8 @@
             }
             .icon {
                 margin-right: 5px;
-                width: 1em;
+                width: 1.5em;
+                text-align: center;
             }
         }
 

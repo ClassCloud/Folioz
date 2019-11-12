@@ -1111,7 +1111,7 @@ function xmldb_core_upgrade($oldversion=0) {
 
     if ($oldversion < 2018122700) {
         // Every day, check if the bounce count needs to be reset
-        $cron = new StdClass;
+        $cron = new stdClass();
         $cron->callfunction = 'cron_email_reset_rebounce';
         $cron->minute       = rand(0, 59);
         $cron->hour         = rand(0, 23);
@@ -1254,10 +1254,40 @@ function xmldb_core_upgrade($oldversion=0) {
                                 try {
                                     // get the artefacts use in the block
                                     $bi = new BlockInstance($blockid);
-                                    if ($bi && $artefacts = PluginBlocktypePlans::get_current_artefacts($bi)) {
-                                        foreach ($artefacts as $key => $artefact) {
-                                            if (isset($bi->configdata['artefactid']) && $bi->configdata['artefactid'] == $artefact) {
-                                                unset($artefacts[$key]);
+                                    if ($bi) {
+                                        $artefacts = array();
+                                        $configdata = $bi->get('configdata');
+                                        foreach ($configdata['artefactids'] as $planid) {
+                                            // We need to do this without calling the plan class because the plan class has changed
+                                            $plan = get_record('artefact', 'id', $planid, null, null, null, null, 'id, title, description, owner');
+                                            if ($tags = get_column('tag', 'tag', 'resourcetype', 'artefact', 'resourceid', $planid)) {
+                                                $plan->tags = $tags;
+                                            }
+                                            $tasks = get_records_sql_array("SELECT a.id, apt.artefact AS task, apt.completed, apt.completiondate,
+                                                                             a.title, a.description, a.parent, a.owner
+                                                                            FROM {artefact} a
+                                                                            JOIN {artefact_plans_task} apt ON apt.artefact = a.id
+                                                                            WHERE a.parent = ?", array($planid));
+                                            foreach ($tasks as $t => $task) {
+                                                if ($tasktags = get_column('tag', 'tag', 'resourcetype', 'artefact', 'resourceid', $task->id)) {
+                                                    $task->tags = $tasktags;
+                                                }
+                                            }
+                                            $artefacts[$planid]['tasks'] = array('count' => count($tasks),
+                                                                                 'data' => $tasks,
+                                                                                 'offset' => 0,
+                                                                                 'limit' => 0,
+                                                                                 'id' => $planid);
+                                            $artefacts[$planid]['title'] = $plan->title;
+                                            $artefacts[$planid]['description'] = $plan->description;
+                                            $artefacts[$planid]['tags'] = $plan->tags;
+                                            $artefacts[$planid]['owner'] = $plan->owner;
+                                        }
+                                        if (!empty($artefacts)) {
+                                            foreach ($artefacts as $key => $artefact) {
+                                                if (isset($bi->configdata['artefactid']) && $bi->configdata['artefactid'] == $artefact) {
+                                                    unset($artefacts[$key]);
+                                                }
                                             }
                                         }
                                         $existing_artefacts[$blockid] = $artefacts;
@@ -1321,6 +1351,205 @@ function xmldb_core_upgrade($oldversion=0) {
                 }
             }
         }
+    }
+
+    if ($oldversion < 2019051300) {
+        log_debug('Moving peer, manager and peer&manager roles to new table');
+
+        $oldtable = new XMLDBTable('usr_roles');
+        $newtable = new XMLDBTable('usr_access_roles');
+        if (!table_exists($newtable)) {
+            $newtable->addFieldInfo('role', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL);
+            $newtable->addFieldInfo('see_block_content', XMLDB_TYPE_INTEGER, 1, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, 0);
+            $newtable->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('role'));
+            create_table($newtable);
+
+            $roles = array('peer' => 0, 'manager' => 1, 'peermanager' => 1);
+            foreach ($roles as $role => $state) {
+                $obj = new stdClass();
+                $obj->role              = $role;
+                $obj->see_block_content = $state;
+                insert_record('usr_access_roles', $obj);
+            }
+        }
+        if (table_exists($oldtable)) {
+            drop_table($oldtable);
+        }
+    }
+
+    if ($oldversion < 2019051600) {
+        log_debug('offset some troublesome cron jobs');
+        execute_sql("UPDATE {cron} SET minute = ? WHERE callfunction = ?", array('2-59/5', 'user_login_tries_to_zero'));
+        execute_sql("UPDATE {interaction_cron} SET minute = ? WHERE plugin = ? AND callfunction = ?", array('3-59/30', 'forum', 'interaction_forum_new_post'));
+        execute_sql("UPDATE {search_cron} SET minute = ? WHERE plugin = ? AND callfunction = ?", array('4-59/5', 'elasticsearch', 'cron'));
+    }
+
+    if ($oldversion < 2019062000) {
+        log_debug('Force install of assessmentreport module plugin');
+        if ($data = check_upgrades('module.assessmentreport')) {
+            upgrade_plugin($data);
+        }
+    }
+
+    if ($oldversion < 2019062600) {
+        log_debug('Remove force password change for those using external auth');
+        if (is_mysql()) {
+            execute_sql("UPDATE {usr} u
+                         JOIN {auth_instance} ui
+                         ON ui.id = u.authinstance
+                         SET passwordchange = 0
+                         WHERE ui.authname != 'internal' AND ui.active = 1 AND u.id != 0
+                         ");
+        }
+        else {
+            execute_sql("UPDATE {usr} SET passwordchange = 0
+             WHERE id IN (
+                 SELECT u.id FROM {usr} u
+                 JOIN {auth_instance} ui ON ui.id = u.authinstance
+                 WHERE ui.authname != 'internal' AND ui.active = 1 AND u.id != 0)"); // Ignore the root user
+        }
+    }
+
+    if ($oldversion < 2019080200) {
+        log_debug('Force install of placeholder block plugin');
+        if ($data = check_upgrades('blocktype.placeholder')) {
+            upgrade_plugin($data);
+        }
+    }
+
+    if ($oldversion < 2019080600) {
+        log_debug('create block dimension table for gridstack layout');
+        $table = new XMLDBTable('block_instance_dimension');
+        if (!table_exists($table)) {
+            $table->addFieldInfo('block', XMLDB_TYPE_INTEGER, 10, false, XMLDB_NOTNULL);
+            $table->addFieldInfo('positionx', XMLDB_TYPE_INTEGER, 2, false, XMLDB_NOTNULL, null, null, null, 0);
+            $table->addFieldInfo('positiony', XMLDB_TYPE_INTEGER, 10, false, XMLDB_NOTNULL, null, null, null, 0);
+            $table->addFieldInfo('width', XMLDB_TYPE_INTEGER, 2, false, XMLDB_NOTNULL, null, null, null, 4);
+            $table->addFieldInfo('height', XMLDB_TYPE_INTEGER, 2, false, XMLDB_NOTNULL, null, null, null, 4);
+            $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('block'));
+            $table->addKeyInfo('blockfk', XMLDB_KEY_FOREIGN, array('block'), 'block_instance', array('id'));
+
+            create_table($table);
+        }
+
+        log_debug('drop constraint from block_instance table in row, column and order');
+        $table = new XMLDBTable('block_instance');
+        $key = new XMLDBKey('viewrowcolumnorderuk');
+        $key->setAttributes(XMLDB_KEY_UNIQUE, array('view', 'row', 'column', 'order'));
+        drop_key($table, $key);
+
+        log_debug('remove NOT NULL modifier from row, column, order in block_instance table');
+        $table = new XMLDBTable('block_instance');
+
+        $field = new XMLDBField('row');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, 2, null, null, null, null, null, null);
+        change_field_notnull($table, $field);
+
+        $field = new XMLDBField('column');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, 2, null, null, null, null, null, null);
+        change_field_notnull($table, $field);
+
+        $field = new XMLDBField('order');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, 2, null, null, null, null, null, null);
+        change_field_notnull($table, $field);
+    }
+
+    if ($oldversion < 2019080601) {
+        require_once(get_config('docroot') . 'blocktype/lib.php');
+        require_once(get_config('docroot') . 'lib/view.php');
+        require_once(get_config('docroot') . 'lib/gridstacklayout.php');
+        log_debug('Translating site templates to grisdtack layout');
+        $templates = View::get_site_template_views();
+        foreach ($templates as $template) {
+            save_blocks_in_new_layout($template['id']);
+        }
+    }
+
+    if ($oldversion < 2019080802) {
+        log_debug('Adding accessible column to view table');
+        $table = new XMLDBTable('view');
+        $field = new XMLDBField('accessibleview');
+        if (!field_exists($table, $field)) {
+            $field->setAttributes(XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, null, null, 0);
+            add_field($table, $field);
+        }
+    }
+
+    if ($oldversion < 2019090900) {
+        log_debug('Update the skin_fonts to know about the theme fonts also');
+        require_once(get_config('libroot') . 'skin.php');
+        $table = new XMLDBTable('skin_fonts');
+        if (table_exists($table)) {
+            $field = new XMLDBField('fonttype');
+            $field->setAttributes(XMLDB_TYPE_CHAR, 30, null, XMLDB_NOTNULL, null, null, null, 'site');
+            change_field_precision($table, $field);
+            install_skins_default();
+        }
+    }
+
+    if ($oldversion < 2019090901) {
+        log_debug('Update the "skin" table to change where we record background images');
+        $table = new XMLDBTable('skin');
+        if (table_exists($table)) {
+            log_debug('Adding headingbgimg');
+            $field = new XMLDBField('headingbgimg');
+            if (!field_exists($table, $field)) {
+                $field->setAttributes(XMLDB_TYPE_INTEGER, 10);
+                add_field($table, $field);
+            }
+
+            $field = new XMLDBField('viewbgimg');
+            if (field_exists($table, $field)) {
+                log_debug('Removing viewbgimg');
+                if ($records = get_records_sql_array("SELECT viewbgimg AS aid FROM {skin} WHERE viewbgimg > 0")) {
+                    foreach ($records as $record) {
+                        // Need to remove the view bg image
+                        require_once(get_config('libroot') . 'skin.php');
+                        Skin::remove_background($record->aid);
+                    }
+                }
+                drop_field($table, $field);
+            }
+        }
+    }
+
+    if ($oldversion < 2019093000) {
+        $searches = plugins_installed('search');
+        if (isset($searches['elasticsearch'])) {
+            log_debug('Remove triggers for elasticsearch');
+            safe_require('search', 'elasticsearch');
+            ElasticSearchIndexing::drop_trigger_functions();
+        }
+        log_debug('Remove triggers for notifications');
+        db_drop_trigger('update_unread_insert', 'notification_internal_activity');
+        db_drop_trigger('update_unread_update', 'notification_internal_activity');
+        db_drop_trigger('update_unread_delete', 'notification_internal_activity');
+        db_drop_trigger('update_unread_insert2', 'module_multirecipient_userrelation');
+        db_drop_trigger('update_unread_update2', 'module_multirecipient_userrelation');
+        db_drop_trigger('update_unread_delete2', 'module_multirecipient_userrelation');
+        db_drop_trigger('unmark_quota_exceed_upd_usr_set', 'usr');
+    }
+
+    if ($oldversion < 2019102000) {
+        log_debug('Remove "thin" theme font variant');
+        foreach (array('RobotoSlab', 'Raleway') as $font) {
+            if ($fontdata = get_record('skin_fonts', 'name', $font)) {
+                $config = unserialize($fontdata->variants);
+                unset($config['thin']);
+                $fontdata->variants = serialize($config);
+                update_record('skin_fonts', $fontdata, 'id');
+            }
+        }
+    }
+
+    if ($oldversion < 2019111100) {
+        log_debug('Drop the elasticsearch triggers for the plugins');
+        require_once(get_config('docroot') . 'search/elasticsearch/lib.php');
+        $enabledtypes = explode(',', get_config_plugin('search', 'elasticsearch', 'types'));
+        foreach ($enabledtypes as $type) {
+            ElasticsearchIndexing::drop_triggers($type);
+        }
+        ElasticsearchIndexing::drop_trigger_functions();
     }
 
     return $status;

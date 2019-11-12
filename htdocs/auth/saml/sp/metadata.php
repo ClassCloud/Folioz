@@ -54,7 +54,7 @@ if ($source === null) {
     throw new SimpleSAML_Error_AuthSource($sourceId, 'Could not find authentication source.');
 }
 
-if (!($source instanceof sspmod_saml_Auth_Source_SP)) {
+if (!($source instanceof \SimpleSAML\Module\saml\Auth\Source\SP)) {
     throw new SimpleSAML_Error_AuthSource($sourceId,
         'The authentication source is not a SAML Service Provider.');
 }
@@ -291,7 +291,7 @@ if (array_key_exists('output', $_REQUEST) && $_REQUEST['output'] == 'xhtml') {
     $t->data['clipboard.js'] = true;
     $t->data['available_certs'] = $availableCerts;
     $t->data['header'] = 'saml20-sp'; // TODO: Replace with headerString in 2.0
-    $t->data['headerString'] = $t->noop('metadata_saml20-idp');
+    $t->data['headerString'] = $t->noop('metadata_saml20-sp');
     $t->data['metaurl'] = get_config('wwwroot') . "auth/saml/sp/metadata.php";
     $t->data['metadata'] = htmlspecialchars($xml);
     $t->data['metadataflat'] = '$metadata[' . var_export($entityId, true) . '] = ' . var_export($metaArray20, true) . ';';

@@ -13,6 +13,7 @@ defined('INTERNAL') || die();
 
 $string['pluginname'] = 'Files';
 
+$string['commentsanddetails'] = 'Comments (%d) and details';
 $string['sitefilesloaded'] = 'Site files loaded';
 $string['addafile'] = 'Add a file';
 $string['archive'] = 'Archive';
@@ -36,6 +37,7 @@ $string['copyrightnotice'] = 'Copyright notice';
 $string['create'] = 'Create';
 $string['Created'] = 'Created';
 $string['createfolder'] = 'Create folder';
+$string['createfoldersuccess'] = 'Folder added successfully';
 $string['foldername'] = 'Folder name';
 $string['confirmdeletefile'] = 'Are you sure you want to delete this file?';
 $string['confirmdeletefolder'] = 'Are you sure you want to delete this folder?';
@@ -252,6 +254,7 @@ $string['bz2'] = 'Bzip2 compressed file';
 $string['txt'] = 'Plain text file';
 $string['video'] = 'Video file';
 $string['wav'] = 'WAV audio file';
+$string['m4a'] = 'M4A audio file';
 $string['wmv'] = 'WMV video file';
 $string['xml'] = 'XML file';
 $string['zip'] = 'ZIP archive';

@@ -251,6 +251,7 @@ if (isset($CFG->wwwroot)) {
     }
 }
 
+require_once('auth/lib.php');
 // Start up a session object, in case we need to use it to print messages
 require_once('auth/session.php');
 $SESSION = Session::singleton();
@@ -390,9 +391,6 @@ if (!defined('CLI')) {
     }
 }
 
-// Only do authentication once we know the page theme, so that the login form
-// can have the correct theming.
-require_once('auth/lib.php');
 $USER    = new LiveUser();
 
 if (function_exists('local_init_user')) {
@@ -479,8 +477,7 @@ if (!$mobile_detection_done) {
 // Run modules bootstrap code.
 if (!defined('INSTALLER')) {
     // make sure the table exists if upgrading from older version
-    require_once('ddl.php');
-    if (table_exists(new XMLDBTable('module_installed'))) {
+    if (db_table_exists('module_installed')) {
         if ($plugins = plugins_installed('module')) {
             foreach ($plugins as &$plugin) {
                 if (safe_require_plugin('module', $plugin->name)) {
@@ -494,6 +491,14 @@ if (!defined('INSTALLER')) {
         if (!PluginModuleMultirecipientnotification::is_active()) {
             throw new ConfigSanityException(get_string('multirecipientnotificationnotenabled',
                                                        'module.multirecipientnotification'));
+        }
+        if (!$siteclosedforupgrade) {
+            // Make sure that placeholder block is installed and active
+            safe_require('blocktype', 'placeholder');
+            if (!PluginBlocktypePlaceholder::is_active()) {
+                throw new ConfigSanityException(get_string('placeholderblocktypenotenabled',
+                                                           'blocktype.placeholder'));
+            }
         }
     }
 }

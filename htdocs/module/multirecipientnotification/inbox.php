@@ -131,6 +131,19 @@ jQuery(function($) {
 });
 JAVASCRIPT;
 
+$externalmsg = param_integer('msg', 0);
+$externalmsgtype = param_variable('msgtype', '');
+$externalmsgtype = preg_replace('/[^a-z0-9_]+/i', '', $externalmsgtype);
+if ($externalmsg && $externalmsgtype) {
+    $paginationjavascript .= '
+
+jQuery(function($) {
+    $(document).ready(function() {
+        $("#notification-' . $externalmsgtype . '-' . $externalmsg . '").collapse("show");
+    });
+});';
+}
+
 $deleteall = pieform(array(
     'name'        => 'delete_all_notifications',
     'class'       => 'form-deleteall sr-only',
@@ -155,6 +168,15 @@ function delete_all_notifications_submit() {
     global $USER, $SESSION;
     $userid = $USER->get('id');
     $type = param_variable('type', 'all');
+
+    $plugins = plugin_all_installed();
+    foreach ($plugins as $key => $plugin) {
+        $classname = generate_class_name($plugin->plugintype, $plugin->name);
+        safe_require($plugin->plugintype, $plugin->name);
+        if (!is_callable(array($classname, 'notification_delete'))) {
+            unset ($plugins[$key]);
+        }
+    }
 
     db_begin();
 
@@ -184,6 +206,11 @@ function delete_all_notifications_submit() {
                 $msgids[] = $record->id;
             }
            delete_messages_mr($msgids, $userid);
+
+            foreach ($plugins as $plugin) {
+                $classname = generate_class_name($plugin->plugintype, $plugin->name);
+                call_static_method($classname, 'notification_delete', $msgids, $userid, 'module_multirecipient_notification');
+            }
         }
         $count = count($msgids);
     }
@@ -226,6 +253,12 @@ function delete_all_notifications_submit() {
         );
         // The update_unread_delete db trigger on notification_internal_activity
         // will update the unread column on the usr table.
+
+        // And make sure any plugins that want to handle it can do so.
+        foreach ($plugins as $plugin) {
+            $classname = generate_class_name($plugin->plugintype, $plugin->name);
+            call_static_method($classname, 'notification_delete', $ids, $userid, 'notification_internal_activity');
+        }
     }
 
     db_commit();
@@ -249,18 +282,22 @@ $searchdata = new stdClass();
 $searchdata->searchtext = $searchtext;
 $searchdata->searcharea = $searcharea;
 $searchdata->searchurl = 'inbox.php?type=' . $type . '&search=' . $searchtext . '&searcharea=';
-$searchdata->all_count = 0;
-$searchdata->sender_count = 0;
-$searchdata->recipient_count = 0;
-$searchdata->sub_count = 0;
-$searchdata->mes_count = 0;
+$searchdata->tabs = array();
 if ($searchtext !== null) {
     $searchresults = get_message_search($searchtext, $type, 0, null, "inbox.php", $USER->get('id'));
-    $searchdata->all_count = $searchresults['All_data']['count'];
-    $searchdata->sender_count = $searchresults['Sender']['count'];
-    $searchdata->recipient_count = $searchresults['Recipient']['count'];
-    $searchdata->sub_count = $searchresults['Subject']['count'];
-    $searchdata->mes_count = $searchresults['Message']['count'];
+    unset($searchresults['Recipient']);
+    foreach ($searchresults as $section => $value) {
+        $term = new stdClass();
+        $term->name = $section;
+        $term->count = $value['count'];
+        switch ($section) {
+            case 'All_data': $term->tag = 'labelall'; break;
+            case 'Sender': $term->tag = 'fromuser'; break;
+            case 'Subject': $term->tag = 'subject'; break;
+            case 'Message': $term->tag = 'labelmessage';
+        }
+        $searchdata->tabs[] = $term;
+    }
 }
 $smarty->assign('searchdata', $searchdata);
 $smarty->assign('deleteall', $deleteall);

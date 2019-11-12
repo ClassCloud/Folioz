@@ -7,7 +7,6 @@
         // color: inherit;
         &.tag {
             display:inline-block;
-            @extend .text-success;
         }
         &.text-success {
              @extend .text-success;
@@ -35,6 +34,7 @@
         }
     }
     &.list-group-unbordered {
+        border: 0;
         li {
             border:0;
             padding: 5px 7px;
@@ -57,6 +57,14 @@
     }
 }
 
+.list-group-item,
+.usericon-heading {
+    .inner-link.with-introduction {
+        span {
+            margin-right: 5px;
+        }
+    }
+}
 
 .list-group-item-heading {
     font-family: $font-family-serif;
@@ -66,6 +74,7 @@
     a {
         &:hover {
             color: $link-color;
+            text-decoration: none;
             &.inner-link {
                 text-decoration: underline;
             }
@@ -80,6 +89,14 @@
 
     .collection-item & {
         font-size: $h3-font-size;
+    }
+
+    .postedon {
+        font-family: $font-family-base;
+    }
+
+    .text-small {
+        font-family: $font-family-base;
     }
 }
 
@@ -102,11 +119,16 @@
 
     }
 }
+.list-group-item-private {
+    background-color: $gray-100;
+    .text-midtone {
+        color: $theme-text-color;
+    }
+}
 
 // Sidebar notification item styles
 .list-group-item-profile-notification {
     word-wrap: normal;
-    word-break: break-all;
     white-space: normal;
     &:first-child {
         padding-right: 80px;
@@ -121,10 +143,11 @@
         font-size: $font-size-sm;
         display: block;
         padding: 10px 15px;
+        color: $link-color;
         &:hover {
             background: #efefef;
             text-decoration: none;
-            color: scale-color($link-color, $lightness: -16%);
+            color:$link-hover-color;
         }
         small {
             color: $link-color;
@@ -250,7 +273,7 @@
 
 .list-group-item-text {
     margin-top: 5px;
-    background-color: $white;
+    background-color: transparent;
     line-height: 1.3;
 }
 
@@ -265,8 +288,8 @@
         }
         &:last-child .list-group-item:last-child{
             border-bottom: 0;
-            border-bottom-right-radius: 3px;
-            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: $card-border-radius;
+            border-bottom-left-radius: $card-border-radius;
         }
     }
 }
@@ -282,10 +305,10 @@
     }
     + .pagination-container {
         padding-top: 10px;
+        padding-bottom: 10px;
     }
 }
 
-.card-header + .block > .list-group .list-group-item:first-child,
 .list-group + .card-footer {
     border-top-width: 0;
 }
@@ -312,7 +335,7 @@
 
 .feedback.modal {
     .btn-group-top.comment-item-buttons {
-        margin-top: -10px;
+        margin-top: -13px;
     }
 }
 
@@ -346,4 +369,150 @@
 .showmore {
     text-align: center;
     clear: both;
+    width: 100%;
+    cursor: pointer;
+}
+
+.card.bt-wall > .block .list-group:last-child .list-group-item:last-child {
+    border-bottom: 1px solid $list-group-border;
+}
+
+.bt-entireresume,
+.bt-entireresume-editor {
+    .list-group {
+        h4.title {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .resume-content {
+            h5.title {
+              font-weight: bold;
+            }
+            .card-body {
+              padding: 0 0 15px 0;
+            }
+        }
+    }
+}
+
+.bt-groupviews,
+.bt-groupviews-editor {
+    h4.title {
+        font-weight: bold;
+        font-size: $font-size-base;
+        padding: 10px 0;
+        border-bottom: 1px solid $list-group-border;
+        margin: 0;
+    }
+}
+
+.bt-plans,
+.bt-plans-editor {
+    h4.title {
+        font-weight: bold;
+        font-size: $font-size-base;
+        margin: 0;
+        padding-bottom: 10px;
+    }
+}
+
+.memberswrap,
+#friendslist {
+    .list-group-item {
+        .user-icon {
+            margin-top: 0;
+            margin-left: 0;
+        }
+        h4.list-group-item-heading {
+            font-size: $h4-font-size;
+        }
+        .detail {
+            margin-left: 53px;
+        }
+    }
+}
+
+// filelist in modal
+.modal-body {
+    .list-group-item {
+        .list-group-item-heading {
+            float: none;
+        }
+    }
+}
+
+// files for download and attachment files
+.file-download-list,
+.has-attachment {
+    .card-header {
+        border-bottom: 0;
+    }
+    .list-group {
+        .list-group-item {
+            .icon-on-hover ~ .icon-action {
+                left: 0;
+            }
+            .title {
+                max-width: 80%;
+                display: inline-block;
+            }
+            img.file-icon,
+            .icon.text-default {
+                vertical-align: top;
+            }
+            .icon-download {
+                position: relative;
+                top: 0;
+            }
+        }
+    }
+}
+
+// Rmove some list's first child top border when they don't have anything between card header and list
+.card.card-secondary {
+  > .block,
+  > .block > .listing,
+  > .block .file-download-list,
+  > .block .forumposts,
+  > .block .blog {
+    > .list-group {
+      .list-group-item:first-child,
+      + .list-group-item:first-child,
+      .block-header:first-child + .list-group-item {
+        border-top: 0;
+      }
+    }
+  }
+  // exceptions
+  &.bt-taggedposts > .block > .list-group,
+  &.bt-taggedposts-editor > .block > .list-group,
+  .list-group .list-group {
+    .list-group-item:first-child,
+    + .list-group-item:first-child,
+    .block-header:first-child + .list-group-item {
+      border-top: 1px solid $list-group-border-color;
+    }
+  }
+
+  &.bt-plans .block .listing,
+  &.bt-plans-editor .block .listing {
+    h4 + .list-group,
+    p + .list-group,
+    .tags + .list-group {
+      .list-group-item:first-child,
+      + .list-group-item:first-child,
+      .block-header:first-child + .list-group-item {
+        border-top: 1px solid $list-group-border-color;
+      }
+    }
+  }
+
+  // leave the bottom border in last child in card-secondary
+  .list-group {
+      &:last-child .list-group-item:last-child{
+          border-bottom: 1px solid $list-group-border-color;
+          border-bottom-right-radius: 0;
+          border-bottom-left-radius: 0;
+      }
+  }
 }

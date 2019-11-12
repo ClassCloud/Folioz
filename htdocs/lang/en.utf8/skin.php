@@ -16,6 +16,20 @@ $string['pluginname'] = 'Skin';
 $string['myskins'] = 'Skins';
 $string['siteskinmenu'] = 'Skins';
 
+$string['header'] = 'Header';
+$string['blockheading'] = 'Block heading';
+
+$string['themedefault'] = 'Theme default';
+$string['blockheaderfontfamily'] = 'Block header font';
+$string['blockheaderfontcolor'] = 'Block header text colour';
+$string['headerbackgroundcolor'] = 'Header background colour';
+$string['headerbackgroundcolordescription'] = 'The background colour for the page header. This will not be displayed if a header background image has been selected.';
+$string['headerbackgroundimage'] = 'Header background image';
+$string['headerbackgroundimagedescription'] = 'The minimum width is 1832px and minimum height is 232px.';
+$string['bodybackgroundcolour'] = 'Page background colour';
+$string['bodybackgroundimage'] = 'Page background image';
+
+
 $string['deletethisskin'] = 'Delete this skin';
 $string['skindeleted'] = 'Skin deleted';
 $string['cantdeleteskin'] = 'You cannot delete this skin.';
@@ -25,13 +39,14 @@ $string['deleteskinusedinpages'] = array(
     0 => 'The skin you are about to delete is used in %d page.',
     1 => 'The skin you are about to delete is used in %d pages.');
 $string['importskins'] = 'Import skin(s)';
+$string['importskinsmenu'] = 'Import';
 $string['importskinsnotice'] = 'Please select a valid XML file to import, which contains the definition(s) of the skin(s).';
 $string['validxmlfile'] = 'Valid XML file';
 $string['notvalidxmlfile'] = 'The uploaded file is not a valid XML file.';
 $string['import'] = 'Import';
 $string['exportthisskin'] = 'Export this skin';
 $string['exportspecific'] = 'Export "%s"';
-$string['exportskins'] = 'Export skin(s)';
+$string['exportskinsmenu'] = 'Export';
 $string['createskin'] = 'Create skin';
 $string['editthisskin'] = 'Edit this skin';
 $string['editsiteskin?'] = 'This is a site skin. Do you want to edit it?';
@@ -94,8 +109,8 @@ $string['bodybgcolor1'] = 'Background colour';
 $string['viewbgcolor'] = 'Page background colour';
 $string['textcolor'] = 'Text colour';
 $string['textcolordescription'] = 'This is the colour of normal text.';
-$string['headingcolor'] = 'Heading text colour';
-$string['headingcolordescription'] = 'This is the colour of a page heading.';
+$string['headingcolor1'] = 'Header text colour';
+$string['headingcolordescription2'] = 'This is the colour for text in the header area.';
 $string['emphasizedcolor'] = 'Emphasized text colour';
 $string['emphasizedcolordescription'] = 'This is the colour of page sub-headings and emphasized text.';
 $string['bodybgimage1'] = 'Background image';
@@ -137,8 +152,9 @@ $string['headerlogoimagelight1'] = 'White Mahara logo and text (suitable for dar
 $string['headerlogoimagedark1'] = 'Dark Mahara logo and text (suitable for lighter header backgrounds)';
 
 $string['normallinkcolor'] = 'Normal link colour';
-$string['hoverlinkcolor'] = 'Highlighted link colour';
-$string['linkunderlined'] = 'Underline link';
+$string['hoverlinkcolor1'] = 'Hover link colour';
+$string['normallinkunderlined'] = 'Underline normal link';
+$string['hoverlinkunderlined'] = 'Underline hover link';
 
 $string['tableborder'] = 'Table border colour';
 $string['tableheader'] = 'Header background colour';
@@ -242,6 +258,11 @@ $string['fonttype.site'] = 'Local font';
 $string['fonttypes.site'] = 'Local fonts';
 $string['fonttype.google'] = 'Google web font';
 $string['fonttypes.google'] = 'Google web fonts';
+$string['fonttypes.theme'] = 'Theme fonts';
+$string['fonttype.t_raw'] = 'Theme font: Raw';
+$string['fonttype.t_ocean'] = 'Theme font: Ocean';
+$string['fonttype.t_modern'] = 'Theme font: Modern';
+$string['fonttype.t_primaryschool'] = 'Theme font: Primary school';
 
 // For examples of pangrams, see: http://en.wikipedia.org/wiki/List_of_pangrams
 $string['preview'] = 'Preview';

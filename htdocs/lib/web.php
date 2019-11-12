@@ -306,11 +306,11 @@ function smarty($javascript = array(), $headers = array(), $pagestrings = array(
                     if (get_config('tinymcespellcheckerengine')) {
                         $spellchecker = ',spellchecker';
                         $spellchecker_toolbar = '| spellchecker';
-                        $spellchecker_config = "gecko_spellcheck : false, spellchecker_rpc_url : \"{$jsroot}tinymce/plugins/spellchecker/spellchecker.php\",";
+                        $spellchecker_config = "spellchecker_rpc_url : \"{$jsroot}tinymce/plugins/spellchecker/spellchecker.php\",";
                     }
                     else {
                         $spellchecker = $spellchecker_toolbar = '';
-                        $spellchecker_config = 'gecko_spellcheck : true,';
+                        $spellchecker_config = 'browser_spellcheck : true,';
                     }
                     $mathslate = (get_config('mathjax')) ? 'mathslate' : '';
                     $mathslateplugin = !empty($mathslate) ? ',' . $mathslate : '';
@@ -342,9 +342,10 @@ EOF;
 
                     if ($check[$key] == 'tinymce') {
                         $tinymceconfig = <<<EOF
-    theme: "modern",
-    plugins: "tooltoggle,textcolor,visualblocks,wordcount,link,lists,imagebrowser,table,emoticons{$spellchecker},paste,code,fullscreen,directionality,searchreplace,nonbreaking,charmap{$mathslateplugin},anchor",
-    skin: 'light',
+    theme: "silver",
+    contextmenu: false,
+    plugins: "tooltoggle,visualblocks,wordcount,link,lists,imagebrowser,table,emoticons{$spellchecker},paste,code,fullscreen,directionality,searchreplace,nonbreaking,charmap{$mathslateplugin},anchor",
+    skin: 'oxide',
     toolbar1: {$toolbar[1]},
     toolbar2: {$toolbar[2]},
     toolbar3: {$toolbar[3]},
@@ -358,7 +359,7 @@ EOF;
                     else {
                         $tinymceconfig = <<<EOF
     selector: "textarea.tinywysiwyg",
-    theme: "modern",
+    theme: "silver",
     skin: 'light',
     plugins: "fullscreen,autoresize",
     toolbar: {$toolbar[0]},
@@ -1305,10 +1306,7 @@ class Theme {
             return get_config('wwwroot') . 'thumb.php?type=logobyid&id=' . $this->headerlogosmall;
         }
         else {
-            require_once('ddl.php');
-            $table = new XMLDBTable('institution');
-            $field = new XMLDBField('logoxs');
-            if (field_exists($table, $field) && $sitelogocustomsmallid = get_field('institution', 'logoxs', 'name', 'mahara')) {
+            if (db_column_exists('institution', 'logoxs') && $sitelogocustomsmallid = get_field('institution', 'logoxs', 'name', 'mahara')) {
                 return get_config('wwwroot') . 'thumb.php?type=logobyid&id=' . $sitelogocustomsmallid;
             }
         }
@@ -1384,6 +1382,7 @@ function jsstrings() {
                 'processing',
                 'unknownerror',
                 'loading',
+                'duplicatenamedfield',
                 'showtags',
                 'couldnotgethelp',
                 'password',
@@ -1424,9 +1423,17 @@ function jsstrings() {
         'views' => array(
             'view' => array(
                 'confirmdeleteblockinstance',
-                'blocksinstructionajaxlive',
+                'blocksinstructionajaxlive1',
             ),
         ),
+        'viewmenu' => array(
+            'artefact.comment' => array(
+                'addcomment',
+                'Details',
+                'commentsanddetails',
+                'commentremoved',
+          )
+        )
     );
 }
 
@@ -2213,6 +2220,14 @@ function pieform_get_help(Pieform $form, $element) {
     return get_help_icon($plugintype, $pluginname, $formname, $element['name'], '', '', (isset($element['title']) ? $element['title'] : null));
 }
 
+function get_block_help(Pieform $form, $element) {
+    $helplink = get_manual_help_link_array(array('blocktype', 'blocks'));
+    $manualhelplink = $helplink['prefix'] . '/' . $helplink['language'] . '/' . $helplink['version'] . '/' .  $helplink['suffix'];
+    $content = get_string('helpfor', 'mahara', $element['legend']);
+    return ' <span class="help"><a href="' . $manualhelplink . '" title="' . get_string('Help') . '" target="_blank"><span class="icon icon-info-circle" role="presentation"></span><span class="sr-only">'. $content . '</span></a></span>';
+}
+
+
 /**
  * Is this a page in the admin area?
  *
@@ -2321,9 +2336,9 @@ function admin_nav() {
         'configusers' => array(
             'path'   => 'configusers',
             'url'    => 'admin/users/search.php',
-            'title'  => get_string('users'),
+            'title'  => get_string('people'),
             'weight' => 30,
-            'iconclass' => 'user',
+            'iconclass' => 'users',
         ),
         'configusers/usersearch' => array(
             'path'   => 'configusers/usersearch',
@@ -2373,7 +2388,7 @@ function admin_nav() {
             'title'  => get_string('groups', 'admin'),
             'accessibletitle' => get_string('administergroups', 'admin'),
             'weight' => 40,
-            'iconclass' => 'users',
+            'iconclass' => 'comments',
         ),
         'managegroups/groups' => array(
             'path'   => 'managegroups/groups',
@@ -2495,7 +2510,7 @@ function admin_nav() {
             'url'    => 'admin/users/statistics.php',
             'title'  => get_string('reports', 'statistics'),
             'weight' => 60,
-            'iconclass' => 'pie-chart',
+            'iconclass' => 'chart-pie',
         ),
         'configextensions' => array(
             'path'   => 'configextensions',
@@ -2586,9 +2601,9 @@ function institutional_admin_nav() {
         'configusers' => array(
             'path'   => 'configusers',
             'url'    => 'admin/users/search.php',
-            'title'  => get_string('users'),
+            'title'  => get_string('people'),
             'weight' => 10,
-            'iconclass' => 'user',
+            'iconclass' => 'users',
         ),
         'configusers/usersearch' => array(
             'path'   => 'configusers/usersearch',
@@ -2736,7 +2751,7 @@ function institutional_admin_nav() {
             'url'    => 'admin/users/statistics.php',
             'title'  => get_string('reports', 'statistics'),
             'weight' => 40,
-            'iconclass' => 'pie-chart',
+            'iconclass' => 'chart-pie',
         ),
     );
 
@@ -2787,7 +2802,7 @@ function staff_nav() {
             'url'    => 'admin/users/statistics.php',
             'title'  => get_string('reports', 'statistics'),
             'weight' => 30,
-            'iconclass' => 'pie-chart',
+            'iconclass' => 'chart-pie',
         ),
     );
 
@@ -2828,7 +2843,7 @@ function institutional_staff_nav() {
             'url'    => 'admin/users/statistics.php',
             'title'  => get_string('reports', 'statistics'),
             'weight' => 20,
-            'iconclass' => 'pie-chart',
+            'iconclass' => 'chart-pie',
         ),
     );
 }
@@ -2853,7 +2868,7 @@ function mahara_standard_nav() {
             'url' => '',
             'title' => get_string('dashboard', 'view'),
             'weight' => 10,
-            'iconclass' => 'tachometer'
+            'iconclass' => 'tachometer-alt',
         ),
         'create' => array(
             'path' => 'create',
@@ -2867,7 +2882,7 @@ function mahara_standard_nav() {
             'url' => null,
             'title' => get_string('share'),
             'weight' => 30,
-            'iconclass' => 'unlock-alt',
+            'iconclass' => 'unlock',
         ),
         'engage' => array(
             'path' => 'engage',
@@ -2919,7 +2934,7 @@ function mahara_standard_nav() {
             'url' => null,
             'title' => get_string('Manage'),
             'weight' => 40,
-            'iconclass' => 'wrench',
+            'iconclass' => 'briefcase',
         ),
         'engage/people' => array(
             'path' => 'engage/people',
@@ -2959,35 +2974,35 @@ function mahara_standard_nav() {
  * @return array
  */
 function main_nav($type = null) {
-    global $USER;
+    global $USER, $SESSION;
 
     $language = current_language();
     $cachemenu = false;
     // Get the first institution
     $institution = $USER->get_primary_institution();
-    $menutype = '';
+    $menutype = $SESSION->get('handheld_device') ? 'mob_' : '';
     if ($type == 'adminnav') {
         global $USER, $SESSION;
         if ($USER->get('admin')) {
-            $menutype = 'admin_nav';
+            $menutype .= 'admin_nav';
             if (!($cachemenu = get_config_institution($institution, $menutype . '_' . $language))) {
                 $menu = admin_nav();
             }
         }
         else if ($USER->get('staff')) {
-            $menutype = 'staff_nav';
+            $menutype .= 'staff_nav';
             if (!($cachemenu = get_config_institution($institution, $menutype . '_' . $language))) {
                 $menu = staff_nav();
             }
         }
         else if ($USER->is_institutional_admin()) {
-            $menutype = 'instadmin_nav';
+            $menutype .= 'instadmin_nav';
             if (!($cachemenu = get_config_institution($institution, $menutype . '_' . $language))) {
                 $menu = institutional_admin_nav();
             }
         }
         else {
-            $menutype = 'inststaff_nav';
+            $menutype .= 'inststaff_nav';
             if (!($cachemenu = get_config_institution($institution, $menutype . '_' . $language))) {
                 $menu = institutional_staff_nav();
             }
@@ -2995,7 +3010,7 @@ function main_nav($type = null) {
     }
     else {
         // Build the menu structure for the site
-        $menutype = 'standard_nav';
+        $menutype .= 'standard_nav';
         if (!($cachemenu = get_config_institution($institution, $menutype . '_' . $language))) {
             $menu = mahara_standard_nav();
         }
@@ -3969,7 +3984,10 @@ function clean_css($input_css, $preserve_css=false) {
 function html2text($html, $fragment=true) {
     require_once('htmltotext/htmltotext.php');
     if ($fragment) {
-        $html = '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></head>' . $html;
+        // Check if fragment is actually a fragment as tinymce can return a valid html page
+        if (!preg_match('/^<(HTML|\!doctype).*?>/i', $html)) {
+            $html = '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></head>' . $html;
+        }
     }
     $h2t = new HtmltoText($html, get_config('wwwroot'));
     return $h2t->text();
@@ -4424,9 +4442,8 @@ function build_pagination($params) {
  * - orderby: What order the results will be returned in
  * - databutton: The ID of the 'Show more' button
  *
- * Optional include:
- * - group: Group id the pagination is for
- * - institution: Institution name the pagination is for
+ * Optional:
+ * - extra: An array of key / values that you want to add as data options
  */
 function build_showmore_pagination($params) {
     // Bail if the required attributes are not present
@@ -4440,25 +4457,33 @@ function build_showmore_pagination($params) {
     if ((int) $params['count'] > ((int) $params['offset'] + (int) $params['limit'])) {
         // Need to add 'showmore' button
         $output  = '<div class="showmore">' . "\n";
-        $output .= '    <div id="' . $params['databutton'] . '" class="btn btn-secondary"';
+        $output .= '    <button id="' . $params['databutton'] . '" class="btn btn-secondary"';
         $output .= ' data-orderby="' . $params['orderby'] . '"';
         $output .= ' data-offset="' . ((int) $params['offset'] + (int) $params['limit']) . '"';
-        $output .= ' data-group="' . (isset($params['group']) ? $params['group'] : '') . '"';
         $output .= ' data-jsonscript="' . $params['jsonscript'] . '"';
-        $output .= ' data-institution="' . (isset($params['institution']) ? $params['institution'] : '') . '"';
+        if (!empty($params['extra']) && is_array($params['extra'])) {
+            foreach ($params['extra'] as $key => $value) {
+                $output .= ' data-' . $key . '="' . $value . '"';
+            }
+        }
         $output .= ' tabindex="0">';
-        $output .= get_string('showmore', 'mahara') . '</div>' . "\n";
+        $output .= get_string('showmore', 'mahara') . '</button>' . "\n";
         $output .= '</div>';
 
-        $js  = 'jQuery("#' . $params['databutton'] . '").on("click", function() {';
+        $js  = 'jQuery("#' . $params['databutton'] . '").on("click", function(e) {';
+        $js .= '    e.preventDefault();';
         $js .= '    pagination_showmore(jQuery(this));';
         $js .= '});' . "\n";
 
         $js .= 'jQuery("#' . $params['databutton'] . '").on("keydown", function(e) {';
         $js .= '    if (e.keyCode == $j.ui.keyCode.SPACE || e.keyCode == $j.ui.keyCode.ENTER) {';
+        $js .= '        e.preventDefault();';
         $js .= '        pagination_showmore(jQuery(this));';
         $js .= '    }';
         $js .= '});' . "\n";
+        if (isset($params['jscall']) && $params['jscall']) {
+            $js .= 'window[\'' . $params['jscall'] . '\']();' . "\n";
+        }
     }
 
     return array('html' => $output, 'javascript' => $js);

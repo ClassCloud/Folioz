@@ -119,7 +119,7 @@ class PluginArtefactInternal extends PluginArtefact {
                 'url' => 'artefact/internal/index.php',
                 'title' => get_string('profile', 'artefact.internal'),
                 'weight' => 10,
-                'iconclass' => 'id-card-o',
+                'iconclass' => 'regular icon-address-card',
             ),
         );
     }
@@ -840,7 +840,9 @@ class ArtefactTypeEmail extends ArtefactTypeProfileField {
                         'artefact'  => $this->id,
                     )
                 );
-                update_record('usr', (object)array('email' => $this->title, 'id' => $this->owner));
+                if (!$principal) {
+                    update_record('usr', (object)array('email' => $this->title, 'id' => $this->owner));
+                }
             }
         }
     }
@@ -998,7 +1000,6 @@ class ArtefactTypeHtml extends ArtefactType {
                 $f = artefact_instance_from_id($attachment->id);
                 $attachment->size = $f->describe_size();
                 $attachment->iconpath = $f->get_icon(array('id' => $attachment->id, 'viewid' => isset($options['viewid']) ? $options['viewid'] : 0));
-                $attachment->viewpath = get_config('wwwroot') . 'artefact/artefact.php?artefact=' . $attachment->id . '&view=' . (isset($options['viewid']) ? $options['viewid'] : 0);
                 $attachment->downloadpath = get_config('wwwroot') . 'artefact/file/download.php?file=' . $attachment->id;
                 if (isset($options['viewid'])) {
                     $attachment->downloadpath .= '&view=' . $options['viewid'];
@@ -1007,6 +1008,8 @@ class ArtefactTypeHtml extends ArtefactType {
             $smarty->assign('attachments', $attachments);
         }
         $smarty->assign('view', (isset($options['viewid']) ? $options['viewid'] : null));
+        $smarty->assign('modal', (isset($options['modal']) ? $options['modal'] : false));
+        $smarty->assign('artefacttype', $this->get('artefacttype'));
         return array(
             'html' => $smarty->fetch('artefact.tpl'),
             'javascript'=>''
@@ -1213,19 +1216,19 @@ class ArtefactTypeSocialprofile extends ArtefactTypeProfileField {
 
             switch ($record->note) {
                 case 'facebook':
-                    $record->icon = favicon_display_url('facebook.com');
+                $record->faicon = '<span class="icon icon-brand icon-lg icon-facebook-square" style="color: #4267B2"></span>';
                     break;
                 case 'tumblr':
-                    $record->icon = favicon_display_url('tumblr.com');
+                    $record->faicon = '<span class="icon icon-brand icon-lg icon-tumblr-square" style="color: #001935"></span>';
                     break;
                 case 'twitter':
-                    $record->icon = favicon_display_url('twitter.com');
+                    $record->faicon = '<span class="icon icon-brand icon-lg icon-twitter" style="color: #00ACED"></span>';
                     break;
                 case 'instagram':
-                    $record->icon = favicon_display_url('instagram.com');
+                    $record->faicon = '<span class="icon icon-brand icon-lg icon-instagram" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); background-clip: text; color: transparent; line-height: 1"></span>';
                     break;
                 case 'pinterest':
-                    $record->icon = favicon_display_url('www.pinterest.com');
+                    $record->faicon = '<span class="icon icon-brand icon-lg icon-pinterest" style="color: #E80021"></span>';
                     break;
                 case 'icq':
                     $record->icon = favicon_display_url('www.icq.com');
@@ -1234,11 +1237,10 @@ class ArtefactTypeSocialprofile extends ArtefactTypeProfileField {
                     $record->icon = favicon_display_url('www.aim.com');
                     break;
                 case 'yahoo':
-                    $record->icon = favicon_display_url('messenger.yahoo.com');
+                    $record->faicon = '<span class="icon icon-brand icon-lg icon-yahoo" style="color: #4B06A3"></span>';
                     break;
                 case 'skype':
-                    // Since www.skype.com favicon is not working...
-                    $record->icon = favicon_display_url('support.skype.com');
+                    $record->faicon = '<span class="icon icon-brand icon-lg icon-skype" style="color: #3498D8"></span>';
                     break;
                 case 'jabber':
                     // Since www.jabber.org favicon is not working...
@@ -1246,7 +1248,7 @@ class ArtefactTypeSocialprofile extends ArtefactTypeProfileField {
                     break;
                 default:
                     // We'll fall back to the "no favicon" default icon
-                    $record->icon = favicon_display_url('example.com');
+                    $record->faicon = '<span class="icon icon-lg icon-globe-americas" style="color: #BFBFF2"></span>';
 
                     // If they've supplied a URL, use its favicon
                     if (filter_var($record->title, FILTER_VALIDATE_URL)) {

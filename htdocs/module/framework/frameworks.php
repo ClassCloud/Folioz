@@ -53,7 +53,7 @@ if ($uploadmatrix) {
 else if ($upload) {
     //jsoneditor page:
     //get existing frameworks.
-    define('MENUITEM-SUBPAGE', 'editor');
+    define('SUBSECTIONHEADING', get_string('editor', 'module.framework'));
     $active_tab = 'editor';
     $fw = array();
     array_push($fw, get_string('copyframework', 'module.framework'));
@@ -137,6 +137,8 @@ else if ($upload) {
         'parentelementdesc' => 'module.framework',
         'standardelementsdescription' => 'module.framework',
         'all' => 'module.framework',
+        'copyexistingframework' => 'module.framework',
+        'editsavedframework' => 'module.framework'
     );
 
     //set up variables for correct selection of framework from dropdowns
@@ -166,6 +168,7 @@ else {
     $active_tab = 'overview';
 }
 
+define('SUBSECTIONHEADING', get_string('Management', 'module.framework'));
 $frameworks = Framework::get_frameworks('any');
 if ($frameworks) {
     foreach ($frameworks as $framework) {
@@ -196,7 +199,7 @@ if ($frameworks) {
                             'type'         => 'button',
                             'class'        => 'btn-secondary btn-sm button',
                             'usebuttontag' => true,
-                            'value'        => '<span class="icon icon-trash icon-lg text-danger" role="presentation" aria-hidden="true"></span><span class="sr-only">'. get_string('delete') . '</span>',
+                            'value'        => '<span class="icon icon-trash-alt icon-lg text-danger" role="presentation" aria-hidden="true"></span><span class="sr-only">'. get_string('delete') . '</span>',
                             'confirm'      => get_string('confirmdeletemenuitem', 'admin'),
                         ),
                         'framework'  => array(

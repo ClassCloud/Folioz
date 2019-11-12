@@ -479,7 +479,8 @@ $string['accountinactivewarninghtml1'] = '<p>Dear %s,</p>
 
 <p>Regards,<br>
 %s site administrator</p>';
-$string['accountsuspended'] = 'Your account has been suspended as of %s.<br />The reason for your suspension is: %s';
+$string['accountsuspended'] = 'Your account has been suspended as of %s.
+The reason for your suspension is: %s';
 $string['youraccounthasbeensuspended'] = 'Your account has been suspended.';
 $string['youraccounthasbeenunsuspended'] = 'Your account has been unsuspended.';
 $string['changepasswordinfo'] = 'You are required to change your password before you can proceed.';
@@ -492,6 +493,7 @@ $string['senddeletenotification'] = 'Send request';
 $string['javascriptnotenabled'] = 'Your browser does not have JavaScript enabled. This site requires JavaScript to be enabled before you can log in.';
 $string['cookiesnotenabled'] = 'Your browser does not have cookies enabled or is blocking cookies. This site requires cookies to be enabled before you can log in.';
 $string['institution'] = 'Institution';
+$string['institutionnotfound'] = 'Institution "%s" not found';
 $string['institutioncontacts'] = '\'%s\' contacts';
 $string['institutionlink'] = '<a href="%s">%s</a>';
 $string['link'] = '<a href="%s">%s</a>';
@@ -759,6 +761,7 @@ $string['emailnotsent']             = 'Failed to send contact email. Error messa
 
 // mahara.js
 $string['namedfieldempty'] = 'The required field "%s" is empty';
+$string['duplicatenamedfield'] = 'The value entered already exists';
 $string['processing']     = 'Processing';
 $string['unknownerror']       = 'An unknown error occurred (0x20f91a0)';
 
@@ -878,6 +881,7 @@ $string['more...'] = 'More...';
 $string['moreoptions'] = 'More options';
 $string['moreoptionsfor'] = 'More options for "%s"';
 $string['details'] = 'details';
+$string['Details'] = 'Details';
 $string['nohelpfound'] = 'There was no help found for this item.';
 $string['nohelpfoundpage'] = 'There was no help found for this page.';
 $string['couldnotgethelp'] = 'An error occurred trying to retrieve the help page.';
@@ -1002,7 +1006,7 @@ $string['country.bz'] = 'Belize';
 $string['country.bj'] = 'Benin';
 $string['country.bm'] = 'Bermuda';
 $string['country.bt'] = 'Bhutan';
-$string['country.bo'] = 'Bolivia';
+$string['country.bo'] = 'Bolivia (Plurinational State of)';
 $string['country.bq'] = 'Bonaire';
 $string['country.ba'] = 'Bosnia and Herzegovina';
 $string['country.bw'] = 'Botswana';
@@ -1073,7 +1077,7 @@ $string['country.gw'] = 'Guinea-bissau';
 $string['country.gy'] = 'Guyana';
 $string['country.ht'] = 'Haiti';
 $string['country.hm'] = 'Heard Island and McDonald Islands';
-$string['country.va'] = 'Holy See (Vatican City State)';
+$string['country.va'] = 'Holy See';
 $string['country.hn'] = 'Honduras';
 $string['country.hk'] = 'Hong Kong';
 $string['country.hu'] = 'Hungary';
@@ -1162,7 +1166,7 @@ $string['country.ro'] = 'Romania';
 $string['country.ru'] = 'Russian Federation';
 $string['country.rw'] = 'Rwanda';
 $string['country.bl'] = 'Saint Barthelemy';
-$string['country.sh'] = 'Saint Helena';
+$string['country.sh'] = 'Saint Helena, Ascension and Tristan da Cunha';
 $string['country.kn'] = 'Saint Kitts and Nevis';
 $string['country.lc'] = 'Saint Lucia';
 $string['country.mf'] = 'Saint Martin (French part)';
@@ -1217,7 +1221,7 @@ $string['country.um'] = 'United States Minor Outlying Islands';
 $string['country.uy'] = 'Uruguay';
 $string['country.uz'] = 'Uzbekistan';
 $string['country.vu'] = 'Vanuatu';
-$string['country.ve'] = 'Venezuela';
+$string['country.ve'] = 'Venezuela (Bolivarian Republic of)';
 $string['country.vn'] = 'Viet Nam';
 $string['country.vg'] = 'Virgin Islands, British';
 $string['country.vi'] = 'Virgin Islands, U.S.';
@@ -1228,7 +1232,8 @@ $string['country.zm'] = 'Zambia';
 $string['country.zw'] = 'Zimbabwe';
 
 $string['nocountryselected'] = 'No country selected';
-
+$string['countryisodisclaimer'] = 'Country names are displayed as defined in ISO 3166, published by the International Organization for Standardization (ISO).';
+$string['countryisocustomise'] = 'To adjust any country names for your site, please edit the "mahara.php" language file in each translation or <a href="https://wiki.mahara.org/wiki/Developer_Area/Language_strings#Custom_lang_strings_in_.2Flocal">create strings in the local directory</a>.';
 // general stuff that doesn't really fit anywhere else
 $string['system'] = 'System';
 $string['done'] = 'Done';
@@ -1362,3 +1367,6 @@ $string['tabgroup'] = 'Group';
 $string['tabinstitution'] = 'Institution';
 $string['version.'] = 'v.'; // version shortname, used when duplicating pages and collections
 $string['viewartefact'] = 'View ';
+
+//Accessing an outdated url that will now redirect with session message
+$string['viewartefactdatavuamodal'] = 'The data for %s artefact "%s" cannot be viewed this way anymore. Please go to page "%s" to view it.';

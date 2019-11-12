@@ -15,14 +15,18 @@
     <tbody>
     {foreach from=$editurls item=item name=urls}
       <tr class="{cycle values='r0,r1' advance=false}">
-
-        <th><img src="{$item.icon}" alt="{$item.name}" title="{$item.name}">&nbsp;{$item.name}</th>
+        <th>{if $item.icon.faicon}
+        <span class="icon icon-lg icon-brand icon-{$item.icon.faicon}" style="{$item.icon.style}" alt="{$item.name}" title="{$item.name}"></span>
+        {else}
+        <img src="{$item.icon.icon}" alt="{$item.name}" title="{$item.name}">
+        {/if}
+        {$item.name}</th>
         <td>{$item.url}</td>
         <td class="buttonscell">
           <div class="btn-group">
 
             <a id="edit-{$item.id}" class="url-open-editform btn btn-secondary btn-sm float-left closed" title="{str tag=edit}" href="">
-              <span class="icon icon-pencil" role="presentation" aria-hidden="true"></span>
+              <span class="icon icon-pencil-alt" role="presentation" aria-hidden="true"></span>
               <span class="icon icon-chevron-down icon-sm" role="presentation" aria-hidden="true"></span>
               <span class="sr-only">{str(tag=editspecific arg1=$item.name)|escape:html|safe}</span>
             </a>

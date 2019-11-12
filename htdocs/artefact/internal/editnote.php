@@ -23,7 +23,7 @@ define('TITLE', get_string('editnote', 'artefact.internal'));
 $note = param_integer('id');
 $artefact = new ArtefactTypeHtml($note);
 if (!$USER->can_edit_artefact($artefact) || $artefact->get('locked')) {
-    throw new AccessDeniedException(get_string('accessdenied', 'error'));
+    throw new AccessDeniedException();
 }
 
 $goto = get_config('wwwroot') . 'artefact/internal/notes.php';
@@ -152,7 +152,7 @@ $smarty = smarty(array(), array(), array(), array(
         image_filebrowser: "editnote_filebrowser",
     '
 ));
-setpageicon($smarty, 'icon-pencil-square-o');
+setpageicon($smarty, 'icon-regular icon-edit');
 $smarty->assign('INLINEJAVASCRIPT', $javascript);
 $smarty->assign('form', $form);
 $smarty->assign('PAGEHEADING', $artefact->get('title'));

@@ -5,29 +5,42 @@
     <a href="{profile_url($r)}" class="outer-link"><span class="sr-only">{$r.name}</span></a>
      <div class="row">
         <div class="col-md-8">
-            <div class="usericon-heading">
-                <div class="user-icon user-icon-40 float-left">
-                    <img src="{profile_icon_url user=$r maxwidth=40 maxheight=40}" alt="{str tag=profileimagetext arg1=$r|display_default_name}">
-                </div>
-                <h4 class="list-group-item-heading">
-                    {$r.name}
-                    {if $r.role}
-                    <span class="grouprole text-small text-midtone"> -
-                        {$results.roles[$r.role]->display}
-                        {if $caneditroles && $r.canchangerole}
-                        <a href="{$WWWROOT}group/changerole.php?group={$group}&amp;user={$r.id}" class="inner-link text-link">
-                            [{str tag=changerole section=group}]
-                        </a>
-                        {/if}
-                    </span>
-                    {/if}
-                </h4>
+            <div class="user-icon user-icon-40 float-left">
+                <img src="{profile_icon_url user=$r maxwidth=40 maxheight=40}" alt="{str tag=profileimagetext arg1=$r|display_default_name}">
             </div>
+
+            <h4 class="list-group-item-heading">
+                {$r.name}
+                {if $r.role}
+                <span class="grouprole text-small text-midtone"> -
+                    {$results.roles[$r.role]->display}
+                    {if $caneditroles && $r.canchangerole}
+                    <a href="{$WWWROOT}group/changerole.php?group={$group}&amp;user={$r.id}" class="inner-link text-link">
+                        [{str tag=changerole section=group}]
+                    </a>
+                    {/if}
+                </span>
+                {/if}
+            </h4>
+
+            {if $r.role}
+                {if $r.introduction}
+                    <div class="detail text-small text-midtone">
+                        <a class="inner-link text-link collapsed with-introduction" data-toggle="collapse" data-target="#userintro{$r.id}"
+                           href="#userintro{$r.id}" role="button" aria-expanded="false"
+                           aria-controls="userintro{$r.id}">
+                           <span class="icon icon-chevron-down collapse-indicator float-left" role="presentation" aria-hidden="true"></span>
+                           {str tag=showintroduction section=group}
+                        </a>
+                    </div>
+                {/if}
+            {/if}
+
             {if $r.role}
             <div class="introduction detail text-small">
-                <span>{$r.introduction|str_shorten_html:80:true:true:false|safe}
-                </span>
 
+                <div class="collapse" id="userintro{$r.id}">{$r.introduction|safe}
+                </div>
                 <div class="jointime">
                     <strong>
                         {str tag="Joined" section="group"}:

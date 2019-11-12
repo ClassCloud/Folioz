@@ -225,7 +225,7 @@ class AuthSaml extends Auth {
 
         if ($create) {
 
-            $user->passwordchange     = 1;
+            $user->passwordchange     = 0;
             $user->active             = 1;
             $user->deleted            = 0;
 
@@ -393,7 +393,7 @@ class PluginAuthSaml extends PluginAuth {
 
     public static function install_auth_default() {
         // Set library version to download
-        set_config_plugin('auth', 'saml', 'version', '1.16.3');
+        set_config_plugin('auth', 'saml', 'version', '1.17.7');
     }
 
     private static function delete_old_certificates() {
@@ -679,7 +679,7 @@ class PluginAuthSaml extends PluginAuth {
             'name' => 'submit', // must be called submit so we can access it's value
             'type'  => 'button',
             'usebuttontag' => true,
-            'content' => '<span class="icon icon-refresh icon-lg left text-danger" role="presentation" aria-hidden="true"></span> '. get_string($certstatus . 'text', 'auth.saml'),
+            'content' => '<span class="icon icon-sync-alt icon-lg left text-danger" role="presentation" aria-hidden="true"></span> '. get_string($certstatus . 'text', 'auth.saml'),
             'value' => $certstatus,
         );
 
@@ -793,6 +793,9 @@ class PluginAuthSaml extends PluginAuth {
     }
 
     public static function idptable($list, $preferred = array(), $institutions = array(), $showdelete = false) {
+        if (empty($list)) {
+            return array(0, '');
+        }
         $idps = array();
         $lang = current_language();
         $lang = explode('.', $lang);
@@ -908,27 +911,27 @@ class PluginAuthSaml extends PluginAuth {
                 throw new ConfigSanityException(get_string('memcacheusememcached', 'error'));
                 break;
             case 'memcached':
-                if (self::is_memcache_configured()) {
+                if (is_memcache_configured()) {
                     $ishandler = true;
                     break;
                 }
             case 'redis':
-                if (self::is_redis_configured()) {
+                if (is_redis_configured()) {
                     $ishandler = true;
                     break;
                 }
             case 'sql':
-                if (self::is_sql_configured()) {
+                if (is_sql_configured()) {
                     $ishandler = true;
                     break;
                 }
             default:
                 // Check Redis
-                $ishandler = self::is_redis_configured();
+                $ishandler = is_redis_configured();
                 // And check Memcache if no Redis
-                $ishandler = $ishandler ? $ishandler : self::is_memcache_configured();
+                $ishandler = $ishandler ? $ishandler : is_memcache_configured();
                 // And check Sql if no Memcache
-                $ishandler = $ishandler ? $ishandler : self::is_sql_configured();
+                $ishandler = $ishandler ? $ishandler : is_sql_configured();
         }
 
         return $ishandler;
@@ -953,105 +956,6 @@ class PluginAuthSaml extends PluginAuth {
 
         SimpleSAML_Configuration::init(get_config('docroot') . 'auth/saml/config');
     }
-    public static function is_memcache_configured() {
-        $is_configured = false;
-
-        if (extension_loaded('memcached')) {
-            foreach (self::get_memcache_servers() as $server) {
-                $memcached = new Memcached;
-
-                if (!empty($server['hostname']) && !empty($server['port'])) {
-                    $memcached->addServer($server['hostname'], $server['port']);
-                    // addServer doesn't make a connection to the server
-                    // but if the server is added, but not running pid will be -1
-                    $server_stats = $memcached->getStats();
-                    if ($server_stats[$server['hostname'] . ":" . $server['port']]['pid'] > 0) {
-                        $is_configured = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return $is_configured;
-    }
-
-    public static function get_memcache_servers() {
-        $memcache_servers = array();
-
-        $servers = get_config('memcacheservers');
-
-        if (empty($servers)) {
-            $servers = 'localhost';
-        }
-
-        $servers = explode(',', $servers);
-
-        foreach ($servers as $server) {
-            $url = parse_url($server);
-            $host = !empty($url['host']) ? $url['host'] : $url['path'];
-            $port = !empty($url['port']) ? $url['port'] : 11211;
-
-            $memcache_servers[] = array('hostname' => $host, 'port' => $port);
-        }
-
-        return $memcache_servers;
-    }
-
-    public static function is_redis_configured() {
-        return (bool) PluginAuthSaml::get_redis_master();
-    }
-
-    public static function get_redis_master() {
-        $master = null;
-        if (extension_loaded('redis')) {
-            foreach (self::get_redis_servers() as $server) {
-                if (!empty($server['server']) && !empty($server['mastergroup']) && !empty($server['prefix'])) {
-                    require_once(get_config('libroot') . 'redis/sentinel.php');
-                    $sentinel = new sentinel($server['server']);
-                    $master = $sentinel->get_master_addr($server['mastergroup']);
-                }
-            }
-        }
-        return $master;
-    }
-
-    public static function get_redis_config() {
-        $servers = PluginAuthSaml::get_redis_servers();
-        $master = PluginAuthSaml::get_redis_master();
-        return array('host' => $master->ip,
-                     'port' => (int)$master->port,
-                     'prefix' => $servers[0]['prefix']
-                    );
-    }
-
-    public static function get_redis_servers() {
-        $redissentinelservers = get_config('redissentinelservers');
-        $redismastergroup = get_config('redismastergroup');
-        $redisprefix = get_config('redisprefix');
-        $redis_servers[] = array('server' => $redissentinelservers,
-                                 'mastergroup' => $redismastergroup,
-                                 'prefix' => $redisprefix);
-        return $redis_servers;
-    }
-
-    public static function is_sql_configured() {
-        $config = PluginAuthSaml::get_sql_config();
-        try {
-            $connection = new PDO($config['dsn'], $config['username'], $config['password']);
-            return true;
-        }
-        catch (PDOException $e) {
-            return false;
-        }
-    }
-
-    public static function get_sql_config() {
-        return array('dsn' => get_config('ssphpsqldsn'),
-                     'username' => get_config('ssphpsqlusername'),
-                     'password' => get_config('ssphpsqlpassword'),
-                     'prefix' => get_config('ssphpsqlprefix'),
-                    );
-    }
 
     public static function get_idps($xml) {
         $xml = new SimpleXMLElement($xml);
@@ -1067,9 +971,12 @@ class PluginAuthSaml extends PluginAuth {
     }
 
     public static function get_raw_disco_list() {
-        PluginAuthSaml::init_simplesamlphp();
-        $discoHandler = new PluginAuthSaml_IdPDisco(array('saml20-idp-remote', 'shib13-idp-remote'), 'saml');
-        return $discoHandler->getTheIdPs();
+        if (class_exists('PluginAuthSaml_IdPDisco')) {
+            PluginAuthSaml::init_simplesamlphp();
+            $discoHandler = new PluginAuthSaml_IdPDisco(array('saml20-idp-remote', 'shib13-idp-remote'), 'saml');
+            return $discoHandler->getTheIdPs();
+        }
+        return array('list' => 0);
     }
 
     public static function get_disco_list($lang = null, $entityidps = array()) {
@@ -1091,16 +998,18 @@ class PluginAuthSaml extends PluginAuth {
     }
 
     public static function get_instance_config_options($institution, $instance = 0) {
-        if (!class_exists('SimpleSAML_XHTML_IdPDisco')) {
-            global $SESSION;
-            $SESSION->add_error_msg(get_string('errorssphpsetup', 'auth.saml'));
-            redirect(get_config('wwwroot') . 'admin/users/institutions.php?i=' . $institution);
+        if (!class_exists('SimpleSAML\XHTML\IdPDisco')) {
+            return array(
+                'error' => get_string('errorssphpsetup', 'auth.saml')
+            );
         }
 
         if ($instance > 0) {
             $default = get_record('auth_instance', 'id', $instance);
             if ($default == false) {
-                throw new SystemException('Could not find data for auth instance ' . $instance);
+                return array(
+                    'error' => get_string('nodataforinstance1', 'auth', $instance)
+                );
             }
             $current_config = get_records_menu('auth_instance_config', 'instance', $instance, '', 'field, value');
 
@@ -1242,7 +1151,6 @@ EOF;
             ),
             'metarefresh_metadata_url' => array(
                 'type'  => 'text',
-                'size' => 100,
                 'title' => get_string('metarefresh_metadata_url', 'auth.saml'),
                 'rules' => array(
                     'required' => false,
@@ -1576,11 +1484,13 @@ function auth_saml_openssl_x509_fingerprint($cert, $hash) {
    $bin = base64_decode($cert);
    return hash($hash, $bin);
 }
-
+$discofileexists = false;
 if (file_exists(get_config('docroot') . 'auth/saml/extlib/simplesamlphp/lib/SimpleSAML/XHTML/IdPDisco.php')) {
     require_once(get_config('docroot') . 'auth/saml/extlib/simplesamlphp/lib/SimpleSAML/XHTML/IdPDisco.php');
-
-    class PluginAuthSaml_IdPDisco extends SimpleSAML_XHTML_IdPDisco
+    $discofileexists = true;
+}
+if ($discofileexists && class_exists('SimpleSAML\XHTML\IdPDisco')) {
+    class PluginAuthSaml_IdPDisco extends SimpleSAML\XHTML\IdPDisco
     {
 
         /**
@@ -1612,7 +1522,10 @@ if (file_exists(get_config('docroot') . 'auth/saml/extlib/simplesamlphp/lib/Simp
         }
     }
 }
-
+else if ($discofileexists) {
+    global $SESSION;
+    $SESSION->add_msg_once(get_string('errorupdatelib', 'auth.saml'), 'error', false);
+}
 
 /*
  * Provides any mahara specific wrappers for the metarefresh plugin from simplesamlphp that is used to refresh IDP metadata
@@ -1631,12 +1544,14 @@ class Metarefresh {
     /*
      * Return all configured metadataurls for idps if any found
      */
-    public static function get_metadata_urls() {
+    public static function get_metadata_urls($viajson=false) {
         $finalarr = array();
         $sites = get_records_menu('auth_instance_config', 'field', 'institutionidpentityid', '', 'instance, value');
         $urls = get_records_array('auth_instance_config', 'field', 'metarefresh_metadata_url', '', 'field, value, instance');
         if ( ( !$sites || count($sites) <= 0 ) || ( !$urls || count($urls) <= 0 ) ) {
-            log_warn("Could not get any valid urls for metadata refresh url list", false, false);
+            if ($viajson === false) {
+                log_warn("Could not get any valid urls for metadata refresh url list", false, false);
+            }
             return array();//could not get any valid urls to fetch metadata from
         }
         foreach($urls as $url) {
@@ -1652,8 +1567,8 @@ class Metarefresh {
     /*
      * Given an IDP entity id, find the source url for it
      */
-    public static function get_metadata_url($idp) {
-        $sources = self::get_metadata_urls();
+    public static function get_metadata_url($idp, $viajson=false) {
+        $sources = self::get_metadata_urls($viajson);
         if (isset($sources[$idp])) {
             return $sources[$idp];
         }
@@ -1703,8 +1618,8 @@ class Metarefresh {
                     'type' => $outputFormat,
                     'directory' => $outputDir,
                 ));
-
-                $metaloader = new sspmod_metarefresh_MetaLoader($expire, $stateFile, $oldMetadataSrc);
+                require_once(get_config('docroot') . 'auth/saml/extlib/simplesamlphp/modules/metarefresh/lib/MetaLoader.php');
+                $metaloader = new SimpleSAML\Module\metarefresh\MetaLoader($expire, $stateFile, $oldMetadataSrc);
 
                 # Get global blacklist, whitelist and caching info
                 $blacklist = $mconfig->getArray('blacklist', array());

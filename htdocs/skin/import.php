@@ -58,7 +58,7 @@ $form = pieform(array(
             'type' => 'submitcancel',
             'class' => 'btn-primary',
             'value' => array(get_string('import', 'skin'), get_string('cancel', 'mahara')),
-            'goto' => ($importsiteskins ? get_config('wwwroot') . 'admin/site/skins.php' : get_config('wwwroot') . 'skin/'),
+            'goto' => ($importsiteskins ? get_config('wwwroot') . 'admin/site/skins.php' : get_config('wwwroot') . 'skin/index.php'),
         ),
     ),
 ));
@@ -125,38 +125,11 @@ function importskinform_submit(Pieform $form, $values) {
             $skin = array_merge($skin, array('body_background_position' => Skin::background_position_value_to_number($item->getAttribute('background-position'))));
         }
 
-        // Header element...  // TODO remove this
+        // Header element...
         $items = $skindata->getElementsByTagName('header');
         foreach ($items as $item) {
             $skin = array_merge($skin, array('header_background_color' => $item->getAttribute('background-color')));
-            $skin = array_merge($skin, array('header_text_font_color' => $item->getAttribute('font-color')));
-            $skin = array_merge($skin, array('header_link_normal_color' => $item->getAttribute('normal-color')));
-            if ($item->getAttribute('normal-decoration') == 'none') {
-                $skin = array_merge($skin, array('header_link_normal_underline' => 0));
-            }
-            else {
-                $skin = array_merge($skin, array('header_link_normal_underline' => 1));
-            }
-            $skin = array_merge($skin, array('header_link_hover_color' => $item->getAttribute('hover-color')));
-            if ($item->getAttribute('hover-decoration') == 'none') {
-                $skin = array_merge($skin, array('header_link_hover_underline' => 0));
-            }
-            else {
-                $skin = array_merge($skin, array('header_link_hover_underline' => 1));
-            }
-            $skin = array_merge($skin, array('header_logo_image' => $item->getAttribute('logo-image')));
-        }
-
-        // View element...  // TODO remove this
-        $items = $skindata->getElementsByTagName('view');
-        foreach ($items as $item) {
-            $skin = array_merge($skin, array('view_background_color' => $item->getAttribute('background-color')));
-            $skin = array_merge($skin, array('view_background_image' => 0));
-            $skin = array_merge($skin, array('view_background_repeat' => Skin::background_repeat_value_to_number($item->getAttribute('background-repeat'))));
-            $skin = array_merge($skin, array('view_background_attachment' => $item->getAttribute('background-attachment')));
-            $skin = array_merge($skin, array('view_background_position' => Skin::background_position_value_to_number($item->getAttribute('background-position'))));
-            $skin = array_merge($skin, array('view_background_width' => str_replace("%", "", $item->getAttribute('width')))); // odstrani znak %!
-            $skin = array_merge($skin, array('view_background_margin' => $item->getAttribute('margin-top')));
+            $skin = array_merge($skin, array('header_background_image' => 0));
         }
 
         // Text element...
@@ -167,7 +140,8 @@ function importskinform_submit(Pieform $form, $values) {
             $skin = array_merge($skin, array('view_text_font_size' => $item->getAttribute('font-size')));
             $skin = array_merge($skin, array('view_text_font_color' => $item->getAttribute('font-color')));
             $skin = array_merge($skin, array('view_text_heading_color' => $item->getAttribute('heading-color')));
-            $skin = array_merge($skin, array('view_text_emphasized_color' => $item->getAttribute('emphasized-color')));
+            $skin = array_merge($skin, array('view_block_header_font' => $item->getAttribute('block-heading-font')));
+            $skin = array_merge($skin, array('view_block_header_font_color' => $item->getAttribute('block-heading-color')));
         }
 
         // Link element...
@@ -189,14 +163,6 @@ function importskinform_submit(Pieform $form, $values) {
             }
         }
 
-        // Table element...  // TODO remove this
-        $items = $skindata->getElementsByTagName('table');
-        foreach ($items as $item) {
-            $skin = array_merge($skin, array('view_table_border_color' => $item->getAttribute('border-color')));
-            $skin = array_merge($skin, array('view_table_odd_row_color' => $item->getAttribute('odd-row-color')));
-            $skin = array_merge($skin, array('view_table_even_row_color' => $item->getAttribute('even-row-color')));
-        }
-
         // Custom CSS element...
         $items = $skindata->getElementsByTagName('customcss');
         foreach ($items as $item) {
@@ -213,7 +179,7 @@ function importskinform_submit(Pieform $form, $values) {
         // TODO: Background image file support for site skins
         if ($siteskin) {
             $skin['body_background_image'] = 0;
-            $skin['view_background_image'] = 0;
+            $skin['header_background_image'] = 0;
         }
         else {
             $items = $skindata->getElementsByTagName('image');
@@ -262,8 +228,11 @@ function importskinform_submit(Pieform $form, $values) {
                     fwrite($fp, $contents);
                     fclose($fp);
                     // We can keep going, but the skin will be missing one of its files
-                    if ($clamerror = mahara_clam_scan_file($imagepath)) {
-                        $SESSION->add_error_msg($clamerror);
+                    if (get_config('viruschecking')) {
+                        if ($clamerror = mahara_clam_scan_file($imagepath)) {
+                            $SESSION->add_error_msg($clamerror);
+                            clam_handle_infected_file($imagepath);
+                        }
                     }
                     chmod($imagepath, get_config('filepermissions'));
                 }
@@ -272,8 +241,8 @@ function importskinform_submit(Pieform $form, $values) {
                 if ($type == 'body-background-image') {
                     $skin['body_background_image'] = $id;
                 }
-                if ($type == 'view-background-image') {  // TODO remove this
-                    $skin['view_background_image'] = $id;
+                if ($type == 'header-background-image') {
+                    $skin['header_background_image'] = $id;
                 }
             }
         }
@@ -324,8 +293,11 @@ function importskinform_submit(Pieform $form, $values) {
                             fwrite($fp, $contents);
                             fclose($fp);
                             // We can keep going, but the skin will be missing one of its files
-                            if ($clamerror = mahara_clam_scan_file($fontpath . $filename)) {
-                                $SESSION->add_error_msg($clamerror);
+                            if (get_config('viruschecking')) {
+                                if ($clamerror = mahara_clam_scan_file($fontpath . $filename)) {
+                                    $SESSION->add_error_msg($clamerror);
+                                    clam_handle_infected_file($fontpath . $filename);
+                                }
                             }
                             chmod($fontpath . $filename, get_config('filepermissions'));
                         }
