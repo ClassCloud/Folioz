@@ -549,7 +549,27 @@ EOF;
         list($selector, $locator) = $this->transform_selector('link_or_button', $link_or_button);
         $elementnode = $this->find($selector, $locator, false, $rownode);
         $this->ensure_node_is_visible($elementnode);
-        $elementnode->click();
+        $this->avoidStaleClick($selector, $locator, $rownode);
+    }
+
+    /**
+     * Try to avoid the problem where the item exist and is visible but when
+     * we go to click it the DOM has changed, eg via Ajax, and so the element is stale
+     */
+    public function avoidStaleClick($selector, $locator, $rownode) {
+        $attempts = 0;
+        while ($attempts < 10) {
+            try {
+                $this->find($selector, $locator, false, $rownode)->click();
+                return;
+            }
+            catch (StaleElementReference $e) {
+            }
+            catch (ElementNotFoundException $e) {
+            }
+            $attempts++;
+        }
+        throw new Exception('Unable to avoid a stale click');
     }
 
     /**
@@ -1342,7 +1362,7 @@ EOF;
             throw new Exception(sprintf('Invalid user name. No profile view found for "%s".', $user));
         }
         if (count($views) > 1) {
-            throw new Exception(sprintf('Invalid useer name. More than one profile view found for "%s".', $user));
+            throw new Exception(sprintf('Invalid user name. More than one profile view found for "%s".', $user));
         }
 
         $view = reset($views);
@@ -1524,6 +1544,7 @@ EOF;
  *
  */
     public function i_delete_link_resource_menu_item($item) {
+        $this->getSession()->wait(2000, '(jQuery("div#menuitemlist tr:contains(\'' . $item . '\') button:contains(\'Delete\')")[0].length > 0)');
         $this->getSession()->executeScript('jQuery("div#menuitemlist tr:contains(\'' . $item . '\') button:contains(\'Delete\')")[0].click();');
         usleep(10000);
         $this->i_accept_confirm_popup();
@@ -1996,4 +2017,66 @@ JS;
         }
     }
 
+    /**
+     * @Then I select the skin :skinname from :skinsection
+     */
+    public function iSelectTheSkinFrom($skinname, $skinsection) {
+        $skinnameliteral = $this->escaper->escapeLiteral($skinname);
+        $xpath = "//div[contains(@id, $skinsection)]" .
+                "/div[contains(concat(' ', normalize-space(@class), ' '), ' skin ')]" .
+                "/a/div";
+        try {
+            $skin = $this->find('xpath', $xpath);
+            $this->ensure_node_is_visible($skin);
+            $skin->click();
+        }
+        catch (ElementNotFoundException $e) {
+            throw new ExpectationException('The skin with title ' . $skinname . ' was not found', $this->getSession());
+        }
+    }
+
+    /**
+     * Check if a block's "display" icons are present
+     *
+     * @Then the :row row should contain display button :text
+     */
+    public function check_row_contains_display_icon($row, $text) {
+        $rowname = $this->escaper->escapeLiteral($row);
+        $textliteral = $this->escaper->escapeLiteral($text);
+        $xpath = "//li[contains(normalize-space(.), " . $rowname . ")]" .
+                 "/preceding-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' bh-displayiconsonly ')][1]" .
+                 "/a/span[@title=" . $textliteral . "]";
+        try {
+            $button = $this->find('xpath', $xpath);
+            $this->ensure_node_is_visible($button);
+        }
+        catch (ElementNotFoundException $e) {
+            throw new ExpectationException('The display button with title ' . $textliteral . ' in row ' . $rowname . ' was not found', $this->getSession());
+        }
+    }
+
+    /**
+     * Check if a block's "display" icons are not present
+     *
+     * @Then the :row row should not contain display button :text
+     */
+    public function check_row_does_not_contains_display_icon($row, $text) {
+        $rowname = $this->escaper->escapeLiteral($row);
+        $textliteral = $this->escaper->escapeLiteral($text);
+        $xpath = "//li[contains(normalize-space(.), " . $rowname . ")]" .
+                 "/preceding-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' bh-displayiconsonly ')][1]" .
+                 "/a/span[@title=" . $textliteral . "]";
+        $found = true;
+        try {
+            $button = $this->find('xpath', $xpath);
+            $this->ensure_node_is_visible($button);
+        }
+        catch (ElementNotFoundException $e) {
+            // all is fine as it is missing
+            $found = false;
+        }
+        if ($found) {
+            throw new ExpectationException('The display button with title ' . $textliteral . ' in row ' . $rowname . ' was found', $this->getSession());
+        }
+    }
 }

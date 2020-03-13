@@ -384,7 +384,7 @@
      */
     function authloginmsgVisibility() {
         // If Parent authority is 'None'
-        if ($('#auth_config_parent').length && $('#auth_config_parent').value != 0) {
+        if ($('#auth_config_parent').length && $('#auth_config_parent').val() != 0) {
             jQuery('#auth_config_authloginmsg_container').addClass('hidden');
         }
         else {
@@ -402,13 +402,15 @@
     };
 
     function updateSsoOptions() {
-        var current = $('#auth_config_ssodirection').value;
-        for (var opt in ssoAllOptions) {
-            if (ssoAllOptions[opt] == current) {
-                jQuery('#auth_config_' + opt + '_container').removeClass('hidden');
-            }
-            else {
-                jQuery('#auth_config_' + opt + '_container').addClass('hidden');
+        var current = $('#auth_config_ssodirection').val();
+        if (typeof current !== 'undefined') {
+            for (var opt in ssoAllOptions) {
+                if (ssoAllOptions[opt] == current) {
+                    jQuery('#auth_config_' + opt + '_container').removeClass('hidden');
+                }
+                else {
+                    jQuery('#auth_config_' + opt + '_container').addClass('hidden');
+                }
             }
         }
     }

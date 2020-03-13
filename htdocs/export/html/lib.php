@@ -242,17 +242,7 @@ class PluginExportHtml extends PluginExport {
                 $SESSION->add_error_msg(get_string('couldnotcopystaticfile', 'export', $from));
             }
         }
-
-        // zip everything up
-        $this->notify_progress_callback(90, get_string('creatingzipfile', 'export'));
-        try {
-            create_zip_archive($this->exportdir, $this->zipfile, array($this->rootdir));
-        }
-        catch (SystemException $e) {
-            throw new SystemException('Failed to zip the export file: ' . $e->getMessage());
-        }
-        $this->notify_progress_callback(100, get_string('Done', 'export'));
-        return $this->zipfile;
+        return true;
     }
 
     public function cleanup() {
@@ -422,8 +412,12 @@ class PluginExportHtml extends PluginExport {
                 $smarty->assign('view', $outputfilter->filter($view->build_rows(false, true)));
             }
             else {
+                $blocks = $view->get_blocks(false, true);
+                if ($blocks && isset($blocks[0]['content'])) {
+                    $blocks[0]['content'] = $outputfilter->filter($blocks[0]['content']);
+                }
                 $smarty->assign('newlayout', true);
-                $smarty->assign('blocks', $view->get_blocks(false, true));
+                $smarty->assign('blocks', $blocks);
             }
             $content = $smarty->fetch('export:html:view.tpl');
             if (!file_put_contents("$directory/index.html", $content)) {
@@ -474,9 +468,7 @@ class PluginExportHtml extends PluginExport {
                 }
             }
         }
-        function sort_by_title($a, $b) {
-            return strnatcasecmp($a['title'], $b['title']);
-        }
+
         foreach (array_keys($this->collections) as $id) {
             usort($list['collections'][$id]['views'], 'sort_by_title');
         }

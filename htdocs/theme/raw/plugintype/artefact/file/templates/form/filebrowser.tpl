@@ -132,6 +132,14 @@
                         </div>
                     </div>
                 </div>
+                {if $validfiletypes}
+                <div class="validfiletypes">
+                    <span class="label">{str tag='validfiletypes' section='artefact.file'}</span>
+                    {foreach from=$validfiletypes item=itype name=loopidx}
+                        .<span>{$itype}</span>
+                    {/foreach}
+                 </div>
+                 {/if}
             </div>
         </div>
         {/if}
@@ -185,7 +193,7 @@
             </tbody>
         </table>
         {/if}
-        {include file="pagemodal.tpl"}
+        {include file="pagemodal.tpl" prefix=$prefix keepParentModalOpen=true}
     {if $tabs}
     </div>
     {/if}

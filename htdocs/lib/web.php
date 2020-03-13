@@ -343,6 +343,10 @@ EOF;
                     if ($check[$key] == 'tinymce') {
                         $tinymceconfig = <<<EOF
     theme: "silver",
+    mobile: {
+        theme: 'mobile',
+        toolbar: ['undo', 'bold', 'italic', 'link', 'bullist', 'styleselect'],
+    },
     contextmenu: false,
     plugins: "tooltoggle,visualblocks,wordcount,link,lists,imagebrowser,table,emoticons{$spellchecker},paste,code,fullscreen,directionality,searchreplace,nonbreaking,charmap{$mathslateplugin},anchor",
     skin: 'oxide',
@@ -798,6 +802,8 @@ EOF;
         else {
             $smarty->assign('SELECTEDSUBNAV', $SELECTEDSUBNAV);
         }
+        $smarty->assign('LANGCHOICES', get_languages());
+        $smarty->assign('LANGCURRENT', current_language());
     }
     else {
         $smarty->assign('languageform', $langselectform);
@@ -2406,6 +2412,12 @@ function admin_nav() {
             'path'   => 'managegroups/archives',
             'url'    => 'admin/groups/archives.php',
             'title'  => get_string('archivedsubmissions', 'admin'),
+            'weight' => 27,
+        ),
+        'managegroups/settings' => array(
+            'path'   => 'managegroups/settings',
+            'url'    => 'admin/groups/settings.php',
+            'title'  => get_string('groupsettings', 'admin'),
             'weight' => 25,
         ),
         'managegroups/uploadcsv' => array(
@@ -2849,7 +2861,7 @@ function institutional_staff_nav() {
 }
 
 /**
- * Returns the entries in the standard user menu
+ * Returns the entries in the standard account menu
  *
  * See the function find_menu_children() in lib/web.php
  * for a description of the expected array structure.
@@ -2947,12 +2959,6 @@ function mahara_standard_nav() {
             'url' => 'group/index.php',
             'title' => get_string('groups'),
             'weight' => 30,
-        ),
-        'engage/institutionmembership' => array(
-            'path' => 'engage/institutions',
-            'url' => 'account/institutions.php',
-            'title' => get_string('institutionmembership'),
-            'weight' => 60,
         ),
     );
 
@@ -3132,6 +3138,12 @@ function right_nav() {
             'title' => get_string('notifications'),
             'weight' => 40,
             'iconclass' => 'flag'
+        ),
+        'settings/institutionmembership' => array(
+            'path' => 'settings/institutions',
+            'url' => 'account/institutions.php',
+            'title' => get_string('institutionmembership'),
+            'weight' => 60,
         ),
     );
 
@@ -4677,6 +4689,8 @@ function language_select_form() {
                             'type' => 'select',
                             'title' => get_string('language') . ':',
                             'hiddenlabel' => true,
+                            'submitonchange' => true,
+                            'class' => 'submitonchange',
                             'options' => $languages,
                             'defaultvalue' => $SESSION->get('lang') ? $SESSION->get('lang') : 'default',
                             'rules' => array('required' => true),
@@ -4684,7 +4698,7 @@ function language_select_form() {
                         'changelang' => array(
                             'type' => 'button',
                             'usebuttontag' => true,
-                            'class' => 'btn-secondary input-group-append',
+                            'class' => 'btn-secondary input-group-append submitonchange',
                             'value' => get_string('change'),
                         )
                     )
@@ -5006,4 +5020,33 @@ function is_valid_url($url) {
         return false;
     }
     return true;
+}
+
+function account_institution_get_menu_tabs() {
+    $menu = array(
+        'institutions' => array(
+            'path' => 'settings/institutions',
+            'url' => 'account/institutions.php',
+            'title' => get_string('currentinstitutionmembership'),
+            'weight' => 10,
+        ),
+        'migrateinstitution' => array(
+            'path' => 'settings/institutions',
+            'url' => 'account/migrateinstitution.php',
+            'title' => get_string('selfmigration'),
+            'weight' => 20,
+        ),
+    );
+
+    if (defined('SECTION_PAGE')) {
+        $key = SECTION_PAGE;
+        if ($key && isset($menu[$key])) {
+            $menu[$key]['selected'] = true;
+        }
+    }
+
+    // Sort the menu items by weight
+    uasort($menu, "sort_menu_by_weight");
+
+    return $menu;
 }

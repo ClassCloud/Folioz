@@ -20,6 +20,7 @@ $id = param_integer('id', null);
 $oldreplytoid = param_integer('oldreplyto', null);
 $replytoid = param_integer('replyto', null);
 $messages = null;
+$cannedmessage = param_alphanum('cm', null);
 $users = array();
 $user = null;
 
@@ -28,7 +29,7 @@ global $THEME;
 global $SESSION;
 
 $subject = '';
-
+$defaultmessage = '';
 if (null !== $id) {
     $user = get_record('usr', 'id', $id);
 
@@ -43,6 +44,10 @@ if (null !== $id) {
     }
 
     $users[] = $id;
+    if ($cannedmessage && in_array($cannedmessage, valid_canned_messages()) && is_callable($cannedmessage)) {
+        // Fetch the canned message to populate the subject / message boxes
+        list($subject, $defaultmessage) = call_user_func_array($cannedmessage, array($users));
+    }
 }
 
 if (!is_null($oldreplytoid)) {
@@ -114,7 +119,7 @@ if (!is_null($replytoid)) {
             $oldmessage->fromusrlink = profile_url($oldmessage->fromid);
         }
         if ($fromusr->deleted) {
-            $oldmessage->fromusrname = get_string('deleteduser');
+            $oldmessage->fromusrname = get_string('deleteduser1');
         }
         else {
             $oldmessage->fromusrname = display_name($oldmessage->fromid);
@@ -138,7 +143,7 @@ if (!is_null($replytoid)) {
         }
         if ($countdeleted > 0) {
             $oldmessage->tousrs[] = array(
-                'display' => $countdeleted . ' ' . get_string('deleteduser', 'module.multirecipientnotification'),
+                'display' => $countdeleted . ' ' . get_string('deleteduser1', 'module.multirecipientnotification'),
                 'link' => null,
             );
         }
@@ -225,6 +230,7 @@ $form = pieform(array(
             'title' => $messages ? get_string('Reply', 'group') : get_string('message'),
             'cols'  => 80,
             'rows'  => 10,
+            'defaultvalue' => $defaultmessage,
             'rules' => array('maxlength' => 65536, 'required' => true),
         ),
         'goto' => array(
@@ -270,16 +276,13 @@ function sendmessage_validate(Pieform $form, $values) {
     }
 }
 
-function translate_ids_to_names(array $ids) {
+function translate_ids_to_names(array $unfilteredids) {
     global $USER;
-    // for an empty list, the element '' is transmitted
-    $ids = array_diff($ids, array(''));
-    $results = array();
-    foreach ($ids as $id) {
-        $deleted = get_field('usr', 'deleted', 'id', $id);
-        if (($deleted === '0') && is_numeric($id) && can_send_message($USER->to_stdclass(), $id)) {
-            $results[] = (object) array('id' => $id, 'text' => hsc(display_name($id, null, true)));
+    $ids = array();
+    foreach ($unfilteredids as $id) {
+        if (is_numeric($id) && can_send_message($USER->to_stdclass(), $id)) {
+            $ids[] = $id;
         }
     }
-    return $results;
+    return translate_user_ids_to_names($ids);
 }

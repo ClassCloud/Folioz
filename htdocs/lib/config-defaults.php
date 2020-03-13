@@ -717,9 +717,9 @@ $cfg->passwordsaltalt1 = 'old salt value';
 
 /**
  * @global array $cfg->openbadgedisplayer_source The open badge sources
- * The default sources are Mozilla Backpack and openbadgepassport.com
+ * The default sources are openbadgepassport.com and Badgr
  */
-$cfg->openbadgedisplayer_source = '{"backpack":"https://backpack.openbadges.org/","passport":"https://openbadgepassport.com/","badgr":"https://api.badgr.io/"}';
+$cfg->openbadgedisplayer_source = '{"passport":"https://openbadgepassport.com/","badgr":"https://api.badgr.io/"}';
 
 /**
  * @global string $cfg->memcacheservers
@@ -776,6 +776,14 @@ $cfg->sessionhandler = 'file';
 */
 
 /**
+ * Log SAML attributes
+ * To help diagnose authentication issues between Mahara and the IdP it is useful to see what attributes are being sent
+ * so we log what was sent to the usr_login_saml table when this flag is set to true.
+ * Note: This should be switched off once problems are diagnosed / fixed and the table cleared
+ */
+$cfg->saml_log_attributes = false;
+
+/**
  * @global array $cfg->externalfilesystem
  * A configuration data for an external file system
  */
@@ -808,3 +816,30 @@ $cfg->sessionhandler = 'file';
  * activites on your install of Mahara. No friends allowed - this is a site-wide setting.
  */
 //$cfg->friendsnotallowed = true;
+
+/**
+ * Restrict the site to only allow the upload of certain file types.
+ * Set as a comma seperated string of valid file extensions
+ */
+//$cfg->validfiletypes = 'doc,docx,gif,jpeg,jpg,m4a,mp3,mp4,pdf,png'; // for example
+
+/**
+ * Allow the creation of a user with minimum details from SAML
+ * With modern privacy laws some IdPs will not include identifying things like firstname/lastname,
+ * email address in their minimum packet of info about an authenticated user.
+ * Mahara expect these to exist to create a new user.
+ * To get passed this, by allowing just a unique identifier/username, we set the follwing flag
+ */
+// $cfg->saml_create_minimum_user=true;
+
+/**
+ * Allow SAML to create an institution when creating a new user if the institution they need
+ * to belong to doesn't yet exist. The IdP can pass an institution display name through
+ * and be mapped via the SAML instance setting 'samlfieldfororganisationname'.
+ * To make a new institution you need to define what institution to fetch an existing SAML
+ * instance from to be used as the default 'template' SAML settings.
+ * The 'saml_create_institution_default' can also be used as a 'parent' auth to update the
+ * role* values for all the other SAML configs that have the same 'institutionidpentityid' value
+ */
+//$cfg->saml_create_institution=true;
+//$cfg->saml_create_institution_default = 'mahara';

@@ -19,13 +19,13 @@ $string['mandatoryfields'] = 'Mandatory fields';
 $string['mandatoryfieldsdescription'] = 'Profile fields that must be filled in';
 $string['searchablefields'] = 'Searchable fields';
 $string['searchablefieldsdescription'] = 'Profile fields that can be searched on by others';
-$string['adminusersearchfields'] = 'Administration user search';
-$string['adminusersearchfieldsdescription'] = 'Profile fields that appear as columns on the Administration user search list';
+$string['adminusersearchfields'] = 'Administration people search';
+$string['adminusersearchfieldsdescription'] = 'Profile fields that appear as columns in the administration\'s "People search".';
 
 $string['aboutdescription'] = 'Enter your real first and last name here. If you want to show a different name to people in the system, put that name in as your display name.';
 $string['infoisprivate'] = 'This information is private until you include it in a page that is shared with others.';
 $string['viewmyprofile'] = 'View my profile';
-$string['aboutprofilelinkdescription'] = '<p>Please go to your <a href="%s">Profile</a> page to arrange the information you wish to display to other users.</p>';
+$string['aboutprofilelinkdescription'] = '<p>Please go to your <a href="%s">profile</a> page to arrange the information you wish to display to others.</p>';
 
 // profile categories
 $string['aboutme'] = 'About me';
@@ -76,6 +76,10 @@ $string['pinterest.input'] = 'Pinterest username';
 $string['pinterest'] = 'Pinterest';
 $string['occupation'] = 'Occupation';
 $string['industry'] = 'Industry';
+// Custom user roles
+$string['userroles'] = 'User roles';
+$string['nospecialroles'] = '<span class="text-midtone">No special roles</span>';
+$string['autogroupadmin'] = 'Auto group admin';
 
 // Field names for view user and search user display
 $string['name'] = 'Name';
@@ -91,7 +95,7 @@ $string['emailvalidation_subject'] = 'Email validation';
 $string['emailvalidation_body1'] = <<<EOF
 Hello %s,
 
-You have added the email address %s to your user account in %s. Please visit the link below to activate this address.
+You have added the email address %s to your account in %s. Please visit the link below to activate this address.
 
 %s
 

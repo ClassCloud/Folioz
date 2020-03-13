@@ -29,13 +29,13 @@ $string['nullpubliccert'] = "Could not generate or save the public certificate";
 $string['defaultinstitution'] = 'Default institution';
 $string['description'] = 'Authenticate against a SAML 2.0 Identity Provider service';
 $string['disco'] = 'Identity Provider discovery';
-$string['errorbadinstitution'] = 'Institution for connecting user not resolved';
+$string['errorbadinstitution'] = 'Institution for connecting account not resolved';
 $string['errorbadssphp'] = 'Invalid SimpleSAMLphp session handler: Must not be phpsession';
 $string['errorbadssphpmetadata'] = 'Invalid SimpleSAMLphp configuration: No Identity Provider metadata configured';
 $string['errorbadssphpspentityid'] = 'Invalid Service Provider entityId';
-$string['errorextrarequiredfield'] = 'This field is required when "We auto-create users" is enabled.';
+$string['errorextrarequiredfield'] = 'This field is required when "We auto-create accounts" is enabled.';
 $string['errorretryexceeded'] = 'Maximum number of retries exceeded (%s): There is a problem with the identity service';
-$string['errnosamluser'] = 'No user found';
+$string['errnosamluser'] = 'No account found';
 $string['errorssphpsetup'] = 'SAML is not set up correctly. You Need to run "make ssphp" from the commandline first.';
 $string['errorbadlib'] = 'The SimpleSAMLPHP library\'s "autoloader" file was not found at %s.<br>Make sure you install SimpleSAMLphp via "make ssphp" and the file is readable.';
 $string['errorupdatelib'] = 'Your current SimpleSAMLPHP library version is out of date. You need to run "make cleanssphp && make ssphp".';
@@ -47,7 +47,7 @@ $string['errorbadmetadata'] = 'Badly formed SAML metadata. Ensure XML contains o
 $string['errorbadinstitutioncombo'] = 'There is already an existing authentication instance with this institution attribute and institution value combination.';
 $string['errormissingmetadata'] = 'You have chosen to add new Identity Provider metadata but none is supplied.';
 $string['errormissinguserattributes1'] = 'You seem to be authenticated, but we did not receive the required user attributes. Please check that your Identity Provider releases the first name, surname, and email fields for SSO to %s or inform the administrator.';
-$string['errorregistrationenabledwithautocreate1'] = 'An institution has registration enabled. For security reasons this excludes user auto-creation, unless you are using remote usernames.';
+$string['errorregistrationenabledwithautocreate1'] = 'An institution has registration enabled. For security reasons this excludes account auto-creation, unless you are using remote usernames.';
 $string['errorremoteuser1'] = 'Matching on "remoteuser" is mandatory if "usersuniquebyusername" is turned off.';
 $string['IdPSelection'] = 'Identity Provider selection';
 $string['noidpsfound'] = 'No Identity Providers found';
@@ -69,9 +69,9 @@ $string['institutionvalue'] = 'Institution value to check against attribute';
 $string['libchecks'] = 'Checking for correct libraries installed: %s';
 $string['link'] = 'Link accounts';
 $string['linkaccounts'] = 'Do you want to link the remote account "%s" with the local account "%s"?';
-$string['loginlink'] = 'Allow users to link their own account';
+$string['loginlink'] = 'Allow people to link their own account';
 $string['logintolink'] = 'Local login to %s to link to remote account';
-$string['logintolinkdesc'] = '<p><b>You are currently connected with remote user "%s". Please log in with your local account to link them or register if you do not currently have an account on %s.</b></p>';
+$string['logintolinkdesc'] = '<p><b>You are currently connected with remote account "%s". Please log in with your local account to link them or register if you do not currently have an account on %s.</b></p>';
 $string['logo'] = 'Logo';
 $string['institutionregex'] = 'Do partial string match with institution shortname';
 $string['login'] = 'SSO';
@@ -87,14 +87,28 @@ $string['samlfieldforemail'] = 'SSO field for email';
 $string['samlfieldforfirstname'] = 'SSO field for first name';
 $string['samlfieldforsurname'] = 'SSO field for surname';
 $string['samlfieldforstudentid'] = 'SSO field for student ID';
+$string['samlfieldforavatar'] = 'SSO field for avatar icon';
+$string['samlfieldforavatardescription'] = 'Supplied avatar needs to contain a base64 encoded image string';
+$string['samlfieldforrole'] = 'SSO field for roles';
+$string['samlfieldforroleprefix'] = 'SSO field for role prefix';
+$string['samlfieldforrolesiteadmin'] = 'Role mapping for site administrator';
+$string['samlfieldforrolesitestaff'] = 'Role mapping for site staff';
+$string['samlfieldforroleinstadmin'] = 'Role mapping for institution administrator';
+$string['samlfieldforroleinststaff'] = 'Role mapping for institution staff';
+$string['samlfieldfororganisationname'] = 'SSO field for Organisation';
+$string['populaterolestoallsaml'] = 'Copy roles to all SAML auth instances';
+$string['populaterolestoallsamldescription'] = 'If this switch is enabled then on submission of the form the values for all the "Role" fields are copied to all the other SAML auth instances that use the same Identity Provider. This field then resets back to "No".';
+$string['samlfieldforautogroups'] = 'Roles have auto group administration';
+$string['samlfieldforautogroupsall'] = 'Auto group administration to all groups';
+$string['samlfieldforautogroupsalldescription'] = 'If enabled then the person will be added as a group admin to all groups otherwise they are only added as a group admin to groups within their institution.';
 $string['samlfieldauthloginmsg'] = 'Wrong login message';
 $string['spentityid'] = "Service Provider entityId";
 $string['title'] = 'SAML';
-$string['updateuserinfoonlogin'] = 'Update user details on login';
+$string['updateuserinfoonlogin'] = 'Update account details on login';
 $string['userattribute'] = 'User attribute';
 $string['simplesamlphplib'] = 'SimpleSAMLPHP lib directory';
 $string['simplesamlphpconfig'] = 'SimpleSAMLPHP config directory';
-$string['weautocreateusers'] = 'We auto-create users';
+$string['weautocreateusers'] = 'We auto-create accounts';
 $string['remoteuser'] = 'Match username attribute to remote username';
 $string['selectidp'] = 'Please select the Identity Provider that you wish to log in with.';
 $string['sha1'] = 'Legacy SHA1 (Dangerous)';
@@ -107,3 +121,17 @@ $string['newkeycreated'] = 'New key / certificate created';
 $string['deleteoldkeytext'] = 'Delete old certificate';
 $string['oldkeydeleted'] = 'Old key / certificate deleted';
 $string['keyrollfailed'] = 'Failed to remove old key / certificate';
+
+// SSO labels
+// The SSO buttons will be labelled with the display name of your institution
+$string['ssolabelfor'] = '%s login';
+// If you want to have a custom label you can either add them here
+// or create a htdocs/local/lang/en.utf8/auth.saml.php file and add them there.
+// They need to have the key 'login' + shortname of institution, eg:
+// For 'testinstitution' it would be: $string['logintestinstitution'] = 'Special label';
+
+$string['noentityidpfound'] = 'No Identity Provider ID found';
+$string['novalidauthinstanceprovided'] = 'Your selection is not possible. Please select a different institution.';
+$string['identityprovider'] = 'Identity Provider';
+$string['selectmigrateto'] = 'Select institution to move to ...';
+

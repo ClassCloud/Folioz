@@ -25,7 +25,7 @@ require_once(get_config('docroot') . 'webservice/lib.php');
 // If we are running behat tests, we only run cron via the behat step:
 // I trigger (the )?cron
 if (defined('BEHAT_TEST')) {
-    if (php_sapi_name() == 'cli') {
+    if (is_cli()) {
         die_info("Can not run cron from command line when behat environment is enabled");
     }
     $behattrigger = param_boolean('behattrigger', false);
@@ -37,7 +37,7 @@ if (defined('BEHAT_TEST')) {
 // Check if we have come via browser and have the right urlsecret
 // Note: if your crontab hits this file via curl/http thenyou will need
 // to add the urlsecret there for the cron to work.
-if (php_sapi_name() != 'cli' && get_config('urlsecret') !== null) {
+if (!is_cli() && get_config('urlsecret') !== null) {
     $urlsecret = param_alphanumext('urlsecret', -1);
     if ($urlsecret !== get_config('urlsecret')) {
         die_info(get_string('accessdeniednourlsecret', 'error'));
@@ -102,27 +102,35 @@ foreach (plugin_types() as $plugintype) {
 
             $classname = generate_class_name($plugintype, $job->plugin);
 
-            log_info("Running $classname::" . $job->callfunction);
-
             safe_require($plugintype, $job->plugin, 'lib.php', 'require_once');
 
-            $droptriggers = in_array($job->callfunction, $jobsneeddroptriggers);
-            if ($droptriggers) {
-                drop_elasticsearch_triggers();
-            }
+            // check if the cron function needs to run on the DB
+            if (!method_exists($classname, $job->callfunction . '_needs_to_run') ||
+                call_static_method($classname, $job->callfunction . '_needs_to_run')) {
 
-            try {
-                call_static_method($classname, $job->callfunction);
-            }
-            catch (Exception $e) {
-                log_message($e->getMessage(), LOG_LEVEL_WARN, true, true, $e->getFile(), $e->getLine(), $e->getTrace());
-                $output = $e instanceof MaharaException ? $e->render_exception() : $e->getMessage();
-                echo "$output\n";
-                // Don't call handle_exception; try to update next run time and free the lock
-            }
+                log_info("Running $classname::" . $job->callfunction);
 
-            if ($droptriggers) {
-                create_elasticsearch_triggers();
+                $droptriggers = in_array($job->callfunction, $jobsneeddroptriggers);
+                if ($droptriggers) {
+                    drop_elasticsearch_triggers();
+                }
+
+                try {
+                    call_static_method($classname, $job->callfunction);
+                }
+                catch (Exception $e) {
+                    log_message($e->getMessage(), LOG_LEVEL_WARN, true, true, $e->getFile(), $e->getLine(), $e->getTrace());
+                    $output = $e instanceof MaharaException ? $e->render_exception() : $e->getMessage();
+                    echo "$output\n";
+                    // Don't call handle_exception; try to update next run time and free the lock
+                }
+
+                if ($droptriggers) {
+                    create_elasticsearch_triggers();
+                }
+            }
+            else {
+                log_info("Skipping: No need to run $classname::" . $job->callfunction);
             }
 
             $nextrun = cron_next_run_time($start, (array)$job);
@@ -173,27 +181,35 @@ if ($jobs) {
             continue;
         }
 
-        log_info("Running core cron " . $job->callfunction);
-
         $function = $job->callfunction;
 
-        $droptriggers = in_array($job->callfunction, $jobsneeddroptriggers);
-        if ($droptriggers) {
-            drop_elasticsearch_triggers();
-        }
+        // check if the cron function needs to run on the DB
+        $checkfunction = $job->callfunction . '_needs_to_run';
 
-        try {
-            $function();
-        }
-        catch (Exception $e) {
-            log_message($e->getMessage(), LOG_LEVEL_WARN, true, true, $e->getFile(), $e->getLine(), $e->getTrace());
-            $output = $e instanceof MaharaException ? $e->render_exception() : $e->getMessage();
-            echo "$output\n";
-            // Don't call handle_exception; try to update next run time and free the lock
-        }
+        if (!function_exists($checkfunction) || $checkfunction()) {
+            log_info("Running core cron " . $job->callfunction);
 
-        if ($droptriggers) {
-            create_elasticsearch_triggers();
+            $droptriggers = in_array($job->callfunction, $jobsneeddroptriggers);
+            if ($droptriggers) {
+                drop_elasticsearch_triggers();
+            }
+
+            try {
+                $function();
+            }
+            catch (Exception $e) {
+                log_message($e->getMessage(), LOG_LEVEL_WARN, true, true, $e->getFile(), $e->getLine(), $e->getTrace());
+                $output = $e instanceof MaharaException ? $e->render_exception() : $e->getMessage();
+                echo "$output\n";
+                // Don't call handle_exception; try to update next run time and free the lock
+            }
+
+            if ($droptriggers) {
+                create_elasticsearch_triggers();
+            }
+        }
+        else {
+            log_info("Skipping: No need to run " . $job->callfunction);
         }
 
         $nextrun = cron_next_run_time($start, (array)$job);

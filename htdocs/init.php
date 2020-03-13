@@ -11,7 +11,7 @@
 
 defined('INTERNAL') || die();
 
-if (defined('CLI') && php_sapi_name() != 'cli') {
+if (defined('CLI') && !is_cli()) {
     die();
 }
 
@@ -375,7 +375,10 @@ if (!defined('CLI')) {
     header('X-Content-Type-Options: nosniff');
     header('X-Permitted-Cross-Domain-Policies: master-only');
     if (is_https()) {
-        header('Strict-Transport-Security: max-age=63072000');
+        if (!preg_grep("/^Strict-Transport-Security/", headers_list())) {
+            // Set this header only if not already set by the server
+            header('Strict-Transport-Security: max-age=63072000');
+        }
     }
     // Don't print precise PHP version as an HTTP header
     header_remove('x-powered-by');
@@ -384,6 +387,10 @@ if (!defined('CLI')) {
     if ($csp_ancestor_exemption = $SESSION->get('csp-ancestor-exemption')) {
         header("Content-Security-Policy: frame-ancestors 'self' $csp_ancestor_exemption");
         header('X-Frame-Options: ALLOW-FROM '. $csp_ancestor_exemption);
+    }
+    else if ($saml_logout = $SESSION->get('saml_logout')) {
+        // To allow IDP SAML to logout within an iframe we temporarily ignore content security policy
+        // This is set via auth/saml/sp/saml2-logout.php
     }
     else {
         header("Content-Security-Policy: frame-ancestors 'self'");
@@ -558,4 +565,23 @@ function init_performance_info() {
     if (function_exists('posix_times')) {
         $PERF->startposixtimes = posix_times();
     }
+}
+
+/**
+ * Do some robust checking to see if we are accessing site via CLI mode or not
+ */
+function is_cli() {
+    if (defined('STDIN')) {
+        return true;
+    }
+    if (php_sapi_name() === 'cli') {
+        return true;
+    }
+    if (array_key_exists('SHELL', $_ENV)) {
+        return true;
+    }
+    if (!array_key_exists('REQUEST_METHOD', $_SERVER)) {
+        return true;
+    }
+    return false;
 }

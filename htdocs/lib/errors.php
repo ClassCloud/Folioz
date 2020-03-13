@@ -533,14 +533,14 @@ function error ($code, $message, $file, $line, $vars) {
 function exception ($e) {
     $classname = get_class($e);
     if (!($e instanceof MaharaException)) {
-        $e = new SystemException("[{$classname}]: " . $e->getMessage(), $e->getCode());
+        $e = new SystemException("[{$classname}]: " . $e->getMessage() . get_string('errorat', 'error') . $e->getFile() . ':' . $e->getLine(), $e->getCode());
     }
     else if ($classname == 'MaharaException') {
         // Mahara coding practice says not to use MaharaException directly, but for more
         // graceful error handling we have chosen not to make it abstract. Instead, make
         // it print like a SystemException.
         /* @var MaharaException $e */
-        $e = new SystemException($e->getMessage(), $e->getCode());
+        $e = new SystemException($e->getMessage() . get_string('errorat', 'error') . $e->getFile() . ':' . $e->getLine(), $e->getCode());
     }
 
     // Display the message and die
@@ -967,6 +967,17 @@ class ViewLimitExceededException extends UserException {}
  * Exception - user not found
  */
 class UserNotFoundException extends NotFoundException {}
+
+/**
+ * Exception - user not found while doing SAML authentication
+ */
+class SamlUserNotFoundException extends UserNotFoundException {
+    public function strings() {
+        return array_merge(parent::strings(),
+            array('message' => get_string('invaliduser', 'error')),
+            array('title'   => get_string('unabletosigninviasso', 'auth')));
+    }
+}
 
 /**
  * Exception - user not found while doing XMLRPC authentication

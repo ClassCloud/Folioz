@@ -99,7 +99,7 @@ class ActivityTypeMultirecipientmessage extends ActivityTypeUsermessage {
         }
 
         if ('sender' === $userdata->role) {
-            $userdata->read = '0';
+            $userdata->read = 0;
         }
 
         $userdata->internalid = insert_record('module_multirecipient_userrelation',
@@ -108,7 +108,7 @@ class ActivityTypeMultirecipientmessage extends ActivityTypeUsermessage {
             $changes->url = $userdata->url = $this->url;
         }
         if ($user->method != 'internal') {
-            $changes->read = (string)(int) ($user->method != 'internal');
+            $changes->read = (int) ($user->method != 'internal');
             $changes->id = $userdata->internalid;
             update_record('module_multirecipient_userrelation', $changes);
         }
@@ -164,7 +164,7 @@ class ActivityTypeMultirecipientmessage extends ActivityTypeUsermessage {
                     if (!isset($adminnotified[$k])) {
                         $message = (object) array(
                             'users' => get_column('usr', 'id', 'admin', 1),
-                            'subject' => get_string('adminnotificationerror', 'activity'),
+                            'subject' => get_string('adminnotificationerror1', 'activity'),
                             'message' => $e,
                         );
                         $adminnotified[$k] = 1;

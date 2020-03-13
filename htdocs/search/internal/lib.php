@@ -42,7 +42,7 @@ class PluginSearchInternal extends PluginSearch {
             'elements'   => array(
                 'exactusersearch' =>  array(
                     'title'        => get_string('exactusersearch', 'search.internal'),
-                    'description'  => get_string('exactusersearchdescription3', 'search.internal'),
+                    'description'  => get_string('exactusersearchdescription4', 'search.internal'),
                     'help'         => true,
                     'type'         => 'switchbox',
                     'defaultvalue' => get_config_plugin('search', 'internal', 'exactusersearch'),
@@ -163,7 +163,7 @@ class PluginSearchInternal extends PluginSearch {
         }
 
         $is_any_admin = $USER->get('admin') || $USER->is_institutional_admin() || $USER->get('staff') || $USER->is_institutional_staff();
-        if (is_isolated() && get_config('owngroupsonly') && !$is_any_admin) {
+        if (get_config('owngroupsonly') && !$is_any_admin) {
             // In search results only include users that are members of the same groups.
             // This does not count for site admins/staff and institutional admins/staff.
             $groupids = array_keys($USER->get('grouproles'));
@@ -185,7 +185,8 @@ class PluginSearchInternal extends PluginSearch {
                 }
 
                 $where .= ')';
-
+        }
+        if (is_isolated() && !get_config('owngroupsonly')) {
             // Regular institution users should always see institutional admins/staff
             if (!empty($data['institutions'])) {
                 $where .= '
@@ -491,9 +492,13 @@ class PluginSearchInternal extends PluginSearch {
             $default = ArtefactTypeProfile::get_always_adminusersearchable_fields();
             foreach ($customcolsarray as $k => $v) {
                 if (!array_key_exists($v, $default)) {
+                    $classname = 'ArtefactType' . $v;
+                    if (is_callable(array($classname, 'can_be_multiple')) && $ismultiple = call_static_method($classname, 'can_be_multiple')) {
+                        continue; // we need to handle this post results
+                    }
                     $firstcols .= ', a' . $k . '.title AS ' . $v;
                     $join .= 'LEFT JOIN {artefact} a' . $k . ' ON (a' . $k . '.owner = u.id AND a' . $k . '.artefacttype = \'' . $v . '\') ';
-               }
+                }
             }
         }
 
@@ -655,7 +660,7 @@ class PluginSearchInternal extends PluginSearch {
 
         $is_admin = $USER->get('admin') || $USER->get('staff');
         if (is_isolated() && !$is_admin) {
-            // in search results only include users that are members of the same groups;
+            // in search results only include users that are members of the same institution
             // site admin and site staff users are excluded
             $userinst = get_field('usr_institution', 'institution', 'usr', $USER->get('id'));
             $searchsql .= '
@@ -663,7 +668,17 @@ class PluginSearchInternal extends PluginSearch {
                     SELECT usr FROM {usr_institution} WHERE institution = \'' . $userinst . '\'
                 )';
         }
-
+        if (get_config('owngroupsonly') && !$is_admin) {
+            // in search results only include users that are members of the same groups
+            // site admin and site staff users are excluded
+            $usergroups = get_column('group_member', 'group', 'member', $USER->get('id'));
+            $membergroups = get_column_sql('SELECT member FROM {group_member} WHERE "group" IN (' . implode(',', $usergroups) . ') AND member != ?', array($USER->get('id')));
+            if ($membergroups) {
+                $membergroups = array_unique($membergroups);
+                $searchsql .= '
+                    AND u.id IN (' . implode(',', $membergroups) . ')';
+            }
+        }
 
         $orderbyoptions = array(
             'adminfirst' => 'gm.role = \'admin\' DESC, gm.role = \'tutor\' DESC,
@@ -948,7 +963,7 @@ class PluginSearchInternal extends PluginSearch {
         }
         else if ($type == 'canjoin') {
             $sql .= '
-              AND (NOT (jointype = ? AND request = 0 AND g.id NOT IN (SELECT "group" FROM {group_member_invite} WHERE member = ?))
+              AND (NOT (jointype = ? AND request = 0 AND g.id NOT IN (SELECT "group" FROM {group_member_invite} WHERE "member" = ?))
                    AND NOT (jointype = ? AND request = 0)
               ) AND g.id NOT IN (' . $grouproles . ')';
             $values = array_merge($values, array('controlled', $USER->get('id'), 'approve'));
@@ -966,14 +981,16 @@ class PluginSearchInternal extends PluginSearch {
                 $values[] = $category;
             }
         }
-        if (is_array($institution) && !empty($institution)) {
-            $sql .= ' AND institution IN (?)';
-            $institution = join(',', array_keys($institution));
-            $values[] = $institution;
-        }
-        if (!is_array($institution) && $institution != 'all') {
-            $sql .= ' AND institution = ?';
-            $values[] = $institution;
+        if ($type != 'admin') {
+            if (is_array($institution) && !empty($institution)) {
+                $sql .= ' AND institution IN (?)';
+                $institution = join(',', array_keys($institution));
+                $values[] = $institution;
+            }
+            else if (!is_array($institution) && $institution != 'all') {
+                $sql .= ' AND institution = ?';
+                $values[] = $institution;
+            }
         }
 
         $count = get_field_sql('SELECT COUNT(*) '.$sql, $values);

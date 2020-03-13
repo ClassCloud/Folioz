@@ -1946,6 +1946,15 @@ function handle_event($event, $data, $ignorefields = array()) {
         }
         $data = (array)$data;
     }
+
+    // Set viewaccess rules for elasticsearch
+    if ($event == 'updateviewaccess' && get_config('searchplugin') == 'elasticsearch' && is_array($data)) {
+        if (isset($data['rules']) && isset($data['rules']->view)) {
+            safe_require('search', 'elasticsearch');
+            ElasticsearchIndexing::add_to_queue($data['rules']->view, 'view');
+        }
+    }
+
     $refid = $reftype = $parentrefid = $parentreftype = null;
     // Need to set dirty to false for all the classes with destructors
     if ($logdata instanceof View) {
@@ -2681,7 +2690,7 @@ abstract class Plugin implements IPlugin {
 
     /**
      * Is plugin deprecated - going to be obsolete / removed
-     * @return bool
+     * @return either bool or lang string indicating if plugin or part of it is deprecated
      */
     public static function is_deprecated() {
         return false;
@@ -3865,15 +3874,16 @@ function profile_sideblock() {
     if ($sortorder = $USER->get_account_preference('groupsideblocksortby')) {
         $sort = $sortorder;
     }
+    $grouplabels = (array)json_decode($USER->get_account_preference('groupsideblocklabels'));
     if ($limitto === null) {
-        $data['groups'] = group_get_user_groups($USER->get('id'), null, $sort);
+        $data['groups'] = group_get_user_groups($USER->get('id'), null, $sort, null, 0, true, $grouplabels);
         $total = count($data['groups']);
     }
     else if ($limitto === 0) {
         $data['groups'] = null;
     }
     else {
-        list($data['groups'], $total) = group_get_user_groups($USER->get('id'), null, $sort, $limitto);
+        list($data['groups'], $total) = group_get_user_groups($USER->get('id'), null, $sort, $limitto, 0, true, $grouplabels);
     }
     $limitstr = '';
     if (!empty($limitto) && $limitto < $total) {
@@ -5611,6 +5621,10 @@ function sort_menu_by_weight($a, $b) {
     return ($aweight < $bweight) ? -1 : 1;
 }
 
+function sort_by_title($a, $b) {
+    return strnatcasecmp($a['title'], $b['title']);
+}
+
 /**
  * Disable elasticsearch triggers for site - useful for upgrades if we don't need to reindex the changes
  * This should be paired with create_elasticsearch_triggers(); - an example:
@@ -5661,7 +5675,8 @@ function get_institutions_to_associate() {
         // This does not apply for site admins
         foreach ($USER->institutions as $inst) {
             if (empty($inst->suspended)) {
-                $institutions = array_merge($institutions, array($inst->institution => $inst->displayname));
+                // use + to perserve numerical keys
+                $institutions = $institutions + array($inst->institution => $inst->displayname);
             }
         }
     }
@@ -5670,7 +5685,8 @@ function get_institutions_to_associate() {
         $records = get_records_array('institution');
         foreach ($records as $inst) {
             if (empty($inst->suspended)) {
-                $institutions = array_merge($institutions, array($inst->name => $inst->displayname));
+                // use + to perserve numerical keys
+                $institutions = $institutions + array($inst->name => $inst->displayname);
             }
         }
     }

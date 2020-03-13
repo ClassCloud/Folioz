@@ -77,6 +77,8 @@ $string['missingbadgesources'] = 'Missing sources setting. Please add it to your
 $string['selectall'] = 'Select all';
 $string['selectnone'] = 'Select none';
 
+$string['deprecatedhost'] = '<p class="alert alert-warning">Badges from the following services are not displayed because they have been discontinued: %s</p>';
+
 // Badgr token page
 $string['featuredisabled'] = 'The openbadgedisplayer blocktype is not active';
 $string['badgrsourcemissing1'] = 'Badgr is not in the sources configuration in your config.php file.';
@@ -87,4 +89,4 @@ $string['badgrtoken'] = "Badgr token: %s";
 $string['badgrtokenadded'] = "Badgr token added to account";
 $string['badgrtokendeleted'] = "Badgr token deleted";
 $string['badgrtokennotfound'] = "Badgr token not found with supplied credentials";
-$string['nobadgruid1'] = 'Before you can use Badgr, you need to set a token. Please go to "User menu → Settings → Apps → Badgr" to set it.';
+$string['nobadgruid2'] = 'Before you can use Badgr, you need to set a token. Please go to "Account menu → Settings → Apps → Badgr" to set it.';

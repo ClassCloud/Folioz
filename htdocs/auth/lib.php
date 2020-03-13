@@ -1225,6 +1225,10 @@ function auth_check_required_fields() {
                 ),
             );
         }
+        else {
+            // No method for changing password so don't show heading
+            $changepassword = false;
+        }
     }
     else if (defined('JSON')) {
         // Don't need to check this for json requests
@@ -1709,7 +1713,8 @@ function auth_get_login_form() {
         'pluginname'     => 'internal',
         'elements'       => $elements,
         'dieaftersubmit' => false,
-        'iscancellable'  => false
+        'iscancellable'  => false,
+        'hiderequiredheader' => (!empty($elements['login_extra']) ? true : false),
     );
 
     return $form;
@@ -1762,10 +1767,12 @@ function auth_get_login_form_elements() {
     );
     $elements = array(
         'login' => array(
-            'type' => 'container',
-            'class' => 'login form-condensed',
-            'isformgroup' => false,
-            'elements' => $elements
+            'type' => 'fieldset',
+            'class' => 'login_internal',
+            'legend' => get_string('alternativelogins', 'auth'),
+            'collapsible' => true,
+            'collapsed'   => true,
+            'elements'    => $elements
         )
     );
 
@@ -1784,34 +1791,34 @@ function auth_get_login_form_elements() {
             $showbasicform = true;
         }
     }
-    if (!empty($extraelements) && $showbasicform) {
-        $loginlabel = array(
-            'type' => 'markup',
-            'value' => '<p><a name="sso" />' . get_string('orloginvia') . '</p>'
-        );
-        $extraelements = array_merge(array('label' => $loginlabel), $extraelements);
-        $keys = array_keys($extraelements);
-        if (!empty($keys)) {
-            $key = $keys[count($keys) - 1];
-        }
-    }
     if (count($extraelements)) {
         $extraelements = array(
             'login_extra' => array(
                 'type' => 'container',
-                'class' => 'login_extra panel-footer text-small',
+                'class' => 'login_extra',
                 'isformgroup' => false,
                 'elements' => $extraelements
             )
         );
     }
-    // Replace or supplement the standard login form elements
-    if ($showbasicform) {
-        $elements = array_merge($elements, $extraelements);
-    }
     else {
+        $elements['login']['type'] = 'container';
+        $elements['login']['class'] = 'login form-condensed';
+        $elements['login']['isformgroup'] = false;
+    }
+
+    // Replace or supplement the standard login form elements
+    if ($showbasicform && !empty($extraelements)) {
+        $elements = array_merge($extraelements, $elements);
+    }
+    else if (!$showbasicform && !empty($extraelements)) {
         $elements = $extraelements;
     }
+    else if (!$showbasicform) {
+        // Should we allow having no login options?
+        $elements = array();
+    }
+
     return $elements;
 }
 /**
@@ -2220,6 +2227,14 @@ function auth_clean_expired_password_requests() {
         WHERE expiry < ?', array(db_format_timestamp(time())));
 }
 
+/**
+ * Removes self-migration requests that were not completed in the allowed amount of time
+ */
+function auth_clean_expired_migrations() {
+    delete_records_sql('DELETE FROM {usr_institution_migrate}
+        WHERE ctime < ?', array(db_format_timestamp(strtotime('-30 mins'))));
+}
+
 function _email_or_notify($user, $subject, $bodytext, $bodyhtml) {
     try {
         email_user($user, null, $subject, $bodytext, $bodyhtml);
@@ -2491,6 +2506,7 @@ function auth_generate_login_form() {
         'pluginname' => 'internal',
         'autofocus'  => false,
         'elements'   => $elements,
+        'hiderequiredheader' => (!empty($elements['login_extra']) ? true : false),
     )));
 
     return $loginform;
@@ -2597,6 +2613,14 @@ function reset_password($user, $resetpasswordchange=true, $quickhash=false) {
         $userobj->commit();
         return false;
     }
+}
+
+
+/*
+ * Check if we need to set any user login tries to 0
+ */
+function user_login_tries_to_zero_needs_to_run() {
+    return (bool)count_records_sql("SELECT COUNT(*) FROM {usr} WHERE logintries >= ?", array(MAXLOGINTRIES));
 }
 
 function user_login_tries_to_zero() {

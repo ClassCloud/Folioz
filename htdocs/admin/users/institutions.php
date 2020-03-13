@@ -585,8 +585,8 @@ if ($institution || $add) {
 
         $elements['allowinstitutionpublicviews'] = array(
             'type'         => 'switchbox',
-            'title'        => get_string('allowinstitutionpublicviews', 'admin'),
-            'description'  => get_string('allowinstitutionpublicviewsdescription2','admin'),
+            'title'        => get_string('allowinstitutionpublicviews1', 'admin'),
+            'description'  => get_string('allowinstitutionpublicviewsdescription3','admin'),
             'defaultvalue' => get_config('allowpublicviews') && $data->allowinstitutionpublicviews,
             'disabled'     => get_config('allowpublicviews') == false,
             'help'         => true,
@@ -595,7 +595,7 @@ if ($institution || $add) {
         if ($USER->get('admin')) {
             $elements['maxuseraccounts'] = array(
                 'type'         => 'text',
-                'title'        => get_string('maxuseraccounts','admin'),
+                'title'        => get_string('maxuseraccounts1','admin'),
                 'description'  => get_string('maxuseraccountsdescription','admin'),
                 'defaultvalue' => empty($data->maxuseraccounts) ? '' : $data->maxuseraccounts,
                 'rules'        => array(
@@ -760,6 +760,21 @@ EOF;
 
 function institution_validate(Pieform $form, $values) {
     global $USER, $institution, $add;
+    if ($add) {
+        try {
+            $check = institution_generate_name($values['displayname']);
+        }
+        catch (ParamOutOfRangeException $e) {
+            $form->set_error('displayname', get_string('institutionnameinvalid', 'admin'));
+        }
+    }
+    else {
+        $check = strtolower($values['displayname']);
+        $check = preg_replace('/[^a-z0-9]/', '', $check);
+        if (strlen($check) < 1 || $check === '0') {
+            $form->set_error('displayname', get_string('institutionnameinvalid', 'admin'));
+        }
+    }
 
     if ($USER->get('admin') || get_config_plugin('artefact', 'file', 'institutionaloverride')) {
         if (get_config_plugin('artefact', 'file', 'maxquotaenabled') && get_config_plugin('artefact', 'file', 'maxquota') < $values['defaultquota']) {

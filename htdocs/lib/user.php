@@ -233,6 +233,7 @@ function expected_account_preferences() {
                  'tagssideblockmaxtags' => get_config('tagssideblockmaxtags'),
                  'groupsideblockmaxgroups' => '',
                  'groupsideblocksortby' => 'alphabetical',
+                 'groupsideblocklabels' => '',
                  'hiderealname'   => 0,
                  'multipleblogs' => get_config('defaultmultipleblogs'),
                  'showhomeinfo' => 1,
@@ -248,6 +249,7 @@ function expected_account_preferences() {
                  'view_details_active' => 0,
                  'showlayouttranslatewarning' => 1,
                  'accessibilityprofile' => false,
+                 'grouplabels' => '',
                  );
 }
 
@@ -409,6 +411,18 @@ function general_account_prefs_form_elements($prefs) {
             'earliest' => get_string('earliest', 'blocktype.mygroups'),
             'alphabetical'  => get_string('alphabetical', 'blocktype.mygroups'),
         ),
+    );
+    $labels = (array)json_decode(get_account_preference($USER->get('id'), 'groupsideblocklabels'));
+    $elements['groupsideblocklabels'] = array(
+        'type'          => 'autocomplete',
+        'title'         => get_string('displayonlylabels', 'group'),
+        'ajaxurl'       => get_config('wwwroot') . 'group/addlabel.json.php',
+        'multiple'      => true,
+        'initfunction'  => 'translate_landingpage_to_tags',
+        'ajaxextraparams' => array(),
+        'extraparams' => array('tags' => false),
+        'defaultvalue'  => $labels,
+        'mininputlength' => 2,
     );
     if (get_config('userscanhiderealnames')) {
         $elements['hiderealname'] = array(
@@ -572,6 +586,13 @@ function set_profile_field($userid, $field, $value, $new = FALSE) {
         $profile->set('description', $desc);
         $profile->set('note',        $type);
         $profile->commit();
+    }
+    else if ($field == 'userroles') {
+        // Handle this in special way
+        $user = new User();
+        $user->find_by_id($userid);
+        $user->set_roles($value);
+        $user->commit();
     }
     else {
         $classname = generate_artefact_class_name($field);
@@ -1241,7 +1262,7 @@ function full_name($user=null) {
        $userobj = $user;
     }
 
-   return isset($userobj->deleted) && $userobj->deleted ? get_string('deleteduser') : $userobj->firstname . ' ' . $userobj->lastname;
+   return isset($userobj->deleted) && $userobj->deleted ? get_string('deleteduser1') : $userobj->firstname . ' ' . $userobj->lastname;
 }
 
 /**
@@ -1336,6 +1357,25 @@ function display_username($user=null) {
     else {
         return $user->username;
     }
+}
+
+/**
+ * Translate the supplied user id to it's display name
+ *
+ * @param array $ids  User id number
+ * @return object $results containing id and text values
+ */
+function translate_user_ids_to_names($ids) {
+    // for an empty list, the element '' is transmitted
+    $ids = array_diff($ids, array(''));
+    $results = array();
+    foreach ($ids as $id) {
+        $deleted = get_field('usr', 'deleted', 'id', $id);
+        if (($deleted === '0') && is_numeric($id)) {
+            $results[] = (object) array('id' => $id, 'text' => display_name($id));
+        }
+    }
+    return $results;
 }
 
 /**
@@ -1624,6 +1664,7 @@ function delete_user($userid) {
     delete_records('usr_password_request', 'usr', $userid);
     delete_records('usr_watchlist_view', 'usr', $userid);
     delete_records('view_access', 'usr', $userid);
+    delete_records('usr_roles', 'usr', $userid);
     delete_records('usr_login_data', 'usr', $userid);
     delete_records('usr_pendingdeletion', 'usr', $userid); // just in case
     delete_records('usr_agreement', 'usr', $userid);

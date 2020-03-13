@@ -70,6 +70,7 @@ class User {
             'accountprefs'     => array(),
             'activityprefs'    => array(),
             'institutions'     => array(),
+            'roles'            => array(),
             'grouproles'       => array(),
             'institutiontheme' => null,
             'admininstitutions' => array(),
@@ -118,6 +119,7 @@ class User {
 
         $this->populate($user);
         $this->reset_institutions();
+        $this->reset_roles();
         $this->reset_grouproles();
         return $this;
     }
@@ -274,8 +276,10 @@ class User {
                             . '
                         )';
             $user = get_record_sql($sql, array($username, $instanceid));
-            $this->populate($user);
-            return $this;
+            if ($user && $user->id > 0) {
+                $this->populate($user);
+                return $this;
+            }
         }
         $sql = 'SELECT
                     *,
@@ -716,6 +720,14 @@ class User {
 
     public function leave_institution($institution) {
         if ($institution != 'mahara' && $this->in_institution($institution)) {
+            // Make inactive any usr_roles for this institution
+            foreach ($this->roles as $inst => $roles) {
+                if ($inst == $institution) {
+                    foreach ($roles as $role) {
+                        $this->update_role($role->id, 0);
+                    }
+                }
+            }
             require_once('institution.php');
             $institution = new Institution($institution);
             $institution->removeMember($this->to_stdclass());
@@ -984,6 +996,91 @@ class User {
             $this->set('institutiontheme', $instobj);
         }
         return $this->institutiontheme;
+    }
+
+    public function get_roletypes() {
+        $types = array();
+        foreach (get_declared_classes() as $class) {
+            if (is_subclass_of($class, 'UserRole')) {
+                $types[] = $class;
+            }
+        }
+        return $types;
+    }
+
+    public function apply_userrole_method($method, $data) {
+        $checks = array();
+        foreach ($this->get_roletypes() as $classname) {
+            if (method_exists($classname, $method)) {
+                $ur = new $classname;
+                $checks[$classname] = $ur->$method($data);
+            }
+        }
+        return $checks;
+    }
+
+    public function reset_roles() {
+        $sql = "SELECT id, role, usr, provisioner, institution, active FROM {usr_roles} WHERE usr = ?";
+        $usrroles = get_records_sql_array($sql, array($this->get('id')));
+        $roles = array();
+        if ($usrroles) {
+            foreach ($usrroles as $r) {
+                if (empty($r->institution)) {
+                    $roles['_site'][$r->role] = $r;
+                }
+                else {
+                    $roles[$r->institution][$r->role] = $r;
+                }
+            }
+        }
+        $this->set('roles', $roles);
+    }
+
+    public function set_roles($roles) {
+        foreach ($roles as $key => $role) {
+            $role = (object) $role;
+            if (isset($role->role) && !empty($role->role)) {
+                $classname = 'UserRole' . ucfirst($role->role);
+                $role->usr = $this->id;
+                $r = new $classname($role);
+                $r->commit();
+            }
+        }
+        $this->reset_roles();
+    }
+
+    public function update_role($roleid, $state) {
+        $role = ucfirst(get_field('usr_roles', 'role', 'id', $roleid));
+        $classname = 'UserRole' . $role;
+        $r = new $classname((object)array('id' => $roleid));
+        $r->set('active', $state);
+        $r->commit();
+        $this->reset_roles();
+    }
+
+    public function get_roles() {
+        $this->reset_roles();
+        return $this->roles;
+    }
+
+    public function get_role($role, $institution = '_site', $provisioner = null, $isactive = null) {
+        $this->reset_roles();
+        if (isset($this->roles[$institution]) && isset($this->roles[$institution][$role])) {
+            if ($provisioner !== null && $this->roles[$institution][$role]->provisioner != $provisioner) {
+                return false;
+            }
+            if ($isactive !== null && $this->roles[$institution][$role]->active != (bool)$isactive) {
+                return false;
+            }
+            $classname = 'UserRole' . ucfirst($role);
+            if (class_exists($classname)) {
+                return new $classname($this->roles[$institution][$role]);
+            }
+            else {
+                // @TODO - should we remove the role from the db?
+            }
+        }
+        return false;
     }
 
     public function reset_grouproles() {
@@ -1644,6 +1741,15 @@ class User {
             }
         }
     }
+
+    /**
+     * Gets the primary institution
+     * @return institution id or 'mahara' if not set
+     */
+    public function get_primary_institution() {
+        $institutions = array_keys($this->get('institutions'));
+        return !empty($institutions[0]) ? $institutions[0] : 'mahara';
+    }
 }
 
 
@@ -1926,6 +2032,7 @@ class LiveUser extends User {
         }
 
         $this->reset_institutions();
+        $this->reset_roles();
         $this->reset_grouproles();
         $this->load_views();
         $this->store_sessionid();
@@ -1938,6 +2045,8 @@ class LiveUser extends User {
         }
 
         $this->commit();
+
+        update_record('usr', (object) array('id' => $user->id, 'logintries' => 0));
 
         // finally, after all is done, call the (maybe non existant) hook on their auth plugin
         $authobj = AuthFactory::create($authinstance);
@@ -1975,15 +2084,6 @@ class LiveUser extends User {
             return $value;
         }
         return $this->defaults[$key];
-    }
-
-    /**
-     * Gets the primary institution
-     * @return institution id or 'mahara' if not set
-     */
-    public function get_primary_institution() {
-        $institutions = array_keys($this->get('institutions'));
-        return !empty($institutions[0]) ? $institutions[0] : 'mahara';
     }
 
     /**
@@ -2123,6 +2223,213 @@ class LiveUser extends User {
         $new = $this->get('unread') + $n;
         $this->SESSION->set('user/unread', $new);
         return $new;
+    }
+}
+
+abstract class UserRole {
+
+    protected $role;
+    protected $id;
+    protected $usr;
+    protected $provisioner='internal';
+    protected $institution=null;
+    protected $active;
+
+    public function __construct($role, $data=null) {
+        $this->role = $role;
+
+        $id = false;
+        if (is_object($data) && !empty($data->id)) {
+            $id = $data->id;
+        }
+        else if (is_array($data) && !empty($data['id'])) {
+            $id = $data['id'];
+        }
+        else if (!empty($data) && is_numeric($data)) {
+            $id = $data;
+        }
+        if ($id) {
+            $data = get_record('usr_roles', 'id', $id);
+            if (!$data) {
+                throw new MaharaException('No UserRole with the ID: ' . $id);
+            }
+            else if ($data->role != $this->role) {
+                throw new MaharaException('Fetched data roletype "' . $data->role . '" does not match UserRole class roletype "' . $this->role . '"');
+            }
+        }
+        $data = empty($data) ? array() : (array)$data;
+        foreach ($data as $field => $value) {
+            if (property_exists($this, $field)) {
+                $this->{$field} = $value;
+            }
+        }
+    }
+
+    public function get($field) {
+        if (!property_exists($this, $field)) {
+            throw new InvalidArgumentException("Field $field wasn't found in class " . get_class($this));
+        }
+        return $this->{$field};
+    }
+
+    public function set($field, $value) {
+        if (property_exists($this, $field)) {
+            $this->{$field} = $value;
+            return true;
+        }
+        throw new InvalidArgumentException("Field $field wasn't found in class " . get_class($this));
+    }
+
+    public function commit() {
+        if (empty($this->role)) {
+            throw new MaharaException('UserRole data needs to contain a role');
+        }
+        if (empty($this->usr) || !get_field('usr', 'username', 'deleted', 0, 'id', $this->usr)) {
+            throw new MaharaException('UserRole data needs to contain a valid usr id');
+        }
+        $fordb = new stdClass();
+        $fordb->usr = $this->usr;
+        $fordb->role = $this->role;
+        $fordb->institution = (isset($this->institution) && $this->institution != '_site') ? $this->institution : null;
+        $fordb->provisioner = isset($this->provisioner) ? $this->provisioner : 'internal';
+        $fordb->active = isset($this->active) ? $this->active : 1;
+        if (!empty($this->id)) {
+            $whereobj = new stdClass();
+            $whereobj->id = $this->id;
+        }
+        else {
+            $whereobj = clone $fordb;
+        }
+        $fordb->ctime = isset($this->ctime) ? $this->ctime : db_format_timestamp(time());
+        ensure_record_exists('usr_roles', $whereobj, $fordb);
+    }
+
+
+    public function activate() {
+        if (!empty($this->id)) {
+            set_field('usr_roles', 'active', 1, 'id', $this->id);
+        }
+        $this->active = 1;
+    }
+
+    public function deactivate() {
+        if (!empty($this->id)) {
+            set_field('usr_roles', 'active', 0, 'id', $this->id);
+        }
+        $this->active = 0;
+    }
+
+    public function delete() {
+        if (!empty($this->id)) {
+            delete_records('usr_roles', 'id', $this->id);
+        }
+    }
+}
+
+class UserRoleAutogroupadmin extends UserRole {
+
+    public function __construct($data=null) {
+        parent::__construct('autogroupadmin', $data);
+    }
+
+    public function commit() {
+        parent::commit();
+
+        require_once(get_config('docroot') . 'lib/group.php');
+        $institution = $this->institution == '_site' || $this->institution === null ? 'all' : $this->institution;
+
+        if ($this->active) {
+            // Add the user to all the groups as a group admin
+            group_add_user_to_existing_groups($this->usr, 'admin', $institution);
+        }
+        else {
+            // Remove the user from all the groups where they are group admin
+            group_remove_user_from_existing_groups($this->usr, $institution);
+        }
+    }
+
+    private function _prepare_sql($data) {
+        $wheresql = 'role = ? ';
+        $where = array($this->role);
+        if (empty($data['institution']) || $data['institution'] == '_site') {
+            $wheresql .= 'AND institution IS NULL ';
+        }
+        else {
+            $wheresql .= 'AND (institution = ? OR institution IS NULL) ';
+            $where[] = $data['institution'];
+        }
+        if (isset($data['active'])) {
+            $wheresql .= 'AND active = ? ';
+            $where[] = (bool)$data['active'];
+        }
+        if (!empty($data['userid'])) {
+            $wheresql .= 'AND usr = ? ';
+            $where[] = $data['userid'];
+        }
+        if (!empty($data['provisioner'])) {
+            $wheresql .= 'AND provisioner = ? ';
+            $where[] = $data['provisioner'];
+        }
+        return array($wheresql, $where);
+    }
+
+    public function group_join($data) {
+        if (!empty($data['groupid'])) {
+            list($wheresql, $where) = self::_prepare_sql($data);
+            if ($results = get_column_sql("SELECT usr FROM {usr_roles} WHERE " . $wheresql . " AND active = 1", $where)) {
+                foreach ($results as $userid) {
+                    insert_record('group_member', (object) array(
+                        'group'  => $data['groupid'],
+                        'member' => $userid,
+                        'role'   => 'admin',
+                        'ctime'  => !empty($data['ctime']) ? $data['ctime'] : db_format_timestamp(time()),
+                    ));
+                }
+                return array('userids' => $results);
+            }
+        }
+        return false;
+    }
+
+    public function group_leave($data) {
+        if (!empty($data['groupid']) && !empty($data['userid'])) {
+            list($wheresql, $where) = self::_prepare_sql($data);
+            if ($results = get_column_sql("SELECT usr FROM {usr_roles} WHERE " . $wheresql, $where)) {
+                return array('can_leave' => false);
+            }
+        }
+        return array('can_leave' => true);
+    }
+
+    public function interaction_subscribe($data) {
+        if (!empty($data['userid'])) {
+            // subscribe one user to the forum
+            subscribe_user_to_forum($data['userid'], $data['id']);
+        }
+        else {
+            // Need to make sure all autogroupadmins are subscribed
+            list($wheresql, $where) = self::_prepare_sql($data);
+            if ($results = get_column_sql("SELECT usr FROM {usr_roles} WHERE " . $wheresql . " AND active = 1", $where)) {
+                foreach ($results as $userid) {
+                    if (!get_record('interaction_forum_subscription_forum', 'user', $userid, 'forum', $data['id'])) {
+                        subscribe_user_to_forum($data['userid'], $data['id']);
+                    }
+                }
+            }
+        }
+        return array('can_subscribe' => true);
+    }
+
+    public function interaction_unsubscribe($data) {
+        if (!empty($data['userid'])) {
+            // Check to see if this user has the authgroupadmin role
+            list($wheresql, $where) = self::_prepare_sql($data);
+            if ($results = get_column_sql("SELECT usr FROM {usr_roles} WHERE " . $wheresql, $where)) {
+                // Not allowed to remove subscription
+                return array('can_unsubscribe' => false);
+            }
+        }
+        return array('can_unsubscribe' => true);
     }
 }
 

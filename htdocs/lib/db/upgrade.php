@@ -1552,5 +1552,106 @@ function xmldb_core_upgrade($oldversion=0) {
         ElasticsearchIndexing::drop_trigger_functions();
     }
 
+    if ($oldversion < 2019111500) {
+        log_debug('Alter module_multirecipient_userrelation table column types');
+        $table = new XMLDBTable('module_multirecipient_userrelation');
+        $field = new XMLDBField('read');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, null, null, 0);
+        change_field_type($table, $field, true, true);
+        $field = new XMLDBField('deleted');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, null, null, 0);
+        change_field_type($table, $field, true, true);
+    }
+
+    if ($oldversion < 2019120600) {
+        // Save the SAML attributes in a db table when debugging
+        log_debug('Create "usr_login_saml" table');
+        $table = new XMLDBTable('usr_login_saml');
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->addFieldInfo('usr', XMLDB_TYPE_INTEGER, 10);
+        $table->addFieldInfo('data', XMLDB_TYPE_TEXT, 'big', null, XMLDB_NOTNULL);
+        $table->addFieldInfo('ctime', XMLDB_TYPE_DATETIME, null, null, XMLDB_NOTNULL);
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+        create_table($table);
+    }
+
+    if ($oldversion < 2019122700) {
+        log_debug('Create an "usr_institution_migrate" table to hold pending migrations');
+
+        $table = new XMLDBTable('usr_institution_migrate');
+        if (!table_exists($table)) {
+            $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->addFieldInfo('usr', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('old_authinstance', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('new_authinstance', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('new_username', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('ctime', XMLDB_TYPE_DATETIME, null, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('key', XMLDB_TYPE_CHAR, 16);
+            $table->addFieldInfo('token', XMLDB_TYPE_CHAR, 6);
+            $table->addFieldInfo('email', XMLDB_TYPE_CHAR, 255);
+
+            $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+            $table->addKeyInfo('usrfk', XMLDB_KEY_FOREIGN, array('usr'), 'usr', array('id'));
+            $table->addKeyInfo('oldauthfk', XMLDB_KEY_FOREIGN, array('old_authinstance'), 'auth_instance', array('id'));
+            $table->addKeyInfo('newauthfk', XMLDB_KEY_FOREIGN, array('new_authinstance'), 'auth_instance', array('id'));
+
+            create_table($table);
+        }
+    }
+
+    if ($oldversion < 2019122701) {
+        if (!get_record('cron', 'callfunction', 'auth_clean_expired_migrations')) {
+            log_debug('Add cron job to clean expired self-migration entries');
+
+            $cron = new stdClass();
+            $cron->callfunction = 'auth_clean_expired_migrations';
+            $cron->minute       = '0';
+            $cron->hour         = '2,14';
+            $cron->day          = '*';
+            $cron->month        = '*';
+            $cron->dayofweek    = '*';
+            insert_record('cron', $cron);
+        }
+    }
+
+    if ($oldversion < 2020011700) {
+        log_debug('Adding in new usr_roles table with different structure');
+
+        $table = new XMLDBTable('usr_roles');
+        if (!table_exists($table)) {
+            $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->addFieldInfo('usr', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('role', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('ctime', XMLDB_TYPE_DATETIME, null, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('provisioner', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('institution', XMLDB_TYPE_CHAR, 255);
+            $table->addFieldInfo('active', XMLDB_TYPE_INTEGER, 1, null, XMLDB_NOTNULL, null, null, null, 1);
+            $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+            $table->addKeyInfo('usrfk', XMLDB_KEY_FOREIGN, array('usr'), 'usr', array('id'));
+            create_table($table);
+        }
+    }
+
+    if ($oldversion < 2020012800) {
+        log_debug('Remove the heading from signoff blocks');
+        execute_sql("UPDATE {block_instance} SET title = '' WHERE blocktype = 'signoff'");
+    }
+
+    if ($oldversion < 2020013000) {
+        log_debug('create group_usr_label table for group labels');
+        $table = new XMLDBTable('group_usr_label');
+        if (!table_exists($table)) {
+            $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+            $table->addFieldInfo('group', XMLDB_TYPE_INTEGER, 10, false, XMLDB_NOTNULL);
+            $table->addFieldInfo('usr', XMLDB_TYPE_INTEGER, 10, false, XMLDB_NOTNULL);
+            $table->addFieldInfo('ctime', XMLDB_TYPE_DATETIME, null, null, XMLDB_NOTNULL);
+            $table->addFieldInfo('label', XMLDB_TYPE_CHAR, 255, null, XMLDB_NOTNULL);
+            $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+            $table->addKeyInfo('groupfk', XMLDB_KEY_FOREIGN, array('group'), 'group', array('id'));
+            $table->addKeyInfo('usrfk', XMLDB_KEY_FOREIGN, array('usr'), 'usr', array('id'));
+            create_table($table);
+        }
+    }
+
     return $status;
 }

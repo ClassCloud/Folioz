@@ -91,7 +91,17 @@ class AuthSaml extends Auth {
         $this->config['loginlink'] = false;
         $this->config['institutionidp'] = '';
         $this->config['institutionidpentityid'] = '';
+        $this->config['avatar'] = '';
         $this->config['authloginmsg'] = '';
+        $this->config['role'] = '';
+        $this->config['roleprefix'] = '';
+        $this->config['rolesiteadmin'] = '';
+        $this->config['rolesitestaff'] = '';
+        $this->config['roleinstadmin'] = '';
+        $this->config['roleinststaff'] = '';
+        $this->config['organisationname'] = '';
+        $this->config['roleautogroups'] = '';
+        $this->config['roleautogroupsall'] = false;
         $this->instanceid = $id;
 
         if (!empty($id)) {
@@ -129,6 +139,15 @@ class AuthSaml extends Auth {
     public function request_user_authorise($attributes) {
         global $USER, $SESSION;
         $this->must_be_ready();
+       /**
+         * Save the SAML attributes to "usr_login_attributes" to help with debugging
+         * Note: This should not be left on full time
+         */
+        if (get_config('saml_log_attributes')) {
+            $jsonattributes = json_encode($attributes);
+            $sla_id = insert_record('usr_login_saml', (object) array('ctime' => db_format_timestamp(time()),
+                                                                     'data' => $jsonattributes), 'id', true);
+        }
 
         if (empty($attributes) or !array_key_exists($this->config['user_attribute'], $attributes)
                                or !array_key_exists($this->config['institutionattribute'], $attributes)) {
@@ -140,11 +159,35 @@ class AuthSaml extends Auth {
         $lastname        = isset($attributes[$this->config['surnamefield']][0]) ? $attributes[$this->config['surnamefield']][0] : null;
         $email           = isset($attributes[$this->config['emailfield']][0]) ? $attributes[$this->config['emailfield']][0] : null;
         $studentid       = isset($attributes[$this->config['studentidfield']][0]) ? $attributes[$this->config['studentidfield']][0] : null;
+        $avatar          = isset($attributes[$this->config['avatar']][0]) ? $attributes[$this->config['avatar']][0] : null;
+        $roles           = isset($attributes[$this->config['role']]) ? $attributes[$this->config['role']] : array();
+        $roleprefix      = isset($this->config['roleprefix']) ? $this->config['roleprefix'] : null;
+        $rolesiteadmin   = isset($this->config['rolesiteadmin']) ? array_map('trim', explode(',', $this->config['rolesiteadmin'])) : array();
+        $rolesitestaff   = isset($this->config['rolesitestaff']) ? array_map('trim', explode(',', $this->config['rolesitestaff'])) : array();
+        $roleinstadmin   = isset($this->config['roleinstadmin']) ? array_map('trim', explode(',', $this->config['roleinstadmin'])) : array();
+        $roleinststaff   = isset($this->config['roleinststaff']) ? array_map('trim', explode(',', $this->config['roleinststaff'])) : array();
+        $roleautogroups  = isset($this->config['roleautogroups']) ? array_map('trim', explode(',', $this->config['roleautogroups'])) : array();
+        $roleautogroupsall = isset($this->config['roleautogroupsall']) ? $this->config['roleautogroupsall'] : false;
+        if (is_isolated()) {
+            $roleautogroupsall = false;
+        }
         $institutionname = $this->institution;
 
         $create = false;
         $update = false;
-
+        // Check if a user needs a certain role to be allowed to login
+        if (!empty($roleprefix)) {
+            $roleallowed = false;
+            foreach ($roles as $index => $role) {
+                if (preg_match('/^' . $roleprefix . '/', $role)) {
+                    $roleallowed = true;
+                }
+            }
+            if (!$roleallowed) {
+                log_debug('User authorisation request from SAML failed - no roles prefixed with "' . $roleprefix . '"');
+                return false;
+            }
+        }
         // Retrieve a $user object. If that fails, create a blank one.
         try {
             $isremote = $this->config['remoteuser'] ? true : false;
@@ -222,6 +265,34 @@ class AuthSaml extends Auth {
         }
 
         /*******************************************/
+        $institutionrole = 'member'; // default role
+        $userroles = array();
+        $usr_is_siteadmin = 0;
+        $usr_is_sitestaff = 0;
+        if ($roles && is_array($roles)) {
+            foreach ($roles as $rk => $rv) {
+                if (in_array($rv, $rolesiteadmin)) {
+                    $user->admin = 1;
+                    $usr_is_siteadmin = 1;
+                }
+                if (in_array($rv, $rolesitestaff)) {
+                    $user->staff = 1;
+                    $usr_is_sitestaff = 1;
+                }
+                if (in_array($rv, $roleinstadmin)) {
+                    $institutionrole = 'admin';
+                }
+                if (in_array($rv, $roleinststaff)) {
+                    $institutionrole = 'staff';
+                }
+                if (in_array($rv, $roleautogroups)) {
+                    $userroles[] = array('role' => 'autogroupadmin',
+                                         'institution' => ($roleautogroupsall ? '_site' : $institutionname),
+                                         'active' => 1,
+                                         'provisioner' => 'saml');
+                }
+            }
+        }
 
         if ($create) {
 
@@ -238,9 +309,11 @@ class AuthSaml extends Auth {
             $user->email              = $email;
             $user->studentid          = $studentid;
 
-            // must have these values
-            if (empty($firstname) || empty($lastname) || empty($email)) {
-                throw new AccessDeniedException(get_string('errormissinguserattributes1', 'auth.saml', get_config('sitename')));
+            // must have these values - unless creating a user with username only
+            if (!get_config('saml_create_minimum_user')) {
+                if (empty($firstname) || empty($lastname) || empty($email)) {
+                    throw new AccessDeniedException(get_string('errormissinguserattributes1', 'auth.saml', get_config('sitename')));
+                }
             }
 
             $user->authinstance       = empty($this->config['parent']) ? $this->instanceid : $this->parent;
@@ -248,7 +321,7 @@ class AuthSaml extends Auth {
             db_begin();
             $user->username           = get_new_username($remoteuser, 40);
 
-            $user->id = create_user($user, array(), $institutionname, $this, $remoteuser);
+            $user->id = create_user($user, array(), $institutionname, $this, $remoteuser, array(), false, $institutionrole);
 
             /*
              * We need to convert the object to a stdclass with its own
@@ -269,8 +342,25 @@ class AuthSaml extends Auth {
                 // Add them to the institution they have SSOed in by
                 $user->join_institution($institutionname);
             }
-
-        } elseif ($update) {
+            if (!empty($avatar) && base64_encode(base64_decode($avatar, true)) === $avatar) {
+                // Check that we have a base64 string
+                $avataricon = base64_decode($avatar);
+                $source_img = imagecreatefromstring($avataricon);
+                $pathname = get_config('dataroot') . 'temp/' . time() . '.jpg';
+                $img_save = imagejpeg($source_img, $pathname, 100);
+                safe_require('artefact', 'file');
+                $data = (object)array(
+                    'title' => 'saml_avatar',
+                    'owner' => $user->get('id'),
+                    'oldextension' => 'jpg',
+                    'artefacttype' => 'profileicon',
+                );
+                $profileid = ArtefactTypeProfileIcon::save_file($pathname, $data, $user, true);
+                imagedestroy($source_img);
+                $user->profileicon = $profileid;
+            }
+        }
+        else if ($update) {
             if (! empty($firstname)) {
                 set_profile_field($user->id, 'firstname', $firstname);
                 $user->firstname = $firstname;
@@ -287,12 +377,102 @@ class AuthSaml extends Auth {
                 set_profile_field($user->id, 'studentid', $studentid);
                 $user->studentid = $studentid;
             }
-
+            // Double check that the user is in this institution and add them if allowed
+            if (get_config('usersuniquebyusername')) {
+                if (!get_field('usr_institution', 'ctime', 'usr', $user->id, 'institution', $institutionname)) {
+                    require_once('institution.php');
+                    $institution = new Institution($institutionname);
+                    if ($institutionrole == 'admin') {
+                        $institution->addUserAsStaff($user);
+                    }
+                    else if ($institutionrole == 'staff') {
+                        $institution->addUserAsStaff($user);
+                    }
+                    else {
+                        $institution->addUserAsMember($user);
+                    }
+                }
+                else {
+                    if ($institutionrole == 'admin') {
+                        set_field('usr_institution', 'admin', 1, 'usr', $user->id, 'institution', $institutionname);
+                        set_field('usr_institution', 'staff', 0, 'usr', $user->id, 'institution', $institutionname);
+                    }
+                    else if ($institutionrole == 'staff') {
+                        set_field('usr_institution', 'admin', 0, 'usr', $user->id, 'institution', $institutionname);
+                        set_field('usr_institution', 'staff', 1, 'usr', $user->id, 'institution', $institutionname);
+                    }
+                    else {
+                        set_field('usr_institution', 'admin', 0, 'usr', $user->id, 'institution', $institutionname);
+                        set_field('usr_institution', 'staff', 0, 'usr', $user->id, 'institution', $institutionname);
+                    }
+                }
+            }
+            if (empty($usr_is_siteadmin)) {
+                // make sure they are not site admin anymore
+                $user->admin = 0;
+            }
+            if (empty($usr_is_sitestaff)) {
+                // make sure they are not site staff anymore
+                $user->staff = 0;
+            }
             $user->lastlastlogin      = $user->lastlogin;
             $user->lastlogin          = time();
         }
+        if (!empty($userroles)) {
+            if ($create) {
+                $user->set_roles($userroles);
+            }
+            else {
+                $user->get_roles();
+                // Turn off all the roles that are not associated with the SAML user roles anymore
+                foreach ($user->roles as $inst => $roles) {
+                    if (in_array($inst, array_column($userroles, 'institution')) === false) {
+                        // Not in institution anymore so remove institution specific roles
+                        foreach ($roles as $role) {
+                            $user->update_role($role->id, 0);
+                        }
+                        continue;
+                    }
+                    foreach ($roles as $k => $role) {
+                        if (in_array($role->role, array_column($userroles, 'role')) === false) {
+                            // User does not have role any more in IdP so remove role
+                            $user->update_role($role->id, 0);
+                        }
+                    }
+                }
+                // Now check which roles need adding / updating
+                foreach ($userroles as $index => $userrole) {
+                    if (isset($user->roles[$userrole['institution']]) &&
+                        isset($user->roles[$userrole['institution']][$userrole['role']])) {
+                        if ($user->roles[$userrole['institution']][$userrole['role']]->active == 0) {
+                            // Need to activate role
+                            $user->update_role($user->roles[$userrole['institution']][$userrole['role']]->id, 1);
+                        }
+                    }
+                    else {
+                        // Need to add role
+                        $user->set_roles(array($userrole));
+                    }
+                }
+            }
+        }
+        else if (empty($userroles) && !$create) {
+            // User exists but doesn't have any user roles so we need to turn of all existing ones
+            $existingroleids = get_column('usr_roles', 'id', 'usr', $user->get('id'), 'active', 1);
+            foreach ($existingroleids as $roleid) {
+                $user->update_role($roleid, 0);
+            }
+        }
+
         $user->commit();
 
+        /**
+         * Save the SAML attributes to "usr_login_attributes" to help with debugging
+         * Note: This should not be left on full time
+         */
+        if (get_config('saml_log_attributes') && $sla_id) {
+            set_field('usr_login_saml', 'usr', $user->get('id'), 'id', $sla_id);
+        }
 
         /*******************************************/
 
@@ -338,6 +518,15 @@ class PluginAuthSaml extends PluginAuth {
         'weautocreateusers'      => 0,
         'firstnamefield'         => '',
         'surnamefield'           => '',
+        'role'                   => '',
+        'roleprefix'             => '',
+        'rolesiteadmin'          => '',
+        'rolesitestaff'          => '',
+        'roleinstadmin'          => '',
+        'roleinststaff'          => '',
+        'organisationname'       => '',
+        'roleautogroups'         => '',
+        'roleautogroupsall'      => 0,
         'emailfield'             => '',
         'studentidfield'         => '',
         'updateuserinfoonlogin'  => 1,
@@ -349,6 +538,7 @@ class PluginAuthSaml extends PluginAuth {
         'loginlink'              => 0,
         'institutionidpentityid' => '',
         'active'                 => 1,
+        'avatar'                 => '',
         'authloginmsg'           => '',
         'metarefresh_metadata_url'         => '',
     );
@@ -393,7 +583,7 @@ class PluginAuthSaml extends PluginAuth {
 
     public static function install_auth_default() {
         // Set library version to download
-        set_config_plugin('auth', 'saml', 'version', '1.17.7');
+        set_config_plugin('auth', 'saml', 'version', '1.18.4');
     }
 
     private static function delete_old_certificates() {
@@ -1253,19 +1443,94 @@ EOF;
                 'defaultvalue' => self::$default_config['studentidfield'],
                 'help' => true,
             ),
-            'authloginmsg' => array(
-                'type'         => 'wysiwyg',
-                'rows'         => 10,
-                'cols'         => 50,
-                'title'        => get_string('samlfieldauthloginmsg', 'auth.saml'),
-                'description'  => get_string('authloginmsgnoparent', 'auth'),
-                'defaultvalue' => self::$default_config['authloginmsg'],
-                'help'         => true,
-                'class'        => 'under-label-help',
-                'rules'       => array(
-                    'maxlength' => 1000000
-                )
+            'organisationname' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldfororganisationname', 'auth.saml'),
+                'defaultvalue' => self::$default_config['organisationname'],
+                'help' => false,
             ),
+            'avatar' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforavatar', 'auth.saml'),
+                'defaultvalue' => self::$default_config['avatar'],
+                'description' => get_string('samlfieldforavatardescription', 'auth.saml'),
+            ),
+            'role' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforrole', 'auth.saml'),
+                'defaultvalue' => self::$default_config['role'],
+                'help' => false,
+            ),
+            'roleprefix' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforroleprefix', 'auth.saml'),
+                'defaultvalue' => self::$default_config['roleprefix'],
+                'help' => true,
+            ),
+            'rolesiteadmin' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforrolesiteadmin', 'auth.saml'),
+                'defaultvalue' => self::$default_config['rolesiteadmin'],
+                'help' => false,
+            ),
+            'rolesitestaff' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforrolesitestaff', 'auth.saml'),
+                'defaultvalue' => self::$default_config['rolesitestaff'],
+                'help' => false,
+            ),
+            'roleinstadmin' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforroleinstadmin', 'auth.saml'),
+                'defaultvalue' => self::$default_config['roleinstadmin'],
+                'help' => false,
+            ),
+            'roleinststaff' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforroleinststaff', 'auth.saml'),
+                'defaultvalue' => self::$default_config['roleinststaff'],
+            ),
+            'roleautogroups' => array(
+                'type' => 'text',
+                'title' => get_string('samlfieldforautogroups', 'auth.saml'),
+                'defaultvalue' => self::$default_config['roleautogroups'],
+                'help' => false,
+            ),
+            'roleautogroupsall' => array(
+                'type' => 'switchbox',
+                'title' => get_string('samlfieldforautogroupsall', 'auth.saml'),
+                'defaultvalue' => is_isolated() ? false : self::$default_config['roleautogroupsall'],
+                'description' => get_string('samlfieldforautogroupsalldescription', 'auth.saml'),
+                'disabled' => is_isolated(),
+            )
+        );
+        if (get_config('saml_create_institution_default')) {
+            // Show the copy roles option if this is a 'default' one
+            foreach ($defaults = explode(',', get_config('saml_create_institution_default')) as $default) {
+                if ($institution == $default) {
+                    $elements['rolepopulate'] = array(
+                        'type'         => 'switchbox',
+                        'title' => get_string('populaterolestoallsaml', 'auth.saml'),
+                        'defaultvalue' => false,
+                        'description' => get_string('populaterolestoallsamldescription', 'auth.saml'),
+                        'help'  => false,
+                    );
+                    break;
+                }
+            }
+        }
+        $elements['authloginmsg'] = array(
+            'type'         => 'wysiwyg',
+            'rows'         => 10,
+            'cols'         => 50,
+            'title'        => get_string('samlfieldauthloginmsg', 'auth.saml'),
+            'description'  => get_string('authloginmsgnoparent', 'auth'),
+            'defaultvalue' => self::$default_config['authloginmsg'],
+            'help'         => true,
+            'class'        => 'under-label-help',
+            'rules'       => array(
+                'maxlength' => 1000000
+            )
         );
 
         return array(
@@ -1422,16 +1687,38 @@ EOF;
             'surnamefield' => $values['surnamefield'],
             'emailfield' => $values['emailfield'],
             'studentidfield' => $values['studentidfield'],
+            'role' => $values['role'],
+            'roleprefix' => trim($values['roleprefix']),
+            'rolesiteadmin' => $values['rolesiteadmin'],
+            'rolesitestaff' => $values['rolesitestaff'],
+            'roleinstadmin' => $values['roleinstadmin'],
+            'roleinststaff' => $values['roleinststaff'],
+            'organisationname' => $values['organisationname'],
+            'roleautogroups' => $values['roleautogroups'],
+            'roleautogroupsall' => $values['roleautogroupsall'],
             'updateuserinfoonlogin' => $values['updateuserinfoonlogin'],
             'institutionattribute' => $values['institutionattribute'],
             'institutionvalue' => $values['institutionvalue'],
             'institutionregex' => $values['institutionregex'],
             'institutionidpentityid' => $entityid,
+            'avatar' => $values['avatar'],
             'authloginmsg' => $values['authloginmsg'],
             'metarefresh_metadata_url' => $values['metarefresh_metadata_url'],
         );
 
-        foreach(self::$default_config as $field => $value) {
+        $auth_children = false;
+        if (get_config('saml_create_institution_default') && !empty($values['rolepopulate'])) {
+            // Allow role changes to populate out to 'child' saml instances if this is a 'default' one
+            foreach ($defaults = explode(',', get_config('saml_create_institution_default')) as $default) {
+                if ($values['institution'] == $default) {
+                    // Find all the instances with same institutionidpentityid
+                    $auth_children = get_column('auth_instance_config', 'instance', 'field', 'institutionidpentityid', 'value', $entityid);
+                    break;
+                }
+            }
+        }
+
+        foreach (self::$default_config as $field => $value) {
             $record = new stdClass();
             $record->instance = $values['instance'];
             $record->field    = $field;
@@ -1442,6 +1729,18 @@ EOF;
             }
             else {
                 update_record('auth_instance_config', $record, array('instance' => $values['instance'], 'field' => $field));
+            }
+
+            if ($auth_children && preg_match('/^role/', $field)) {
+                // Populate the role changes to the other SAML instances
+                foreach ($auth_children as $child) {
+                    $dbwhere = new StdClass();
+                    $dbwhere->field = $field;
+                    $dbwhere->instance = $child;
+                    $dbdata = clone $dbwhere;
+                    $dbdata->value = $value;
+                    ensure_record_exists('auth_instance_config', $dbwhere, $dbdata);
+                }
             }
         }
 
@@ -1458,14 +1757,54 @@ EOF;
      * Add "SSO Login" link below the normal login form.
      */
     public static function login_form_elements() {
+        // Check how many active IdPs we can connect to and if it less than four we
+        // can display sso buttons for them on login block - otherwise have them
+        // redirect to IdP discovery page
+        $idps = array();
+        if ($rawidps = get_records_sql_array("
+                SELECT aic.value, ai.institution
+                FROM {auth_instance} ai
+                JOIN {auth_instance_config} aic ON aic.instance = ai.id
+                WHERE ai.authname = ?
+                AND ai.active = ?
+                AND aic.field = ?
+                ORDER BY ai.id ASC", array('saml', 1, 'institutionidpentityid'))) {
+            foreach ($rawidps as $rawidp) {
+                if (!isset($idps[$rawidp->value])) {
+                    $idps[$rawidp->value] = $rawidp;
+                }
+            }
+        }
         $url = get_config('wwwroot') . 'auth/saml/index.php';
         if (param_exists('login')) {
             // We're on the transient login page. Redirect back to original page once we're done.
             $url .= '?wantsurl=' . urlencode(get_full_script_path());
         }
+
+        $value = '<div class="login-externallink">';
+        if (count($idps) < 4) {
+            foreach ($idps as $idp) {
+                $idpurl = $url;
+                $idpurl .= param_exists('login') ? '&' : '?';
+                $idpurl .= 'idpentityid=' . $idp->value;
+                if (string_exists('login' . $idp->institution, 'auth.saml')) {
+                    // we use custom string defined in auth.saml
+                    $ssolabel = get_string('login' . $idp->institution, 'auth.saml');
+                }
+                else {
+                    $ssolabel = get_string('ssolabelfor', 'auth.saml', get_field('institution', 'displayname', 'name', $idp->institution));
+                }
+                $value .= '<a class="btn btn-primary saml-' . $idp->institution . '" href="' . $idpurl . '">' . $ssolabel . '</a>';
+            }
+        }
+        else {
+            $value .= '<a class="btn btn-primary" href="' . $url . '">' . get_string('login', 'auth.saml') . '</a>';
+        }
+        $value .= '</div>';
+
         $elements = array(
             'loginsaml' => array(
-                'value' => '<div class="login-externallink"><a class="btn btn-primary btn-sm" href="' . $url . '">' . get_string('login', 'auth.saml') . '</a></div>'
+                'value' => $value
             )
         );
         return $elements;

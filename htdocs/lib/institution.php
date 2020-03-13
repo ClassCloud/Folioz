@@ -461,7 +461,7 @@ class Institution {
         }
     }
 
-    public function send_admin_institution_is_full_message(){
+    public function send_admin_institution_is_full_message($applicantid=null) {
         // get the site admin and institution admin user records.
         $admins = $this->institution_and_site_admins();
         // check if there are admins - otherwise there are no site admins?!?!?
@@ -472,12 +472,25 @@ class Institution {
                 $lang = get_user_language($id);
                 $user = new User();
                 $user->find_by_id($id);
-                $message = (object) array(
-                    'users'   => array($id),
-                    'subject' => get_string_from_language($lang, 'institutionmembershipfullsubject'),
-                    'message' => get_string_from_language($lang, 'institutionmembershipfullmessagetext', 'mahara',
-                            $user->firstname, $this->displayname, get_config('sitename'), get_config('sitename')),
-                );
+                if ($applicantid) {
+                    $applicant = new User();
+                    $applicant->find_by_id($applicantid);
+                    $url = get_config('wwwroot') . 'module/multirecipientnotification/sendmessage.php?id=' . $applicantid . '&cm=institutionfilledreply&i=' . $this->name;
+                    $message = (object) array(
+                        'users'   => array($id),
+                        'subject' => get_string_from_language($lang, 'institutionmembershipfullsubject'),
+                        'message' => get_string_from_language($lang, 'institutionmembershipfullmessagetextuser', 'mahara',
+                                $user->firstname, display_name($applicant), $this->displayname, get_config('sitename'), display_name($applicant), $url, get_config('sitename')),
+                    );
+                }
+                else {
+                    $message = (object) array(
+                        'users'   => array($id),
+                        'subject' => get_string_from_language($lang, 'institutionmembershipfullsubject'),
+                        'message' => get_string_from_language($lang, 'institutionmembershipfullmessagetext', 'mahara',
+                                $user->firstname, $this->displayname, get_config('sitename'), get_config('sitename')),
+                    );
+                }
                 activity_occurred('maharamessage', $message);
             }
         }
@@ -1142,14 +1155,11 @@ function institution_generate_name($displayname) {
     $basename = mb_substr($displayname, 0, 255);
     $basename = iconv('UTF-8', 'ASCII//TRANSLIT', $displayname);
     $basename = strtolower($basename);
-    $basename = preg_replace('/[^a-z]/', '', $basename);
-    if (strlen($basename) < 2) {
-        $basename = 'inst' . $basename;
+    $basename = preg_replace('/[^a-z0-9]/', '', $basename);
+    $basename = substr($basename, 0, 255);
+    if (strlen($basename) < 1 || $basename === '0') {
+        throw new ParamOutOfRangeException(get_string('institutionnameinvalid', 'admin'));
     }
-    else {
-        $basename = substr($basename, 0, 255);
-    }
-
     // Make sure the name is unique. If it is not, add a suffix and see if
     // that makes it unique
     $finalname = $basename;

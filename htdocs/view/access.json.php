@@ -26,32 +26,90 @@ if ($page < 1) {
     $page = 1;
 }
 $offset = ($page - 1) * $limit;
+$is_admin = $USER->get('admin') || $USER->get('staff');
+$options = array();
+if (is_isolated() && ($USER->get('institutions') || !$USER->get('institutions') && !$is_admin)) {
+    $options['myinstitutions'] = true;
+    $options['showadmins'] = false;
+}
+
 switch ($type) {
     case 'friend':
-        $data = search_user($query, $limit, $offset,  array('exclude' => $USER->get('id'), 'friends' => true));
+        $options['exclude'] = $USER->get('id');
+        $options['friends'] = true;
+        $data = search_user($query, $limit, $offset, $options);
+        if (!empty($data['data'])) {
+            foreach ($data['data'] as $key => $value) {
+                $info = array(
+                    'id' => $value['id'],
+                    'name' => display_name($value['id'])
+                );
+                $data['data'][$key] = $info;
+            }
+        }
+        $count = $data['count'];
         break;
     case 'user':
-        $data = search_user($query, $limit, $offset, array('exclude' => $USER->get('id')));
+        $options['exclude'] = $USER->get('id');
+        $data = search_user($query, $limit, $offset, $options);
         $roles = get_records_array('usr_access_roles');
         $data['roles'] =  array();
         foreach ($roles as $r) {
             $data['roles'][] = array('name' => $r->role, 'display' => get_string($r->role, 'view'));
         }
+        foreach ($data['data'] as $key => $value) {
+            $info = array(
+                'id' => $value['id'],
+                'name' => display_name($value['id']),
+            );
+            $data['data'][$key] = $info;
+        }
         break;
     case 'group':
         require_once('group.php');
-        $data = search_group($query, $limit, $offset, '');
+        $type = 'all';
+        $groupcategory = '';
+        $institutions = 'all';
+        if (is_isolated() && !$is_admin) {
+            $institutions = $USER->get('institutions');
+            if (get_config('owngroupsonly')) {
+                $type = 'member';
+            }
+        }
+        else if (get_config('owngroupsonly') && !$is_admin) {
+            $type = 'member';
+            $institutions = array();
+        }
+        $data = search_group($query, $limit, $offset, $type, $groupcategory, $institutions);
         $roles = get_records_array('grouptype_roles');
         $data['roles'] = array();
         foreach ($roles as $r) {
             $data['roles'][$r->grouptype][] = array('name' => $r->role, 'display' => get_string($r->role, 'grouptype.'.$r->grouptype));
         }
-        foreach ($data['data'] as &$r) {
-            $r->url = group_homepage_url($r);
+        if (!empty($data['data'])) {
+            foreach ($data['data'] as $key => $value) {
+                $info = array(
+                    'id' => $value->id,
+                    'url' => group_homepage_url($value),
+                    'name' => $value->name,
+                    'grouptype' => $value->grouptype
+                );
+                $data['data'][$key] = $info;
+            }
         }
+        $data['profilepic'] = false;
         break;
     default:
-        $data = search_user($query, $limit, $offset,  array('exclude' => $USER->get('id'), 'friends' => true));
+        $options['exclude'] = $USER->get('id');
+        $options['friends'] = true;
+        $data = search_user($query, $limit, $offset, $options);
+        foreach ($data as $key => $value) {
+            $info = array(
+                'id' => $value['id'],
+                'name' => display_name($value['id'])
+            );
+            $data['data'][$key] = $info;
+        }
         break;
 }
 $more = $data['count'] > $limit * $page;

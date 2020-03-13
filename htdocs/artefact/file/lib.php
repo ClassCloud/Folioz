@@ -1143,6 +1143,10 @@ class ArtefactTypeFile extends ArtefactTypeFileBase {
         return "artefact/file/originals/" . ($id % 256);
     }
 
+    public static function get_profileicon_file_directory($id) {
+        return "artefact/file/profileicons/originals/" . ($id % 256);
+    }
+
     public function get_path($data=array()) {
         if (!empty($this->externalfilesystem)) {
             return $this->externalfilesystem->get_path($this);
@@ -1174,6 +1178,9 @@ class ArtefactTypeFile extends ArtefactTypeFileBase {
             $data->filetype = $imageinfo['mime'];
             $data->width    = $imageinfo[0];
             $data->height   = $imageinfo[1];
+            if (isset($data->artefacttype) && $data->artefacttype == 'profileicon') {
+                return new ArtefactTypeProfileicon(0, $data);
+            }
             return new ArtefactTypeImage(0, $data);
         }
 
@@ -1225,9 +1232,35 @@ class ArtefactTypeFile extends ArtefactTypeFileBase {
         }
 
         $f->commit();
+
+        if ($validfiletypes = get_config('validfiletypes')) {
+            $validext = array_map('trim', explode(',', $validfiletypes));
+            $oldext = $f->get('oldextension');
+            if (!in_array($oldext, $validext)) {
+                // the extension is not one of the valid options
+                log_debug(get_string('filetypenotallowed', 'artefact.file', $oldext));
+                $f->delete();
+                return false;
+            }
+            $typeparts = explode('/', $f->get('filetype'));
+            $oldext = $oldext == 'jpg' ? 'jpeg' : $oldext;
+            $mimetype = file_mime_type('foo.' . $oldext); // check the file mimetype against it's extension
+            $mimetypeparts = explode('/', $mimetype);
+            if ($typeparts[0] !== $mimetypeparts[0]) {
+                // the extension is not correct type for the file
+                log_debug(get_string('filetypenotmatchingmimetype', 'artefact.file', $mimetype));
+                $f->delete();
+                return false;
+            }
+        }
         $id = $f->get('id');
 
-        $newdir = $dataroot . self::get_file_directory($id);
+        if (isset($data->artefacttype) && $data->artefacttype == 'profileicon') {
+            $newdir = $dataroot . self::get_profileicon_file_directory($id);
+        }
+        else {
+            $newdir = $dataroot . self::get_file_directory($id);
+        }
         check_dir_exists($newdir);
         $newname = $newdir . '/' . $id;
         if (!rename($pathname, $newname)) {

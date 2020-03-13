@@ -11,6 +11,7 @@
  */
 function loadGridTranslate(grid, blocks) {
     var gridElements = [];
+    window.isGridstackRendering = true;
     gridRemoveEvents();
     // load grid with empty blocks
     $.each(blocks, function(index, block) {
@@ -40,12 +41,14 @@ function loadGridTranslate(grid, blocks) {
             el.on('resizestop', resizeStopBlock);
         });
         initJs();
+        window.isGridstackRendering = false;
     }, 300);
 }
 
 function loadGrid(grid, blocks) {
     var minWidth = grid.opts.minCellColumns,
         minHeight;
+    window.isGridstackRendering = true;
     $.each(blocks, function(index, block) {
         minHeight = null;
         var blockContent = $('<div id="block_' + block.id + '"><div class="grid-stack-item-content">'
@@ -68,6 +71,7 @@ function loadGrid(grid, blocks) {
         if (typeof id === 'undefined') {
             updateBlockSizes();
         }
+        window.isGridstackRendering = false;
     }, 300);
 
 }
@@ -144,9 +148,11 @@ function updateTranslatedGridRows(blocks) {
 
           y = 0;
           if (block.row > 1) {
-              // get the actual y value based on the max height of previus rows
+              // get the actual y value based on the max height of previous rows
               for (var i = 1; i < block.row; i++) {
-                  y += maxheight[i];
+                  if (typeof(maxheight[i]) != 'undefined' && !isNaN(maxheight[i])) {
+                      y += maxheight[i];
+                  }
               }
           }
           if (typeof(height[block.row][block.column]) != 'undefined') {
@@ -180,7 +186,11 @@ function updateTranslatedGridRows(blocks) {
           else {
               height[block.row][block.column] += realheight;
           }
-          maxheight[block.row] = Math.max(...height[block.row]);
+          // need to filter values that are not numbers
+          var allnumbers = height[block.row].filter(function (el) {
+              return Number.isInteger(el);
+          });
+          maxheight[block.row] = Math.max.apply(null, allnumbers);
       });
       // update all blocks together
       moveBlocks(updatedGrid);
@@ -210,7 +220,7 @@ function updateBlockSizes(grid) {
     });
 }
 
-function addNewWidget(blockContent, blockId, dimensions, grid, blocktypeclass, minWidth=null, minHeight=null) {
+function addNewWidget(blockContent, blockId, dimensions, grid, blocktypeclass, minWidth, minHeight) {
    el = grid.addWidget(
          blockContent,
          dimensions.positionx,

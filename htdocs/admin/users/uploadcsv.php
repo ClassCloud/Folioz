@@ -360,6 +360,15 @@ function uploadcsv_validate(Pieform $form, $values) {
                 $csverrors->add($i, get_string('uploadcsverrorexpirydateinpast', 'admin', $i, $expirydate));
             }
         }
+        if (array_key_exists('userroles', $formatkeylookup) && !empty($line[$formatkeylookup['userroles']])) {
+            $userroles = explode(',', $line[$formatkeylookup['userroles']]);
+            foreach ($userroles as $roleid => $role) {
+                $classname = 'UserRole' . ucfirst($role);
+                if (!class_exists($classname)) {
+                    $csverrors->add($i, get_string('uploadcsverroruserrolemissing', 'admin', $i, $role, ucfirst($role)));
+                }
+            }
+        }
     }
 
     // If the admin is trying to overwrite existing users, identified by username,
@@ -573,6 +582,19 @@ function uploadcsv_submit(Pieform $form, $values) {
                 }
                 continue;
             }
+            if ($field == 'userroles') {
+                if (!empty($record[$formatkeylookup[$field]])) {
+                    $userroles = explode(',', $record[$formatkeylookup[$field]]);
+                    foreach ($userroles as $roleid => $role) {
+                        $userroles[$roleid] = array('role' => $role,
+                                                    'institution' => '_site',
+                                                    'active' => 1,
+                                                    'provisioner' => 'csv');
+                    }
+                    $profilefields->{$field} = $userroles;
+                }
+                continue;
+            }
             $profilefields->{$field} = $record[$formatkeylookup[$field]];
         }
 
@@ -673,7 +695,7 @@ foreach ($ALLOWEDKEYS as $type) {
 }
 $fields .= "<div class=cl></div></ul>\n";
 
-$uploadcsvpagedescription = get_string('uploadcsvpagedescription6', 'admin', $fields);
+$uploadcsvpagedescription = get_string('uploadcsvpagedescription7', 'admin', $fields);
 
 $form = pieform($form);
 
